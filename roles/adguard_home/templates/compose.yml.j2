@@ -1,0 +1,30 @@
+# For DHCP to work reliably, set adguard_network_host: true in host/group vars.
+# With host network, the container uses the host's network (no port mapping).
+services:
+  adguard:
+    image: {{ adguard_image | default('adguard/adguardhome:latest') }}
+    container_name: adguard-{{ inventory_hostname }}
+    restart: unless-stopped
+{% if adguard_network_host | default(false) %}
+    network_mode: host
+{% else %}
+    ports:
+      - "53:53/tcp"      # DNS
+      - "53:53/udp"      # DNS (main)
+      - "67:67/udp"      # DHCP server
+      - "68:68/udp"      # DHCP client (needed for DHCP server)
+      - "80:80/tcp"      # Web UI / HTTP
+      - "443:443/tcp"    # Web UI / HTTPS / DNS over HTTPS
+      - "3000:3000/tcp"  # Initial setup wizard
+      - "853:853/tcp"    # DNS over TLS (recommended for clients)
+      - "784:784/udp"    # DNS over QUIC (optional)
+{% endif %}
+    volumes:
+      - adguard_data:/opt/adguardhome/work
+      - adguard_config:/opt/adguardhome/conf
+    environment:
+      TZ: {{ tz | default('Europe/Amsterdam') }}
+
+volumes:
+  adguard_data:
+  adguard_config:

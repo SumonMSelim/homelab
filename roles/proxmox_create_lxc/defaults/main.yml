@@ -1,0 +1,27 @@
+---
+# Defaults for creating LXC containers on Proxmox VE
+# Override in playbook vars or -e. Pass API credentials and proxmox_container_password via vars file or -e.
+
+proxmox_api_host: "192.168.178.110"
+proxmox_api_port: 8006
+proxmox_node: "one"
+proxmox_ostemplate: "media-storage:vztmpl/ubuntu-24.04-docker_amd64.tar.zst"
+proxmox_disk: "local-lvm:10"
+proxmox_cores: 1
+proxmox_memory: 1024
+proxmox_swap: 512
+proxmox_gw: "192.168.178.1"
+proxmox_bridge: "vmbr0"
+
+proxmox_ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGPdbWBj0cioTEXSeNjotNxDol9QRGuhRTI1q3xsK4+D ansible-homelab"
+
+# Containers to create.
+proxmox_containers:
+  - vmid: 253
+    hostname: adguard-primary
+    ip: "192.168.178.253/24"
+    description: "AdGuard Home Primary (DNS + DHCP)"
+  - vmid: 254
+    hostname: adguard-secondary
+    ip: "192.168.178.254/24"
+    description: "AdGuard Home Secondary (DNS)"

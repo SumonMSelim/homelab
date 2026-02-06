@@ -1,0 +1,3 @@
+# AdGuard Home — DNS group
+adguard_network_host: false
+ansible_user: root

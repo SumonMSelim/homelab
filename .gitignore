@@ -1,0 +1,42 @@
+AGENTS.md
+
+# IDEs and editors
+.vscode/
+.idea/
+.cursorrules
+.cursor/
+
+# Ansible
+*.retry
+.ansible/
+vault_password
+.vault_pass
+*.vault_pass
+
+# Secrets and env (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*_vars.yml
+secrets/
+
+# Python (if using venv or custom modules)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+*.tmp
+*.temp
+.cache/

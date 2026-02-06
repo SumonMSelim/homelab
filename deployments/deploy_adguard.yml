@@ -1,0 +1,7 @@
+---
+# Deploy AdGuard Home
+- name: Deploy AdGuard Home
+  hosts: dns
+  become: yes
+  roles:
+    - adguard_home

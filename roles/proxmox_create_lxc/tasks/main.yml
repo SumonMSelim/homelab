@@ -1,0 +1,51 @@
+---
+# Create LXC containers on Proxmox VE
+# Requires: community.proxmox collection (ansible-galaxy collection install community.proxmox)
+# Required: proxmox_api_user; (proxmox_api_password OR proxmox_api_token_id + proxmox_api_token_secret); proxmox_container_password
+- name: Create LXC container on Proxmox
+  community.proxmox.proxmox:
+    api_host: "{{ proxmox_api_host }}"
+    api_port: "{{ proxmox_api_port | default(8006) }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_password: "{{ proxmox_api_password | default(omit) }}"
+    api_token_id: "{{ proxmox_api_token_id | default(omit) }}"
+    api_token_secret: "{{ proxmox_api_token_secret | default(omit) }}"
+    validate_certs: "{{ proxmox_validate_certs | default(false) }}"
+    node: "{{ proxmox_node }}"
+    vmid: "{{ item.vmid }}"
+    hostname: "{{ item.hostname }}"
+    ostemplate: "{{ proxmox_ostemplate }}"
+    password: "{{ proxmox_container_password }}"
+    pubkey: "{{ proxmox_ssh_pubkey }}"
+    disk: "{{ proxmox_disk }}"
+    cores: "{{ proxmox_cores }}"
+    memory: "{{ proxmox_memory }}"
+    swap: "{{ proxmox_swap }}"
+    netif:
+      net0: "name=eth0,bridge={{ proxmox_bridge }},gw={{ proxmox_gw }},ip={{ item.ip }}"
+    unprivileged: true
+    features:
+      - nesting=1
+    onboot: true
+    description: "{{ item.description }}"
+    state: present
+  loop: "{{ proxmox_containers }}"
+  loop_control:
+    label: "{{ item.hostname }}"
+  no_log: true
+
+- name: Start LXC container on Proxmox
+  community.proxmox.proxmox:
+    api_host: "{{ proxmox_api_host }}"
+    api_port: "{{ proxmox_api_port | default(8006) }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_password: "{{ proxmox_api_password | default(omit) }}"
+    api_token_id: "{{ proxmox_api_token_id | default(omit) }}"
+    api_token_secret: "{{ proxmox_api_token_secret | default(omit) }}"
+    validate_certs: "{{ proxmox_validate_certs | default(false) }}"
+    vmid: "{{ item.vmid }}"
+    state: started
+  loop: "{{ proxmox_containers }}"
+  loop_control:
+    label: "{{ item.hostname }}"
+  no_log: true

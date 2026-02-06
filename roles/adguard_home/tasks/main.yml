@@ -1,0 +1,67 @@
+---
+# AdGuard Home — free port 53 per https://github.com/AdguardTeam/AdGuardHome/wiki/FAQ#bindinuse
+# (disable systemd-resolved stub on both primary and secondary), then deploy compose and start
+- name: Ensure systemd-resolved drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: '0755'
+  when: ansible_service_mgr == "systemd"
+
+- name: Deactivate DNSStubListener and set DNS=127.0.0.1 (AdGuard FAQ bindinuse)
+  ansible.builtin.copy:
+    dest: /etc/systemd/resolved.conf.d/adguardhome.conf
+    content: |
+      [Resolve]
+      DNS=127.0.0.1
+      DNSStubListener=no
+    mode: '0644'
+  notify: Restart systemd-resolved
+  when: ansible_service_mgr == "systemd"
+
+- name: Stat /etc/resolv.conf
+  ansible.builtin.stat:
+    path: /etc/resolv.conf
+  register: resolv_conf_stat
+  when: ansible_service_mgr == "systemd"
+
+- name: Backup resolv.conf before replacing (AdGuard FAQ step 3)
+  ansible.builtin.copy:
+    src: /etc/resolv.conf
+    dest: /etc/resolv.conf.backup
+    remote_src: true
+    force: false
+  when:
+    ansible_service_mgr == "systemd"
+    and not (resolv_conf_stat.skipped | default(false))
+    and resolv_conf_stat.stat.exists
+    and (not resolv_conf_stat.stat.islnk or resolv_conf_stat.stat.lnk_source != '/run/systemd/resolve/resolv.conf')
+
+- name: Activate systemd resolve resolv.conf — symlink so host uses 127.0.0.1 (AdGuard FAQ step 3)
+  ansible.builtin.file:
+    src: /run/systemd/resolve/resolv.conf
+    dest: /etc/resolv.conf
+    state: link
+    force: true
+  when: ansible_service_mgr == "systemd"
+
+- name: Flush handlers so systemd-resolved restarts before we start AdGuard
+  ansible.builtin.meta: flush_handlers
+  when: ansible_service_mgr == "systemd"
+
+- name: Ensure compose project directory exists
+  ansible.builtin.file:
+    path: "/opt/compose/adguard-{{ inventory_hostname }}"
+    state: directory
+    mode: '0755'
+
+- name: Deploy AdGuard Home compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "/opt/compose/adguard-{{ inventory_hostname }}/compose.yml"
+    mode: '0644'
+
+- name: Start AdGuard Home with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "/opt/compose/adguard-{{ inventory_hostname }}"
+    state: present

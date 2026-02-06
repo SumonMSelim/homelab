@@ -1,0 +1,19 @@
+---
+# Create LXC containers on Proxmox VE (all entries in roles/proxmox_create_lxc/defaults/main.yml → proxmox_containers).
+# Run from a host that can reach the Proxmox API.
+#
+# Required: Proxmox API (password or token) + root password for new containers.
+# With vars file: make create-lxc  (or -e "@vars/proxmox_create_vars.yml")
+# Or -e "proxmox_api_user=root@pam" -e "proxmox_api_token_id=ansible" \
+#    -e "proxmox_api_token_secret=SECRET" -e "proxmox_container_password=ROOT_PW"
+#
+- name: Create LXC containers on Proxmox
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    proxmox_validate_certs: false
+  roles:
+    - proxmox_create_lxc
+  tags:
+    - lxc

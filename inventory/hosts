@@ -1,0 +1,12 @@
+# Homelab inventory — 192.168.178.0/24, gw 192.168.178.1
+
+# DNS
+[adguard_primary_host]
+adguard_primary ansible_host=192.168.178.253
+
+[adguard_secondary_host]
+adguard_secondary ansible_host=192.168.178.254
+
+[dns:children]
+adguard_primary_host
+adguard_secondary_host

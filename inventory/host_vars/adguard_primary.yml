@@ -1,0 +1,2 @@
+# AdGuard Primary — DHCP server: use host network so DHCP broadcasts work.
+adguard_network_host: true

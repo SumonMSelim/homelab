@@ -1,0 +1,6 @@
+---
+- name: Restart systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: restarted
+  when: ansible_service_mgr == "systemd"
