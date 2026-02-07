@@ -1,0 +1,39 @@
+---
+# Destroy LXC container(s) on Proxmox VE.
+# Same vars as create: vars/proxmox_create_vars.yml
+#
+# Destroy all (from proxmox_containers):
+#   make destroy-lxc   or   ansible-playbook deployments/destroy_lxc.yml -e "@vars/proxmox_create_vars.yml"
+#
+# Destroy a single container by CTID:
+#   make destroy-lxc CTID=253   or   ... -e "vmid=253"
+#
+- name: Destroy LXC container(s) on Proxmox
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../roles/proxmox_create_lxc/defaults/main.yml
+  vars:
+    proxmox_validate_certs: false
+  tasks:
+    - name: Set containers to destroy (single vmid or full list)
+      ansible.builtin.set_fact:
+        containers_to_destroy: "{{ [{'vmid': vmid}] if vmid is defined else proxmox_containers }}"
+
+    - name: Destroy LXC container
+      community.proxmox.proxmox:
+        api_host: "{{ proxmox_api_host }}"
+        api_port: "{{ proxmox_api_port | default(8006) }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_password: "{{ proxmox_api_password | default(omit) }}"
+        api_token_id: "{{ proxmox_api_token_id | default(omit) }}"
+        api_token_secret: "{{ proxmox_api_token_secret | default(omit) }}"
+        validate_certs: "{{ proxmox_validate_certs }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ item.vmid }}"
+        state: absent
+      loop: "{{ containers_to_destroy }}"
+      loop_control:
+        label: "{{ item.hostname | default(item.vmid) }} ({{ item.vmid }})"
+      no_log: true
