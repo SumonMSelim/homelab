@@ -23,7 +23,7 @@
     swap: "{{ proxmox_swap }}"
     netif:
       net0: "name=eth0,bridge={{ proxmox_bridge }},gw={{ proxmox_gw }},ip={{ item.ip }}"
-    unprivileged: true
+    unprivileged: "{{ item.unprivileged | default(1) }}"
     features:
       - nesting=1
     onboot: true
