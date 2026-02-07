@@ -1,15 +1,14 @@
 ---
 # Create LXC containers on Proxmox VE
 # Requires: community.proxmox collection (ansible-galaxy collection install community.proxmox)
-# Required: proxmox_api_user; (proxmox_api_password OR proxmox_api_token_id + proxmox_api_token_secret); proxmox_container_password
+# Required: proxmox_api_user; proxmox_api_token_id; proxmox_api_token_secret; proxmox_container_password
 - name: Create LXC container on Proxmox
   community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
     api_port: "{{ proxmox_api_port | default(8006) }}"
     api_user: "{{ proxmox_api_user }}"
-    api_password: "{{ proxmox_api_password | default(omit) }}"
-    api_token_id: "{{ proxmox_api_token_id | default(omit) }}"
-    api_token_secret: "{{ proxmox_api_token_secret | default(omit) }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
     validate_certs: "{{ proxmox_validate_certs | default(false) }}"
     node: "{{ proxmox_node }}"
     vmid: "{{ item.vmid }}"
@@ -39,9 +38,8 @@
     api_host: "{{ proxmox_api_host }}"
     api_port: "{{ proxmox_api_port | default(8006) }}"
     api_user: "{{ proxmox_api_user }}"
-    api_password: "{{ proxmox_api_password | default(omit) }}"
-    api_token_id: "{{ proxmox_api_token_id | default(omit) }}"
-    api_token_secret: "{{ proxmox_api_token_secret | default(omit) }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
     validate_certs: "{{ proxmox_validate_certs | default(false) }}"
     vmid: "{{ item.vmid }}"
     state: started
