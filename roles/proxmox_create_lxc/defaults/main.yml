@@ -21,7 +21,9 @@ proxmox_containers:
     hostname: adguard-primary
     ip: "192.168.178.253/24"
     description: "AdGuard Home Primary (DNS + DHCP)"
+    unprivileged: 0
   - vmid: 254
     hostname: adguard-secondary
     ip: "192.168.178.254/24"
     description: "AdGuard Home Secondary (DNS)"
+    unprivileged: 0
