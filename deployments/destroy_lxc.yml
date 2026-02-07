@@ -33,6 +33,7 @@
         node: "{{ proxmox_node }}"
         vmid: "{{ item.vmid }}"
         state: absent
+        force: true
       loop: "{{ containers_to_destroy }}"
       loop_control:
         label: "{{ item.hostname | default(item.vmid) }} ({{ item.vmid }})"
