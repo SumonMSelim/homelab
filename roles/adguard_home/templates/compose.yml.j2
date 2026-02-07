@@ -19,6 +19,8 @@ services:
       - "853:853/tcp"    # DNS over TLS (recommended for clients)
       - "784:784/udp"    # DNS over QUIC (optional)
 {% endif %}
+    security_opt:
+      - apparmor=unconfined
     volumes:
       - adguard_data:/opt/adguardhome/work
       - adguard_config:/opt/adguardhome/conf
