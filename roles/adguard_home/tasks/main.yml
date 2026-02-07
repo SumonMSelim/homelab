@@ -1,6 +1,6 @@
 ---
 # AdGuard Home — free port 53 per https://github.com/AdguardTeam/AdGuardHome/wiki/FAQ#bindinuse
-# (disable systemd-resolved stub on both primary and secondary), then deploy compose and start
+# Use upstream DNS in resolved until AdGuard is running so Docker can pull the image; then switch host to 127.0.0.1.
 - name: Ensure systemd-resolved drop-in directory exists
   ansible.builtin.file:
     path: /etc/systemd/resolved.conf.d
@@ -8,12 +8,12 @@
     mode: '0755'
   when: ansible_service_mgr == "systemd"
 
-- name: Deactivate DNSStubListener and set DNS=127.0.0.1 (AdGuard FAQ bindinuse)
+- name: Deactivate DNSStubListener and set temporary upstream DNS (so Docker can pull before AdGuard is up)
   ansible.builtin.copy:
     dest: /etc/systemd/resolved.conf.d/adguardhome.conf
     content: |
       [Resolve]
-      DNS=127.0.0.1
+      DNS={{ adguard_bootstrap_dns | default('8.8.8.8') }}
       DNSStubListener=no
     mode: '0644'
   notify: Restart systemd-resolved
@@ -37,7 +37,7 @@
     and resolv_conf_stat.stat.exists
     and (not resolv_conf_stat.stat.islnk or resolv_conf_stat.stat.lnk_source != '/run/systemd/resolve/resolv.conf')
 
-- name: Activate systemd resolve resolv.conf — symlink so host uses 127.0.0.1 (AdGuard FAQ step 3)
+- name: Activate systemd resolve resolv.conf — symlink (host uses bootstrap DNS until AdGuard is up)
   ansible.builtin.file:
     src: /run/systemd/resolve/resolv.conf
     dest: /etc/resolv.conf
@@ -65,3 +65,18 @@
   community.docker.docker_compose_v2:
     project_src: "/opt/compose/adguard-{{ inventory_hostname }}"
     state: present
+
+- name: Switch host DNS to AdGuard (127.0.0.1) now that container is up
+  ansible.builtin.copy:
+    dest: /etc/systemd/resolved.conf.d/adguardhome.conf
+    content: |
+      [Resolve]
+      DNS=127.0.0.1
+      DNSStubListener=no
+    mode: '0644'
+  notify: Restart systemd-resolved
+  when: ansible_service_mgr == "systemd"
+
+- name: Flush handlers to apply host DNS switch to 127.0.0.1
+  ansible.builtin.meta: flush_handlers
+  when: ansible_service_mgr == "systemd"
