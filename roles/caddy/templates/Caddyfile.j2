@@ -9,7 +9,10 @@
 
 # Proxmox VE
 http://one.mol.la, one.mol.la {
-    reverse_proxy https://192.168.178.110:8006
+    reverse_proxy https://192.168.178.110:8006 {
+        tls_server_name one.mol.la
+        header_up Host {upstream_hostport}
+    }
 }
 
 # AdGuard Primary — DNS UI
