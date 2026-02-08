@@ -35,3 +35,4 @@
   community.docker.docker_compose_v2:
     project_src: "/opt/compose/caddy-{{ inventory_hostname }}"
     state: present
+    build: always
