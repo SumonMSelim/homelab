@@ -1,0 +1,36 @@
+# Caddy + Cloudflare Tunnel — host network for seamless internal/external routing.
+# Pass cloudflare_api_token and cloudflare_tunnel_token via vars (e.g. vars/caddy_vars.yml).
+services:
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: caddy-cloudflare-{{ inventory_hostname }}
+    container_name: caddy-{{ inventory_hostname }}
+    restart: unless-stopped
+    security_opt:
+      - apparmor=unconfined
+    network_mode: host
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./config/Caddyfile:/etc/caddy/Caddyfile:ro
+    environment:
+      CLOUDFLARE_API_TOKEN: "{{ cloudflare_api_token }}"
+{% if caddy_cloudflare_email is defined and caddy_cloudflare_email %}
+      CLOUDFLARE_EMAIL: "{{ caddy_cloudflare_email }}"
+{% endif %}
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-{{ inventory_hostname }}
+    restart: unless-stopped
+    security_opt:
+      - apparmor=unconfined
+    network_mode: host
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: "{{ cloudflare_tunnel_token }}"
+
+volumes:
+  caddy_data:
+  caddy_config:
