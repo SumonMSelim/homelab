@@ -1,18 +1,21 @@
-# PocketID — OIDC/Passkey provider at https://id.mol.la
-# Pass pocketid_admin_email and pocketid_session_secret via vars (e.g. vars/pocketid_vars.yml).
+# Pocket ID — OIDC/Passkey provider at https://id.mol.la
+# Pass pocketid_encryption_key via vars (e.g. -e "@vars/pocketid_vars.yml"). Generate with: openssl rand -base64 32
 services:
   pocketid:
-    image: {{ pocketid_image | default('ghcr.io/pocketid/pocketid:latest') }}
+    image: {{ pocketid_image | default('ghcr.io/pocket-id/pocket-id:v2') }}
     container_name: pocketid-{{ inventory_hostname }}
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "1411:1411"
     volumes:
       - pocketid_data:/app/data
     environment:
-      PUBLIC_URL: "https://id.mol.la"
-      POCKETID_ADMIN_EMAIL: "{{ pocketid_admin_email }}"
-      POCKETID_SESSION_SECRET: "{{ pocketid_session_secret }}"
+      APP_URL: "https://id.mol.la"
+      ENCRYPTION_KEY: "{{ pocketid_encryption_key }}"
+      TRUST_PROXY: "true"
+      {% if pocketid_maxmind_license_key is defined and pocketid_maxmind_license_key | length > 0 %}
+      MAXMIND_LICENSE_KEY: "{{ pocketid_maxmind_license_key }}"
+      {% endif %}
 
 volumes:
   pocketid_data:
