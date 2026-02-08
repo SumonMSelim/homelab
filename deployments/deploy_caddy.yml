@@ -1,0 +1,8 @@
+---
+# Deploy Caddy (reverse proxy + Cloudflare Tunnel).
+# Pass cloudflare_api_token and cloudflare_tunnel_token via vars file: make deploy-caddy or -e "@vars/caddy_vars.yml"
+- name: Deploy Caddy
+  hosts: caddy
+  become: yes
+  roles:
+    - caddy
