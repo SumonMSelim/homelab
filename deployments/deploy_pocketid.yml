@@ -1,6 +1,6 @@
 ---
 # Deploy PocketID (OIDC/Passkey provider at https://id.mol.la).
-# Pass pocketid_admin_email and pocketid_session_secret via vars file: -e "@vars/pocketid_vars.yml"
+# Pass pocketid_encryption_key via vars: -e "@vars/pocketid_vars.yml" (generate with: openssl rand -base64 32)
 - name: Deploy PocketID
   hosts: pocketid_host
   become: yes
