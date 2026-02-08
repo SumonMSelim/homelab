@@ -1,5 +1,12 @@
 # Homelab inventory — 192.168.178.0/24, gw 192.168.178.1
 
+# Proxy
+[caddy_host]
+caddy_proxy ansible_host=192.168.178.121
+
+[caddy:children]
+caddy_host
+
 # DNS
 [adguard_primary_host]
 adguard_primary ansible_host=192.168.178.253

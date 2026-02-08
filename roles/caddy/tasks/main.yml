@@ -1,0 +1,37 @@
+---
+# Caddy reverse proxy + Cloudflare Tunnel. Pass cloudflare_api_token and cloudflare_tunnel_token via vars file or -e.
+- name: Ensure compose project directory exists
+  ansible.builtin.file:
+    path: "/opt/compose/caddy-{{ inventory_hostname }}"
+    state: directory
+    mode: '0755'
+
+- name: Ensure Caddy config directory exists
+  ansible.builtin.file:
+    path: "/opt/compose/caddy-{{ inventory_hostname }}/config"
+    state: directory
+    mode: '0755'
+
+- name: Deploy Caddy Dockerfile (build with Cloudflare DNS module)
+  ansible.builtin.copy:
+    src: Dockerfile
+    dest: "/opt/compose/caddy-{{ inventory_hostname }}/Dockerfile"
+    mode: '0644'
+
+- name: Deploy Caddy compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "/opt/compose/caddy-{{ inventory_hostname }}/compose.yml"
+    mode: '0644'
+  no_log: true
+
+- name: Deploy Caddyfile
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: "/opt/compose/caddy-{{ inventory_hostname }}/config/Caddyfile"
+    mode: '0644'
+
+- name: Start Caddy and Cloudflare Tunnel with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "/opt/compose/caddy-{{ inventory_hostname }}"
+    state: present

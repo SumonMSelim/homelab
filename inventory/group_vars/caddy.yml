@@ -1,0 +1,3 @@
+---
+# Caddy host(s) — reverse proxy + Cloudflare Tunnel
+ansible_user: root
