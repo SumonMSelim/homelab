@@ -2,6 +2,7 @@
 # Create LXC containers on Proxmox VE
 # Requires: community.proxmox collection (ansible-galaxy collection install community.proxmox)
 # Required: proxmox_api_user; proxmox_api_token_id; proxmox_api_token_secret; proxmox_container_password
+# Skip create for privileged (unprivileged: 0) when using token auth — Proxmox requires root@pam (password) for those.
 - name: Create LXC container on Proxmox
   community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
@@ -31,6 +32,7 @@
   loop: "{{ proxmox_containers }}"
   loop_control:
     label: "{{ item.hostname }}"
+  when: (item.unprivileged | default(1) | int) != 0 or (proxmox_api_password is defined and proxmox_api_password | default('') | length > 0)
   no_log: true
 
 - name: Start LXC container on Proxmox

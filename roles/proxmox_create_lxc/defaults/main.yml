@@ -17,6 +17,21 @@ proxmox_ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGPdbWBj0cioTEXSeNjotNx
 
 # LXCs to create.
 proxmox_containers:
+  - vmid: 120
+    hostname: ansible
+    ip: "192.168.178.120/24"
+    description: "Ansible as host for the homelab control plane"
+    unprivileged: 1
+  - vmid: 121
+    hostname: caddy
+    ip: "192.168.178.121/24"
+    description: "Caddy Reverse Proxy & Cloudflare Tunnel"
+    unprivileged: 1
+  - vmid: 122
+    hostname: pocketid
+    ip: "192.168.178.122/24"
+    description: "PocketID for identity management"
+    unprivileged: 1
   - vmid: 253
     hostname: adguard-primary
     ip: "192.168.178.253/24"
