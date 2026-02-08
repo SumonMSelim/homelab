@@ -10,8 +10,9 @@
 # Proxmox VE
 http://one.mol.la, one.mol.la {
     reverse_proxy https://192.168.178.110:8006 {
-        tls_server_name one.mol.la
-        header_up Host {upstream_hostport}
+        transport http {
+            tls_server_name one.mol.la
+        }
     }
 }
 
