@@ -16,6 +16,11 @@ http://one.mol.la, one.mol.la {
     }
 }
 
+# PocketID — OIDC/Passkey
+http://id.mol.la, id.mol.la {
+	reverse_proxy 192.168.178.122:8080
+}
+
 # AdGuard Primary — DNS UI
 http://dns1.mol.la, dns1.mol.la {
 	reverse_proxy 192.168.178.253:80

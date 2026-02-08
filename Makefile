@@ -1,7 +1,7 @@
 # Homelab IaC — run from your laptop (or any host that can reach the Proxmox API).
 # You need Ansible installed: brew install ansible (macOS) or pip install ansible-core
 
-.PHONY: help create-lxc destroy-lxc deploy-caddy
+.PHONY: help create-lxc destroy-lxc deploy-caddy deploy-pocketid
 
 help:
 	@echo "Homelab IaC — usage:"
@@ -9,6 +9,7 @@ help:
 	@echo "  make destroy-lxc       Destroy all LXCs from proxmox_containers"
 	@echo "  make destroy-lxc CTID=253   Destroy only container 253"
 	@echo "  make deploy-caddy      Deploy Caddy + Cloudflare Tunnel (uses vars/caddy_vars.yml)"
+	@echo "  make deploy-pocketid   Deploy PocketID (uses vars/pocketid_vars.yml)"
 	@echo ""
 	@echo "First time: install Ansible, then create vars files in vars/"
 
@@ -20,3 +21,6 @@ destroy-lxc:
 
 deploy-caddy:
 	ansible-playbook deployments/deploy_caddy.yml -e "@vars/caddy_vars.yml"
+
+deploy-pocketid:
+	ansible-playbook deployments/deploy_pocketid.yml -e "@vars/pocketid_vars.yml"
