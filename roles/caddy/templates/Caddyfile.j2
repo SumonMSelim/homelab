@@ -1,12 +1,11 @@
 # Global: default ACME issuer with Cloudflare DNS-01 (token from env CLOUDFLARE_API_TOKEN)
 {
+    auto_https disable_redirects
+
 	cert_issuer acme {
 		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 	}
 }
-
-# Future: PocketID Forward Auth (192.168.178.122)
-# import /config/snippets/pocketid.conf
 
 # AdGuard Primary — DNS UI
 dns1.mol.la {
