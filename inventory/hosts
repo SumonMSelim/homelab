@@ -2,15 +2,15 @@
 
 # Ansible
 [ansible_host]
-ansible_proxy ansible_host=192.168.178.120
+ansible ansible_host=192.168.178.120
 
-# Proxy
+# Caddy
 [caddy_host]
-caddy_proxy ansible_host=192.168.178.121
+caddy ansible_host=192.168.178.121
 
 # PocketID
 [pocketid_host]
-pocketid_proxy ansible_host=192.168.178.122
+pocketid ansible_host=192.168.178.122
 
 [core:children]
 ansible_host

@@ -1,0 +1,19 @@
+---
+# PocketID — OIDC/Passkey provider. Pass pocketid_admin_email and pocketid_session_secret via vars (e.g. vars/pocketid_vars.yml).
+- name: Ensure compose project directory exists
+  ansible.builtin.file:
+    path: "/opt/compose/pocketid-{{ inventory_hostname }}"
+    state: directory
+    mode: '0755'
+
+- name: Deploy PocketID compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "/opt/compose/pocketid-{{ inventory_hostname }}/compose.yml"
+    mode: '0644'
+  no_log: true
+
+- name: Start PocketID with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "/opt/compose/pocketid-{{ inventory_hostname }}"
+    state: present
