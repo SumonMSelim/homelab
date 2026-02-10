@@ -1,0 +1,5 @@
+---
+- name: Restart Caddy service
+  community.docker.docker_container:
+    name: "caddy-{{ inventory_hostname }}"
+    state: restarted

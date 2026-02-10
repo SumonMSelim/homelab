@@ -12,6 +12,7 @@
     dest: "/opt/compose/pocketid-{{ inventory_hostname }}/compose.yml"
     mode: '0644'
   no_log: true
+  notify: Restart PocketID service
 
 - name: Start PocketID with Docker Compose
   community.docker.docker_compose_v2:
