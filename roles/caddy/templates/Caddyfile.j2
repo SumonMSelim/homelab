@@ -1,10 +1,15 @@
-
 (protected) {
-    forward_auth 192.168.178.122:1411 {
-        uri /api/oidc/forward-auth
+    forward_auth 192.168.178.122:8080 {
+        uri /api/forward-auth
+        
+        # Required headers for PocketID to know who is asking
         header_up Host {host}
         header_up X-Forwarded-Method {method}
         header_up X-Forwarded-Uri {uri}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        
+        # Headers PocketID will send back after successful login
         copy_headers Remote-User Remote-Email Remote-Name
     }
 }
