@@ -1,5 +1,4 @@
 ---
 - name: Restart Caddy service
-  community.docker.docker_container:
-    name: "caddy-{{ inventory_hostname }}"
-    state: restarted
+  ansible.builtin.command:
+    cmd: docker restart caddy-{{ inventory_hostname }}
