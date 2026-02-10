@@ -1,4 +1,9 @@
 ---
+- name: Restart AdGuard Home service
+  community.docker.docker_container:
+    name: "adguard-{{ inventory_hostname }}"
+    state: restarted
+
 - name: Restart systemd-resolved
   ansible.builtin.systemd:
     name: systemd-resolved

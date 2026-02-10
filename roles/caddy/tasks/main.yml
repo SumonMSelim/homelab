@@ -24,12 +24,14 @@
     dest: "/opt/compose/caddy-{{ inventory_hostname }}/compose.yml"
     mode: '0644'
   no_log: true
+  notify: Restart Caddy service
 
 - name: Deploy Caddyfile
   ansible.builtin.template:
     src: Caddyfile.j2
     dest: "/opt/compose/caddy-{{ inventory_hostname }}/config/Caddyfile"
     mode: '0644'
+  notify: Restart Caddy service
 
 - name: Start Caddy and Cloudflare Tunnel with Docker Compose
   community.docker.docker_compose_v2:

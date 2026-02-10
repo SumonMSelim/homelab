@@ -1,0 +1,5 @@
+---
+- name: Restart PocketID service
+  community.docker.docker_container:
+    name: "pocketid-{{ inventory_hostname }}"
+    state: restarted

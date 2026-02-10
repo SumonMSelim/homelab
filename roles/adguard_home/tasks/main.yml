@@ -60,6 +60,7 @@
     src: compose.yml.j2
     dest: "/opt/compose/adguard-{{ inventory_hostname }}/compose.yml"
     mode: '0644'
+  notify: Restart AdGuard Home service
 
 - name: Start AdGuard Home with Docker Compose
   community.docker.docker_compose_v2:
