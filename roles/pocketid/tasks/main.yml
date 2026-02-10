@@ -1,5 +1,5 @@
 ---
-# PocketID — OIDC/Passkey provider. Pass pocketid_admin_email and pocketid_session_secret via vars (e.g. vars/pocketid_vars.yml).
+# Pocket ID — OIDC/Passkey provider. Pass pocketid_encryption_key via vars (e.g. -e "@vars/pocketid_vars.yml"). Generate with: openssl rand -base64 32
 - name: Ensure compose project directory exists
   ansible.builtin.file:
     path: "/opt/compose/pocketid-{{ inventory_hostname }}"

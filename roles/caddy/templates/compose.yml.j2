@@ -8,8 +8,6 @@ services:
     image: caddy-cloudflare-{{ inventory_hostname }}
     container_name: caddy-{{ inventory_hostname }}
     restart: unless-stopped
-    security_opt:
-      - apparmor=unconfined
     network_mode: host
     volumes:
       - caddy_data:/data
@@ -24,8 +22,6 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared-{{ inventory_hostname }}
     restart: unless-stopped
-    security_opt:
-      - apparmor=unconfined
     network_mode: host
     command: ["tunnel", "--no-autoupdate", "run"]
     environment:
