@@ -1,3 +1,14 @@
+
+(protected) {
+    forward_auth 192.168.178.122:1411 {
+        uri /api/oidc/forward-auth
+        header_up Host {host}
+        header_up X-Forwarded-Method {method}
+        header_up X-Forwarded-Uri {uri}
+        copy_headers Remote-User Remote-Email Remote-Name
+    }
+}
+
 # Global: default ACME issuer with Cloudflare DNS-01 (token from env CLOUDFLARE_API_TOKEN)
 {
     auto_https disable_redirects
@@ -9,6 +20,7 @@
 
 # Proxmox VE
 http://one.mol.la, one.mol.la {
+    import protected
     reverse_proxy https://192.168.178.110:8006 {
         transport http {
             tls_server_name one.mol.la
