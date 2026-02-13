@@ -1,14 +1,12 @@
+# Tinyauth forward-auth — validates session via Pocket ID (Tinyauth on PocketID host :1412)
 (protected) {
-    forward_auth 192.168.178.122:1411 {
-        uri /api/forward-auth
-        
+    forward_auth 192.168.178.122:1412 {
+        uri /api/auth/caddy
         header_up X-Forwarded-Host {host}
         header_up X-Forwarded-Proto https
         header_up X-Forwarded-Method {method}
         header_up X-Forwarded-Uri {uri}
-        header_up Host id.mol.la
-        
-        copy_headers Remote-User Remote-Email Remote-Name
+        copy_headers Remote-User Remote-Email Remote-Name Remote-Groups
     }
 }
 
@@ -31,9 +29,14 @@ http://one.mol.la, one.mol.la {
     }
 }
 
-# PocketID — OIDC/Passkey
+# id.mol.la — Pocket ID UI + Tinyauth callback (single identity portal, cookie consistency)
 http://id.mol.la, id.mol.la {
-	reverse_proxy 192.168.178.122:1411
+    handle /api/oauth/* {
+        reverse_proxy 192.168.178.122:1412
+    }
+    handle {
+        reverse_proxy 192.168.178.122:1411
+    }
 }
 
 # AdGuard Primary — DNS UI

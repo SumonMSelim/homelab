@@ -2,3 +2,7 @@
 - name: Restart PocketID service
   ansible.builtin.command:
     cmd: docker restart pocketid-{{ inventory_hostname }}
+
+- name: Restart Tinyauth service
+  ansible.builtin.command:
+    cmd: docker restart tinyauth-{{ inventory_hostname }}
