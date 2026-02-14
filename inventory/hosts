@@ -12,10 +12,15 @@ caddy ansible_host=192.168.178.121
 [pocketid_host]
 pocketid ansible_host=192.168.178.122
 
+# PostgreSQL
+[postgresql_host]
+postgresql ansible_host=192.168.178.130
+
 [core:children]
 ansible_host
 caddy_host
 pocketid_host
+postgresql_host
 
 # DNS
 [adguard_primary_host]
