@@ -1,0 +1,5 @@
+# Vault OIDC — PocketID client credentials
+# Create OIDC client at https://id.mol.la/settings/admin/oidc-clients
+# Callback URL: https://vault.mol.la/ui/vault/auth/oidc/oidc/callback
+vault_oidc_client_id: "CHANGE_ME"
+vault_oidc_client_secret: "CHANGE_ME"

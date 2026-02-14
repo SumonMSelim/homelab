@@ -68,3 +68,60 @@
       - "role_id: {{ approle_role_id.data.data.role_id }}"
       - "secret_id: {{ approle_secret_id.data.data.secret_id }}"
       - "Store these securely. The secret_id cannot be retrieved again."
+
+# --- OIDC (PocketID) ---
+
+- name: Write admin policy
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "sys/policies/acl/admin"
+    data:
+      policy: "{{ lookup('template', 'admin-policy.hcl.j2') }}"
+
+- name: Enable oidc auth method
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "sys/auth/oidc"
+    data:
+      type: oidc
+  register: oidc_mount
+  failed_when:
+    - oidc_mount is failed
+    - "'already in use' not in (oidc_mount.msg | default(''))"
+
+- name: Configure oidc auth method
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "auth/oidc/config"
+    data:
+      oidc_discovery_url: "{{ vault_oidc_discovery_url }}"
+      oidc_client_id: "{{ vault_oidc_client_id }}"
+      oidc_client_secret: "{{ vault_oidc_client_secret }}"
+      default_role: "{{ vault_oidc_role_name }}"
+  no_log: true
+
+- name: Create oidc role
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "auth/oidc/role/{{ vault_oidc_role_name }}"
+    data:
+      user_claim: "email"
+      allowed_redirect_uris: "{{ vault_oidc_redirect_uris }}"
+      token_policies:
+        - admin
+      oidc_scopes:
+        - openid
+        - profile
+        - email
+
+- name: Tune oidc auth to be listed first
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "sys/auth/oidc/tune"
+    data:
+      listing_visibility: "unauth"
