@@ -40,6 +40,26 @@ proxmox_containers:
     cores: 2
     memory: 2048
     disk: "local-lvm:20"
+  - vmid: 131
+    hostname: mysql
+    ip: "192.168.178.131/24"
+    description: "MySQL database server"
+    unprivileged: 1
+    cores: 2
+    memory: 2048
+    disk: "local-lvm:20"
+  - vmid: 132
+    hostname: redis
+    ip: "192.168.178.132/24"
+    description: "Redis in-memory data store"
+    unprivileged: 1
+  - vmid: 133
+    hostname: mongodb
+    ip: "192.168.178.133/24"
+    description: "MongoDB document database"
+    unprivileged: 1
+    cores: 2
+    memory: 2048
   - vmid: 253
     hostname: adguard-primary
     ip: "192.168.178.253/24"
