@@ -1,7 +1,8 @@
 # Tinyauth forward-auth — validates session via Pocket ID (Tinyauth on PocketID host :1412)
 (protected) {
     forward_auth 192.168.178.122:1412 {
-        uri /api/auth/caddy
+        # Redirects back to the app after successful login
+        uri /api/auth/caddy?redirect_uri=https://{host}{uri}
         header_up X-Forwarded-Host {host}
         header_up X-Forwarded-Proto https
         header_up X-Forwarded-Method {method}
@@ -31,9 +32,17 @@ http://one.mol.la, one.mol.la {
 
 # id.mol.la — Pocket ID UI + Tinyauth callback (single identity portal, cookie consistency)
 http://id.mol.la, id.mol.la {
-    handle /api/oauth/* {
+    # Match ONLY Tinyauth-specific paths (Pocket ID keeps /api/oidc/*, /authorize, etc.)
+    @tinyauth_paths {
+        path /api/oauth/* /api/context/* /api/auth/* /api/user/* /api/resources/* /api/healthz /login* /continue* /error* /unauthorized*
+    }
+
+    # Route Tinyauth traffic
+    handle @tinyauth_paths {
         reverse_proxy 192.168.178.122:1412
     }
+
+    # Route everything else to Pocket ID
     handle {
         reverse_proxy 192.168.178.122:1411
     }

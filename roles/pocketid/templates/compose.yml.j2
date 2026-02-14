@@ -1,18 +1,19 @@
-# Pocket ID + Tinyauth — OIDC/Passkey at id.mol.la, Tinyauth auth middleware on same host for cookie consistency
-# Vars: pocketid_encryption_key, tinyauth_pocketid_client_id, tinyauth_pocketid_client_secret
-# OIDC client callback URL: https://id.mol.la/api/oauth/callback/pocketid
 services:
   tinyauth:
     image: ghcr.io/steveiliop56/tinyauth:v4
-    container_name: tinyauth-{{ inventory_hostname }}
+    container_name: tinyauth-homelab
     restart: unless-stopped
+    # We map to the internal Docker IP or specific host IP for Caddy
     ports:
       - "1412:3000"
+    volumes:
+      - tinyauth_data:/data
     environment:
       APP_URL: "https://id.mol.la"
       SECURE_COOKIE: "true"
       OAUTH_AUTO_REDIRECT: "pocketid"
       USERS: "{{ tinyauth_users | default('oauth_placeholder:$$2a$$10$$UdLYoJ5lgPsC0RKqYH/jMua7zIn0g9kPqWmhYayJYLaZQ/FTmH2/u') }}"
+      # Using standard OIDC discovery or manual endpoints
       PROVIDERS_POCKETID_CLIENT_ID: "{{ tinyauth_pocketid_client_id }}"
       PROVIDERS_POCKETID_CLIENT_SECRET: "{{ tinyauth_pocketid_client_secret }}"
       PROVIDERS_POCKETID_AUTH_URL: "https://id.mol.la/authorize"
@@ -24,8 +25,8 @@ services:
       TRUSTED_PROXIES: "192.168.178.121,127.0.0.1,::1"
 
   pocketid:
-    image: {{ pocketid_image | default('ghcr.io/pocket-id/pocket-id:v2') }}
-    container_name: pocketid-{{ inventory_hostname }}
+    image: ghcr.io/pocket-id/pocket-id:v2
+    container_name: pocketid-homelab
     restart: unless-stopped
     ports:
       - "1411:1411"
@@ -35,7 +36,7 @@ services:
       APP_URL: "https://id.mol.la"
       ENCRYPTION_KEY: "{{ pocketid_encryption_key }}"
       TRUST_PROXY: "true"
-      MAXMIND_LICENSE_KEY: "{{ pocketid_maxmind_license_key | default('') }}"
 
 volumes:
   pocketid_data:
+  tinyauth_data:
