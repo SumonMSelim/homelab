@@ -1,6 +1,28 @@
-# Pocket ID — OIDC/Passkey provider at https://id.mol.la
-# Pass pocketid_encryption_key via vars (e.g. -e "@vars/pocketid_vars.yml"). Generate with: openssl rand -base64 32
+# Pocket ID + Tinyauth — OIDC/Passkey at id.mol.la, Tinyauth auth middleware on same host for cookie consistency
+# Vars: pocketid_encryption_key, tinyauth_pocketid_client_id, tinyauth_pocketid_client_secret
+# OIDC client callback URL: https://id.mol.la/api/oauth/callback/pocketid
 services:
+  tinyauth:
+    image: ghcr.io/steveiliop56/tinyauth:v4
+    container_name: tinyauth-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "1412:3000"
+    environment:
+      APP_URL: "https://id.mol.la"
+      SECURE_COOKIE: "true"
+      OAUTH_AUTO_REDIRECT: "pocketid"
+      USERS: "{{ tinyauth_users | default('oauth_placeholder:$$2a$$10$$UdLYoJ5lgPsC0RKqYH/jMua7zIn0g9kPqWmhYayJYLaZQ/FTmH2/u') }}"
+      PROVIDERS_POCKETID_CLIENT_ID: "{{ tinyauth_pocketid_client_id }}"
+      PROVIDERS_POCKETID_CLIENT_SECRET: "{{ tinyauth_pocketid_client_secret }}"
+      PROVIDERS_POCKETID_AUTH_URL: "https://id.mol.la/authorize"
+      PROVIDERS_POCKETID_TOKEN_URL: "https://id.mol.la/api/oidc/token"
+      PROVIDERS_POCKETID_USER_INFO_URL: "https://id.mol.la/api/oidc/userinfo"
+      PROVIDERS_POCKETID_REDIRECT_URL: "https://id.mol.la/api/oauth/callback/pocketid"
+      PROVIDERS_POCKETID_SCOPES: "openid email profile groups"
+      PROVIDERS_POCKETID_NAME: "Pocket ID"
+      TRUSTED_PROXIES: "192.168.178.121,127.0.0.1,::1"
+
   pocketid:
     image: {{ pocketid_image | default('ghcr.io/pocket-id/pocket-id:v2') }}
     container_name: pocketid-{{ inventory_hostname }}
@@ -13,9 +35,7 @@ services:
       APP_URL: "https://id.mol.la"
       ENCRYPTION_KEY: "{{ pocketid_encryption_key }}"
       TRUST_PROXY: "true"
-      {% if pocketid_maxmind_license_key is defined and pocketid_maxmind_license_key | length > 0 %}
-      MAXMIND_LICENSE_KEY: "{{ pocketid_maxmind_license_key }}"
-      {% endif %}
+      MAXMIND_LICENSE_KEY: "{{ pocketid_maxmind_license_key | default('') }}"
 
 volumes:
   pocketid_data:
