@@ -6,3 +6,9 @@ vault_approle_token_ttl: "1h"
 vault_approle_token_max_ttl: "4h"
 vault_approle_secret_id_ttl: "720h"
 vault_policy_name: "ansible-read-policy"
+
+# OIDC (PocketID)
+vault_oidc_discovery_url: "https://id.mol.la"
+vault_oidc_role_name: "homelab-admin"
+vault_oidc_redirect_uris:
+  - "https://vault.mol.la/ui/vault/auth/oidc/oidc/callback"

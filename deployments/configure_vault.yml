@@ -1,6 +1,6 @@
 ---
-# Configure Vault: kv-v2 engine, AppRole auth, policies.
-# Usage: ansible-playbook deployments/configure_vault.yml -e "vault_token=<root-token>"
+# Configure Vault: kv-v2 engine, AppRole auth, OIDC (PocketID), policies.
+# Usage: ansible-playbook deployments/configure_vault.yml -e "vault_token=<root-token>" -e "@vars/vault_config_vars.yml"
 - name: Configure Vault
   hosts: localhost
   connection: local
