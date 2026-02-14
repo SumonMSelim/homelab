@@ -1,3 +1,12 @@
+# Global: default ACME issuer with Cloudflare DNS-01 (token from env CLOUDFLARE_API_TOKEN)
+{
+    auto_https disable_redirects
+
+	cert_issuer acme {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+}
+
 # Tinyauth forward-auth — validates session via Pocket ID (Tinyauth on PocketID host :1412)
 (protected) {
     forward_auth 192.168.178.122:1412 {
@@ -8,25 +17,6 @@
         header_up X-Forwarded-Method {method}
         header_up X-Forwarded-Uri {uri}
         copy_headers Remote-User Remote-Email Remote-Name Remote-Groups
-    }
-}
-
-# Global: default ACME issuer with Cloudflare DNS-01 (token from env CLOUDFLARE_API_TOKEN)
-{
-    auto_https disable_redirects
-
-	cert_issuer acme {
-		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
-	}
-}
-
-# Proxmox VE
-http://one.mol.la, one.mol.la {
-    import protected
-    reverse_proxy https://192.168.178.110:8006 {
-        transport http {
-            tls_server_name one.mol.la
-        }
     }
 }
 
@@ -46,6 +36,22 @@ http://id.mol.la, id.mol.la {
     handle {
         reverse_proxy 192.168.178.122:1411
     }
+}
+
+# Proxmox VE
+http://one.mol.la, one.mol.la {
+    import protected
+    reverse_proxy https://192.168.178.110:8006 {
+        transport http {
+            tls_server_name one.mol.la
+        }
+    }
+}
+
+# Vault — secrets management
+http://vault.mol.la, vault.mol.la {
+    import protected
+    reverse_proxy 192.168.178.123:8200
 }
 
 # AdGuard Primary — DNS UI

@@ -1,0 +1,9 @@
+---
+# Deploy HashiCorp Vault on vault_host
+# Vault listens on 0.0.0.0:8200. Caddy proxies vault.mol.la with PocketID auth.
+# After deploy: run Caddy deploy to update vault.mol.la route.
+- name: Deploy Vault
+  hosts: vault_host
+  become: true
+  roles:
+    - vault

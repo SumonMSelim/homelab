@@ -37,8 +37,6 @@ proxmox_containers:
     ip: "192.168.178.123/24"
     description: "HashiCorp Vault — secrets management"
     unprivileged: 1
-    cores: 2
-    memory: 1024
   - vmid: 130
     hostname: postgresql
     ip: "192.168.178.130/24"
@@ -65,8 +63,6 @@ proxmox_containers:
     ip: "192.168.178.133/24"
     description: "MongoDB document database"
     unprivileged: 1
-    cores: 2
-    memory: 2048
   - vmid: 253
     hostname: adguard-primary
     ip: "192.168.178.253/24"
