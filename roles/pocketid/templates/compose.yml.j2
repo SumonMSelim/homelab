@@ -35,6 +35,7 @@ services:
       APP_URL: "https://id.mol.la"
       ENCRYPTION_KEY: "{{ pocketid_encryption_key }}"
       TRUST_PROXY: "true"
+      MAXMIND_LICENSE_KEY: "{{ pocketid_maxmind_license_key | default('') }}"
 
 volumes:
   pocketid_data:
