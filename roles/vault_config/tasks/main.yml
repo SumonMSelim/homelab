@@ -14,7 +14,7 @@
   register: kv_mount
   failed_when:
     - kv_mount is failed
-    - "'existing mount' not in (kv_mount.msg | default(''))"
+    - "'already in use' not in (kv_mount.msg | default('') + kv_mount.module_stderr | default(''))"
 
 - name: Enable approle auth method
   community.hashi_vault.vault_write:
@@ -26,7 +26,7 @@
   register: approle_mount
   failed_when:
     - approle_mount is failed
-    - "'already in use' not in (approle_mount.msg | default(''))"
+    - "'already in use' not in (approle_mount.msg | default('') + approle_mount.module_stderr | default(''))"
 
 - name: Write ansible-read-policy
   community.hashi_vault.vault_write:
@@ -89,7 +89,7 @@
   register: oidc_mount
   failed_when:
     - oidc_mount is failed
-    - "'already in use' not in (oidc_mount.msg | default(''))"
+    - "'already in use' not in (oidc_mount.msg | default('') + oidc_mount.module_stderr | default(''))"
 
 - name: Configure oidc auth method
   community.hashi_vault.vault_write:
