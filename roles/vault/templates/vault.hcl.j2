@@ -1,0 +1,15 @@
+# Vault configuration — homelab
+# Managed by Ansible
+
+ui = {{ vault_ui | lower }}
+
+storage "file" {
+  path = "{{ vault_data_dir }}"
+}
+
+listener "tcp" {
+  address     = "{{ vault_listen_address }}"
+  tls_disable = 1
+}
+
+disable_mlock = {{ vault_disable_mlock | lower }}

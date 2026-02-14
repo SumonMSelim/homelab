@@ -1,0 +1,98 @@
+---
+# HashiCorp Vault — install on LXC, listen on 0.0.0.0:8200
+# Uses file storage backend. Caddy proxies vault.mol.la with PocketID auth.
+
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - unzip
+      - curl
+    state: present
+    update_cache: true
+
+- name: Create vault group
+  ansible.builtin.group:
+    name: vault
+    state: present
+    system: true
+
+- name: Create vault user
+  ansible.builtin.user:
+    name: vault
+    group: vault
+    system: true
+    shell: /usr/sbin/nologin
+    home: /var/lib/vault
+    create_home: true
+
+- name: Create Vault config directory
+  ansible.builtin.file:
+    path: "{{ vault_config_dir }}"
+    state: directory
+    mode: '0750'
+    owner: vault
+    group: vault
+
+- name: Create Vault data directory
+  ansible.builtin.file:
+    path: "{{ vault_data_dir }}"
+    state: directory
+    mode: '0750'
+    owner: vault
+    group: vault
+
+- name: Set Vault binary architecture
+  ansible.builtin.set_fact:
+    vault_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+
+- name: Download HashiCorp Vault
+  ansible.builtin.get_url:
+    url: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_{{ vault_arch }}.zip"
+    dest: /tmp/vault.zip
+    mode: '0644'
+  register: vault_download
+
+- name: Unzip Vault binary
+  ansible.builtin.unarchive:
+    src: /tmp/vault.zip
+    dest: /usr/local/bin
+    remote_src: true
+    creates: /usr/local/bin/vault
+
+- name: Set Vault binary ownership and permissions
+  ansible.builtin.file:
+    path: /usr/local/bin/vault
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Remove Vault zip
+  ansible.builtin.file:
+    path: /tmp/vault.zip
+    state: absent
+
+- name: Deploy Vault configuration
+  ansible.builtin.template:
+    src: vault.hcl.j2
+    dest: "{{ vault_config_dir }}/vault.hcl"
+    mode: '0640'
+    owner: vault
+    group: vault
+  notify: Restart Vault
+
+- name: Deploy Vault systemd service
+  ansible.builtin.template:
+    src: vault.service.j2
+    dest: /etc/systemd/system/vault.service
+    mode: '0644'
+  notify: Restart Vault
+
+- name: Flush handlers (apply config before ensure running)
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure Vault service is running and enabled
+  ansible.builtin.service:
+    name: vault
+    state: started
+    enabled: true
+    daemon_reload: true
