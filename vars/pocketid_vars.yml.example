@@ -1,14 +1,4 @@
-# PocketID + Tinyauth (identity portal at id.mol.la)
-# Copy to pocketid_vars.yml and fill in your values.
-# Required for: deploy_pocketid.yml
-
-# PocketID encryption key — generate: openssl rand -base64 32
 pocketid_encryption_key: "CHANGE_ME"
-
-# MaxMind GeoIP (optional) — leave empty to disable
 pocketid_maxmind_license_key: ""
-
-# Tinyauth OIDC — create client at https://id.mol.la/settings/admin/oidc-clients
-# Callback URL: https://id.mol.la/api/oauth/callback/pocketid
 tinyauth_pocketid_client_id: "CHANGE_ME"
 tinyauth_pocketid_client_secret: "CHANGE_ME"

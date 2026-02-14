@@ -1,10 +1,3 @@
-# Caddy + Cloudflare Tunnel
-# Copy to caddy_vars.yml and fill in your values.
-# Required for: deploy_caddy.yml
-
-# Cloudflare DNS-01 challenge for ACME certs
 caddy_cloudflare_email: "your-email@example.com"
 cloudflare_api_token: "CHANGE_ME"
-
-# Cloudflare Tunnel — create at Zero Trust Dashboard → Networks → Tunnels
 cloudflare_tunnel_token: "CHANGE_ME"

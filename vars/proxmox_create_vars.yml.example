@@ -1,20 +1,5 @@
-# Proxmox API and container creation
-# Copy to proxmox_create_vars.yml and fill in your values.
-# Required for: create_lxc.yml, destroy_lxc.yml
-
-# Proxmox node name (from your cluster)
 proxmox_node: one
-
-# API auth — use token (recommended) or password
-# Token: create at Datacenter → Permissions → API Tokens
 proxmox_api_user: root@pam
 proxmox_api_token_id: "CHANGE_ME"
 proxmox_api_token_secret: "CHANGE_ME"
-
-# Root password for newly created LXC containers
 proxmox_container_password: "CHANGE_ME"
-
-# Optional overrides (defaults in roles/proxmox_create_lxc/defaults/main.yml):
-# proxmox_api_host: "192.168.178.110"
-# proxmox_api_port: 8006
-# proxmox_containers: [...]  # override container list
