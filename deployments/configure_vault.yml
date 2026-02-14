@@ -1,0 +1,9 @@
+---
+# Configure Vault: kv-v2 engine, AppRole auth, policies.
+# Usage: ansible-playbook deployments/configure_vault.yml -e "vault_token=<root-token>"
+- name: Configure Vault
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - vault_config

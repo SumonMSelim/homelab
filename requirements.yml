@@ -2,3 +2,4 @@
 collections:
   - name: community.proxmox
   - name: community.docker
+  - name: community.hashi_vault

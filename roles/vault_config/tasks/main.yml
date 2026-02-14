@@ -1,0 +1,70 @@
+---
+# Configure Vault: KV secrets engine, AppRole auth, policies.
+# Requires: community.hashi_vault collection, hvac pip package.
+
+- name: Enable kv-v2 secrets engine
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "sys/mounts/{{ vault_kv_path }}"
+    data:
+      type: kv
+      options:
+        version: "2"
+  register: kv_mount
+  failed_when:
+    - kv_mount is failed
+    - "'existing mount' not in (kv_mount.msg | default(''))"
+
+- name: Enable approle auth method
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "sys/auth/approle"
+    data:
+      type: approle
+  register: approle_mount
+  failed_when:
+    - approle_mount is failed
+    - "'already in use' not in (approle_mount.msg | default(''))"
+
+- name: Write ansible-read-policy
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "sys/policies/acl/{{ vault_policy_name }}"
+    data:
+      policy: "{{ lookup('template', 'ansible-read-policy.hcl.j2') }}"
+
+- name: Create ansible-controller AppRole
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "auth/approle/role/{{ vault_approle_name }}"
+    data:
+      token_policies:
+        - "{{ vault_policy_name }}"
+      token_ttl: "{{ vault_approle_token_ttl }}"
+      token_max_ttl: "{{ vault_approle_token_max_ttl }}"
+      secret_id_ttl: "{{ vault_approle_secret_id_ttl }}"
+
+- name: Read AppRole role-id
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "auth/approle/role/{{ vault_approle_name }}/role-id"
+  register: approle_role_id
+
+- name: Generate AppRole secret-id
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "auth/approle/role/{{ vault_approle_name }}/secret-id"
+  register: approle_secret_id
+
+- name: Display AppRole credentials
+  ansible.builtin.debug:
+    msg:
+      - "role_id: {{ approle_role_id.data.data.role_id }}"
+      - "secret_id: {{ approle_secret_id.data.data.secret_id }}"
+      - "Store these securely. The secret_id cannot be retrieved again."

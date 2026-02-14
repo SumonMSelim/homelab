@@ -1,0 +1,8 @@
+---
+vault_addr: "http://192.168.178.123:8200"
+vault_kv_path: "kv/homelab"
+vault_approle_name: "ansible-controller"
+vault_approle_token_ttl: "1h"
+vault_approle_token_max_ttl: "4h"
+vault_approle_secret_id_ttl: "720h"
+vault_policy_name: "ansible-read-policy"

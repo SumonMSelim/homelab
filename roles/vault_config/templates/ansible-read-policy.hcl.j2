@@ -1,0 +1,8 @@
+# Read and list secrets under {{ vault_kv_path }}
+path "{{ vault_kv_path }}/data/*" {
+  capabilities = ["read", "list"]
+}
+
+path "{{ vault_kv_path }}/metadata/*" {
+  capabilities = ["read", "list"]
+}

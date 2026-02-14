@@ -47,6 +47,11 @@ ansible-playbook deployments/deploy_pocketid.yml -e "@vars/pocketid_vars.yml"
 ansible-playbook deployments/deploy_vault.yml
 ```
 
+**Configure Vault (kv-v2, AppRole, policies):**
+```bash
+ansible-playbook deployments/configure_vault.yml -e "vault_token=<root-token>"
+```
+
 > After deploying a new service that Caddy should proxy, redeploy Caddy to update routes.
 
 ---
