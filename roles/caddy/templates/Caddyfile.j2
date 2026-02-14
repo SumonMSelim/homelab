@@ -34,7 +34,7 @@ http://one.mol.la, one.mol.la {
 http://id.mol.la, id.mol.la {
     # Match ONLY Tinyauth-specific paths (Pocket ID keeps /api/oidc/*, /authorize, etc.)
     @tinyauth_paths {
-        path /api/oauth/* /api/context/* /api/auth/* /api/user/* /api/resources/* /api/healthz /login* /continue* /error* /unauthorized*
+        path /api/oauth/* /api/context/* /api/auth/* /api/user/* /api/resources/* /api/healthz /login* /continue* /error* /unauthorized* /assets/* /site.webmanifest /favicon.ico /background.jpg
     }
 
     # Route Tinyauth traffic
