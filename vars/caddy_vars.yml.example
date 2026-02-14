@@ -1,3 +1,7 @@
+# Caddy + Cloudflare Tunnel
+# Copy to caddy_vars.yml and fill in your values.
+# Required for: deploy_caddy.yml
+
 caddy_cloudflare_email: "your-email@example.com"
 cloudflare_api_token: "CHANGE_ME"
 cloudflare_tunnel_token: "CHANGE_ME"

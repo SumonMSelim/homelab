@@ -1,5 +1,15 @@
+# Proxmox API and container creation
+# Copy to proxmox_create_vars.yml and fill in your values.
+# Required for: create_lxc.yml, destroy_lxc.yml
+
 proxmox_node: one
 proxmox_api_user: root@pam
 proxmox_api_token_id: "CHANGE_ME"
 proxmox_api_token_secret: "CHANGE_ME"
 proxmox_container_password: "CHANGE_ME"
+
+# Optional overrides (defaults in roles/proxmox_create_lxc/defaults/main.yml):
+# proxmox_api_host: "192.168.178.110"
+# proxmox_api_port: 8006
+# proxmox_ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... ansible-homelab"
+# proxmox_containers: [...]  # override container list
