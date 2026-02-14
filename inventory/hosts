@@ -12,6 +12,10 @@ caddy ansible_host=192.168.178.121
 [pocketid_host]
 pocketid ansible_host=192.168.178.122
 
+# Vault
+[vault_host]
+vault ansible_host=192.168.178.123
+
 # PostgreSQL
 [postgresql_host]
 postgresql ansible_host=192.168.178.130
@@ -38,6 +42,7 @@ mongodb_host
 ansible_host
 caddy_host
 pocketid_host
+vault_host
 data_services
 
 # DNS

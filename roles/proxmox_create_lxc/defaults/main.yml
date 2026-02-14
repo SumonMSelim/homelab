@@ -32,6 +32,13 @@ proxmox_containers:
     ip: "192.168.178.122/24"
     description: "PocketID for identity management"
     unprivileged: 1
+  - vmid: 123
+    hostname: vault
+    ip: "192.168.178.123/24"
+    description: "HashiCorp Vault — secrets management"
+    unprivileged: 1
+    cores: 2
+    memory: 1024
   - vmid: 130
     hostname: postgresql
     ip: "192.168.178.130/24"
