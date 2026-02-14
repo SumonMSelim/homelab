@@ -16,11 +16,29 @@ pocketid ansible_host=192.168.178.122
 [postgresql_host]
 postgresql ansible_host=192.168.178.130
 
+# MySQL
+[mysql_host]
+mysql ansible_host=192.168.178.131
+
+# Redis
+[redis_host]
+redis ansible_host=192.168.178.132
+
+# MongoDB
+[mongodb_host]
+mongodb ansible_host=192.168.178.133
+
+[data_services:children]
+postgresql_host
+mysql_host
+redis_host
+mongodb_host
+
 [core:children]
 ansible_host
 caddy_host
 pocketid_host
-postgresql_host
+data_services
 
 # DNS
 [adguard_primary_host]
