@@ -34,15 +34,6 @@
   delegate_to: localhost
   become: false
 
-- name: Set MySQL root password
-  community.mysql.mysql_user:
-    name: root
-    host: localhost
-    password: "{{ mysql_vault_secret.data.data.data[mysql_root_vault_key] }}"
-    login_unix_socket: /var/run/mysqld/mysqld.sock
-    state: present
-  no_log: true
-
 - name: Create users and databases
   ansible.builtin.include_tasks: create_app.yml
   loop: "{{ mysql_apps }}"
