@@ -7,20 +7,22 @@ prometheus_retention: "30d"
 prometheus_scrape_jobs:
   - job_name: prometheus
     targets: ["localhost:9090"]
-  - job_name: node
-    targets:
-      - "192.168.178.110:9100"   # proxmox
-      - "192.168.178.120:9100"   # ansible
-      - "192.168.178.121:9100"   # caddy
-      - "192.168.178.122:9100"   # pocketid
-      - "192.168.178.123:9100"   # vault
-      - "192.168.178.124:9100"   # monitoring
-      - "192.168.178.130:9100"   # postgresql
-      - "192.168.178.131:9100"   # mysql
-      - "192.168.178.132:9100"   # redis
-      - "192.168.178.133:9100"   # mongodb
-      - "192.168.178.253:9100"   # adguard-primary
-      - "192.168.178.254:9100"   # adguard-secondary
+
+# Node exporter targets — "name" becomes the instance label in Prometheus/Grafana.
+# To add a new host: append an entry here and redeploy monitoring.
+prometheus_node_targets:
+  - { addr: "192.168.178.110:9100", name: proxmox }
+  - { addr: "192.168.178.120:9100", name: ansible }
+  - { addr: "192.168.178.121:9100", name: caddy }
+  - { addr: "192.168.178.122:9100", name: pocketid }
+  - { addr: "192.168.178.123:9100", name: vault }
+  - { addr: "192.168.178.124:9100", name: monitoring }
+  - { addr: "192.168.178.130:9100", name: postgresql }
+  - { addr: "192.168.178.131:9100", name: mysql }
+  - { addr: "192.168.178.132:9100", name: redis }
+  - { addr: "192.168.178.133:9100", name: mongodb }
+  - { addr: "192.168.178.253:9100", name: adguard-primary }
+  - { addr: "192.168.178.254:9100", name: adguard-secondary }
 
 # Grafana OIDC (PocketID)
 grafana_vault_secret_path: "kv/homelab/data/grafana"
