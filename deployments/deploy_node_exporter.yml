@@ -1,0 +1,8 @@
+---
+# Install prometheus-node-exporter on all managed hosts.
+# Usage: ansible-playbook deployments/deploy_node_exporter.yml
+- name: Deploy node exporter
+  hosts: all_nodes
+  become: true
+  roles:
+    - node_exporter
