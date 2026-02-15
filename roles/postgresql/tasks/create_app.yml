@@ -2,7 +2,7 @@
 - name: Create PostgreSQL user {{ app.user }}
   community.postgresql.postgresql_user:
     name: "{{ app.user }}"
-    password: "{{ pg_vault_secret.data.data[app.vault_key] }}"
+    password: "{{ pg_vault_secret.data.data.data[app.vault_key] }}"
   become_user: postgres
   no_log: true
 
