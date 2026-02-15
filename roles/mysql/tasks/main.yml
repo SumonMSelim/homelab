@@ -20,6 +20,17 @@
     line: "bind-address = 0.0.0.0"
   notify: Restart MySQL
 
+- name: Deploy /root/.my.cnf for local socket auth
+  ansible.builtin.copy:
+    dest: /root/.my.cnf
+    content: |
+      [client]
+      user=root
+      socket=/var/run/mysqld/mysqld.sock
+    mode: '0600'
+    owner: root
+    group: root
+
 - name: Flush handlers before creating users/databases
   ansible.builtin.meta: flush_handlers
 
