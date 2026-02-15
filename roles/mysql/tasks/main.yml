@@ -34,14 +34,54 @@
   delegate_to: localhost
   become: false
 
-- name: Set root password via shell (auth_socket allows this)
-  ansible.builtin.shell: >
-    mysql -u root -e "ALTER USER 'root'@'localhost'
-    IDENTIFIED WITH mysql_native_password
-    BY '{{ mysql_vault_secret.data.data.data[mysql_root_vault_key] }}';
-    FLUSH PRIVILEGES;"
-  no_log: true
-  changed_when: true
+- name: Check if .my.cnf exists
+  ansible.builtin.stat:
+    path: /root/.my.cnf
+  register: mycnf_stat
+
+- name: Set root password on fresh install (skip-grant-tables)
+  when: not mycnf_stat.stat.exists
+  block:
+    - name: Stop MySQL
+      ansible.builtin.service:
+        name: mysql
+        state: stopped
+
+    - name: Ensure mysqld socket directory exists
+      ansible.builtin.file:
+        path: /var/run/mysqld
+        state: directory
+        owner: mysql
+        group: mysql
+        mode: '0755'
+
+    - name: Start MySQL with skip-grant-tables
+      ansible.builtin.shell: mysqld_safe --skip-grant-tables --skip-networking &
+      async: 10
+      poll: 0
+
+    - name: Wait for MySQL socket
+      ansible.builtin.wait_for:
+        path: /var/run/mysqld/mysqld.sock
+        timeout: 30
+
+    - name: Set root password
+      ansible.builtin.shell: >
+        mysql -u root -e "FLUSH PRIVILEGES;
+        ALTER USER 'root'@'localhost'
+        IDENTIFIED WITH mysql_native_password
+        BY '{{ mysql_vault_secret.data.data.data[mysql_root_vault_key] }}';
+        FLUSH PRIVILEGES;"
+      no_log: true
+
+    - name: Kill mysqld_safe
+      ansible.builtin.shell: killall mysqld && sleep 2
+      failed_when: false
+
+    - name: Start MySQL normally
+      ansible.builtin.service:
+        name: mysql
+        state: started
 
 - name: Deploy /root/.my.cnf with root credentials
   ansible.builtin.template:
