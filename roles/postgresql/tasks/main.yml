@@ -1,0 +1,61 @@
+---
+- name: Install PostgreSQL and Python bindings
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+    update_cache: true
+
+- name: Ensure PostgreSQL service is running and enabled
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Discover PostgreSQL version
+  ansible.builtin.shell: ls -1 /etc/postgresql/
+  register: postgresql_versions
+  changed_when: false
+
+- name: Set PostgreSQL config path
+  ansible.builtin.set_fact:
+    postgresql_conf_dir: "/etc/postgresql/{{ postgresql_versions.stdout_lines[0] }}/main"
+
+- name: Set listen_addresses to all interfaces
+  ansible.builtin.lineinfile:
+    path: "{{ postgresql_conf_dir }}/postgresql.conf"
+    regexp: "^#?listen_addresses\\s*="
+    line: "listen_addresses = '*'"
+  notify: Restart PostgreSQL
+
+- name: Deploy pg_hba.conf
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
+    mode: '0640'
+    owner: postgres
+    group: postgres
+  notify: Restart PostgreSQL
+
+- name: Flush handlers before creating users/databases
+  ansible.builtin.meta: flush_handlers
+
+- name: Fetch passwords from Vault
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    path: "{{ postgres_vault_secret_path }}"
+    auth_method: approle
+    role_id: "{{ vault_role_id }}"
+    secret_id: "{{ vault_secret_id }}"
+  register: pg_vault_secret
+  delegate_to: localhost
+  become: false
+
+- name: Create users and databases
+  ansible.builtin.include_tasks: create_app.yml
+  loop: "{{ postgres_apps }}"
+  loop_control:
+    loop_var: app
+    label: "{{ app.user }}/{{ app.db }}"

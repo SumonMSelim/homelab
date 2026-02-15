@@ -52,6 +52,11 @@ ansible-playbook deployments/deploy_vault.yml
 ansible-playbook deployments/configure_vault.yml -e "vault_token=<root-token>" -e "@vars/vault_config_vars.yml"
 ```
 
+**PostgreSQL (database server):**
+```bash
+ansible-playbook deployments/deploy_postgresql.yml -e "@vars/vault_auth_vars.yml" -e "@vars/postgresql_dbs.yml"
+```
+
 > After deploying a new service that Caddy should proxy, redeploy Caddy to update routes.
 
 ---

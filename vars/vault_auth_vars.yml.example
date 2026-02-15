@@ -1,0 +1,5 @@
+# Vault AppRole credentials — used by all playbooks that read secrets from Vault.
+# Copy to vault_auth.yml and fill in role_id + secret_id from configure_vault output.
+vault_addr: "http://192.168.178.123:8200"
+vault_role_id: "CHANGE_ME"
+vault_secret_id: "CHANGE_ME"
