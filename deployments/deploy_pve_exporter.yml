@@ -1,0 +1,8 @@
+---
+# Deploy Prometheus PVE Exporter on the Proxmox host.
+# Usage: ansible-playbook deployments/deploy_pve_exporter.yml -e "@vars/vault_auth_vars.yml"
+- name: Deploy PVE Exporter
+  hosts: proxmox_host
+  become: true
+  roles:
+    - pve_exporter

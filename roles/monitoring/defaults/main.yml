@@ -24,6 +24,10 @@ prometheus_node_targets:
   - { addr: "192.168.178.253:9100", name: adguard-primary }
   - { addr: "192.168.178.254:9100", name: adguard-secondary }
 
+# PVE exporter — Proxmox VE metrics
+pve_exporter_target: "192.168.178.110"
+pve_exporter_scrape_addr: "192.168.178.110:9221"
+
 # Grafana OIDC (PocketID)
 grafana_vault_secret_path: "kv/homelab/data/grafana"
 grafana_oidc_name: "PocketID"
