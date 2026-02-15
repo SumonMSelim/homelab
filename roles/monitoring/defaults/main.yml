@@ -27,6 +27,7 @@ prometheus_node_targets:
 # PVE exporter — Proxmox VE metrics
 pve_exporter_target: "192.168.178.110"
 pve_exporter_scrape_addr: "192.168.178.110:9221"
+pve_exporter_node_name: "one"
 
 # Grafana OIDC (PocketID)
 grafana_vault_secret_path: "kv/homelab/data/grafana"
