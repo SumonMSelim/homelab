@@ -1,0 +1,6 @@
+---
+redis_vault_secret_path: "kv/homelab/data/redis"
+redis_vault_key: "password"
+redis_bind: "0.0.0.0"
+redis_maxmemory: "768mb"
+redis_maxmemory_policy: "allkeys-lru"

@@ -1,0 +1,8 @@
+---
+# Deploy Redis — password fetched from Vault.
+# Usage: ansible-playbook deployments/deploy_redis.yml -e "@vars/vault_auth_vars.yml"
+- name: Deploy Redis
+  hosts: redis_host
+  become: true
+  roles:
+    - redis

@@ -1,0 +1,30 @@
+# Redis configuration — managed by Ansible
+
+bind {{ redis_bind }}
+protected-mode yes
+port 6379
+
+requirepass {{ redis_vault_secret.data.data.data[redis_vault_key] }}
+
+maxmemory {{ redis_maxmemory }}
+maxmemory-policy {{ redis_maxmemory_policy }}
+
+# Persistence
+save 900 1
+save 300 10
+save 60 10000
+dbfilename dump.rdb
+dir /var/lib/redis
+
+# Logging
+loglevel notice
+logfile /var/log/redis/redis-server.log
+
+# Security
+rename-command FLUSHALL ""
+rename-command FLUSHDB ""
+rename-command CONFIG ""
+
+daemonize yes
+supervised systemd
+pidfile /run/redis/redis-server.pid

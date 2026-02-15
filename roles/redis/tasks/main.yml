@@ -1,0 +1,33 @@
+---
+- name: Install Redis
+  ansible.builtin.apt:
+    name: redis-server
+    state: present
+    update_cache: true
+
+- name: Fetch password from Vault
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    path: "{{ redis_vault_secret_path }}"
+    auth_method: approle
+    role_id: "{{ vault_role_id }}"
+    secret_id: "{{ vault_secret_id }}"
+  register: redis_vault_secret
+  delegate_to: localhost
+  become: false
+
+- name: Deploy redis.conf
+  ansible.builtin.template:
+    src: redis.conf.j2
+    dest: /etc/redis/redis.conf
+    mode: '0640'
+    owner: redis
+    group: redis
+  notify: Restart Redis
+  no_log: true
+
+- name: Ensure Redis service is running and enabled
+  ansible.builtin.service:
+    name: redis-server
+    state: started
+    enabled: true
