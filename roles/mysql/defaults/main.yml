@@ -1,7 +1,6 @@
 ---
 mysql_homelab_network: "192.168.178.%"
 mysql_vault_secret_path: "kv/homelab/data/mysql"
-mysql_root_vault_key: "root"
 
 # List of apps — each gets a user, db, and remote access grant.
 # Password is fetched from Vault using vault_key.
