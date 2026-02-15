@@ -1,2 +1,4 @@
 ---
+# Control node — run locally, no SSH needed
 ansible_user: root
+ansible_connection: local
