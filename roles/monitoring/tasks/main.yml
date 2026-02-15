@@ -1,0 +1,65 @@
+---
+- name: Install prerequisites
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - software-properties-common
+      - gnupg
+    state: present
+    update_cache: true
+
+# Prometheus
+- name: Install Prometheus and node exporter
+  ansible.builtin.apt:
+    name:
+      - prometheus
+      - prometheus-node-exporter
+    state: present
+
+- name: Deploy prometheus.yml
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    mode: '0644'
+    owner: prometheus
+    group: prometheus
+  notify: Restart Prometheus
+
+- name: Ensure Prometheus is running and enabled
+  ansible.builtin.service:
+    name: prometheus
+    state: started
+    enabled: true
+
+# Grafana
+- name: Import Grafana GPG key
+  ansible.builtin.apt_key:
+    url: https://apt.grafana.com/gpg.key
+    state: present
+
+- name: Add Grafana repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://apt.grafana.com stable main"
+    filename: grafana
+    state: present
+
+- name: Install Grafana
+  ansible.builtin.apt:
+    name: grafana
+    state: present
+    update_cache: true
+
+- name: Deploy Grafana datasource provisioning
+  ansible.builtin.template:
+    src: grafana-datasource.yml.j2
+    dest: /etc/grafana/provisioning/datasources/prometheus.yml
+    mode: '0640'
+    owner: root
+    group: grafana
+  notify: Restart Grafana
+
+- name: Ensure Grafana is running and enabled
+  ansible.builtin.service:
+    name: grafana-server
+    state: started
+    enabled: true

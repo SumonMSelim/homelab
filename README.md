@@ -72,6 +72,11 @@ ansible-playbook deployments/deploy_redis.yml -e "@vars/vault_auth_vars.yml"
 ansible-playbook deployments/deploy_mongodb.yml -e "@vars/vault_auth_vars.yml" -e "@vars/mongodb_apps.yml"
 ```
 
+**Monitoring (Prometheus + Grafana):**
+```bash
+ansible-playbook deployments/deploy_monitoring.yml
+```
+
 > After deploying a new service that Caddy should proxy, redeploy Caddy to update routes.
 
 ---

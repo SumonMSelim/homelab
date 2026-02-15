@@ -1,0 +1,11 @@
+---
+prometheus_port: 9090
+grafana_port: 3000
+prometheus_scrape_interval: "15s"
+prometheus_retention: "30d"
+
+prometheus_scrape_jobs:
+  - job_name: prometheus
+    targets: ["localhost:9090"]
+  - job_name: node
+    targets: ["localhost:9100"]
