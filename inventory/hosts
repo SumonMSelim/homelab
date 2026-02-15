@@ -1,5 +1,9 @@
 # Homelab inventory — 192.168.178.0/24, gw 192.168.178.1
 
+# Proxmox host
+[proxmox_host]
+proxmox ansible_host=192.168.178.110
+
 # Ansible
 [ansible_host]
 ansible ansible_host=192.168.178.120
@@ -60,3 +64,9 @@ adguard_secondary ansible_host=192.168.178.254
 [dns:children]
 adguard_primary_host
 adguard_secondary_host
+
+# All nodes — used for node_exporter deployment and Prometheus scraping
+[all_nodes:children]
+proxmox_host
+core
+dns

@@ -1,0 +1,3 @@
+---
+# Proxmox VE host — hypervisor
+ansible_user: root
