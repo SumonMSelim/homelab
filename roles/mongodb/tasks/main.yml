@@ -4,7 +4,6 @@
     name:
       - gnupg
       - curl
-      - python3-pymongo
     state: present
     update_cache: true
 
@@ -30,8 +29,6 @@
     src: mongod.conf.j2
     dest: /etc/mongod.conf
     mode: '0644'
-    owner: root
-    group: root
   notify: Restart MongoDB
 
 - name: Ensure MongoDB service is running and enabled
@@ -54,17 +51,24 @@
   delegate_to: localhost
   become: false
 
+- name: Check if admin user exists
+  ansible.builtin.shell: >
+    mongosh --quiet --eval
+    'db.getSiblingDB("admin").getUser("{{ mongodb_admin_user }}")'
+    | grep -c '"user"'
+  register: admin_user_check
+  changed_when: false
+  failed_when: false
+
 - name: Create admin user
-  community.mongodb.mongodb_user:
-    database: admin
-    name: "{{ mongodb_admin_user }}"
-    password: "{{ mongo_vault_secret.data.data.data[mongodb_admin_vault_key] }}"
-    roles:
-      - db: admin
-        role: root
-    login_host: localhost
-    login_port: 27017
-    state: present
+  ansible.builtin.shell: >
+    mongosh --quiet --eval '
+    db.getSiblingDB("admin").createUser({
+      user: "{{ mongodb_admin_user }}",
+      pwd: "{{ mongo_vault_secret.data.data.data[mongodb_admin_vault_key] }}",
+      roles: [{ role: "root", db: "admin" }]
+    })'
+  when: admin_user_check.stdout | default("0") | trim == "0"
   no_log: true
 
 - name: Create app users and databases

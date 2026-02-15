@@ -5,4 +5,3 @@ collections:
   - name: community.hashi_vault
   - name: community.postgresql
   - name: community.mysql
-  - name: community.mongodb
