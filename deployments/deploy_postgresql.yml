@@ -1,6 +1,6 @@
 ---
 # Deploy PostgreSQL — passwords fetched from Vault.
-# Usage: ansible-playbook deployments/deploy_postgresql.yml -e "@vars/vault_auth_vars.yml" -e "@vars/postgresql_dbs.yml"
+# Usage: ansible-playbook deployments/deploy_postgresql.yml -e "@vars/vault_auth_vars.yml" -e "@vars/postgresql_apps.yml"
 - name: Deploy PostgreSQL
   hosts: postgresql_host
   become: true
