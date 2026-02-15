@@ -1,0 +1,75 @@
+---
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - gnupg
+      - curl
+      - python3-pymongo
+    state: present
+    update_cache: true
+
+- name: Import MongoDB GPG key
+  ansible.builtin.apt_key:
+    url: "https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc"
+    state: present
+
+- name: Add MongoDB repository
+  ansible.builtin.apt_repository:
+    repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/{{ mongodb_version }} multiverse"
+    filename: mongodb-org-{{ mongodb_version }}
+    state: present
+
+- name: Install MongoDB
+  ansible.builtin.apt:
+    name: mongodb-org
+    state: present
+    update_cache: true
+
+- name: Deploy mongod.conf
+  ansible.builtin.template:
+    src: mongod.conf.j2
+    dest: /etc/mongod.conf
+    mode: '0644'
+    owner: root
+    group: root
+  notify: Restart MongoDB
+
+- name: Ensure MongoDB service is running and enabled
+  ansible.builtin.service:
+    name: mongod
+    state: started
+    enabled: true
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Fetch passwords from Vault
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    path: "{{ mongodb_vault_secret_path }}"
+    auth_method: approle
+    role_id: "{{ vault_role_id }}"
+    secret_id: "{{ vault_secret_id }}"
+  register: mongo_vault_secret
+  delegate_to: localhost
+  become: false
+
+- name: Create admin user
+  community.mongodb.mongodb_user:
+    database: admin
+    name: "{{ mongodb_admin_user }}"
+    password: "{{ mongo_vault_secret.data.data.data[mongodb_admin_vault_key] }}"
+    roles:
+      - db: admin
+        role: root
+    login_host: localhost
+    login_port: 27017
+    state: present
+  no_log: true
+
+- name: Create app users and databases
+  ansible.builtin.include_tasks: create_app.yml
+  loop: "{{ mongodb_apps }}"
+  loop_control:
+    loop_var: app
+    label: "{{ app.user }}/{{ app.db }}"

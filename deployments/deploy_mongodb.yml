@@ -1,0 +1,8 @@
+---
+# Deploy MongoDB — passwords fetched from Vault.
+# Usage: ansible-playbook deployments/deploy_mongodb.yml -e "@vars/vault_auth_vars.yml" -e "@vars/mongodb_apps.yml"
+- name: Deploy MongoDB
+  hosts: mongodb_host
+  become: true
+  roles:
+    - mongodb

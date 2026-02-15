@@ -1,0 +1,6 @@
+# MongoDB apps — each entry creates a user with readWrite on its database.
+# Password is fetched from Vault at kv/homelab/mongodb using vault_key.
+mongodb_apps:
+  - user: homelab
+    db: homelab
+    vault_key: homelab
