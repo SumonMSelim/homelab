@@ -1,0 +1,4 @@
+[client]
+user=root
+password={{ mysql_vault_secret.data.data.data[mysql_root_vault_key] }}
+socket=/var/run/mysqld/mysqld.sock
