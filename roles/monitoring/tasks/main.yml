@@ -86,6 +86,12 @@
     owner: grafana
     group: grafana
 
+- name: Remove old prometheus-stats dashboard
+  ansible.builtin.file:
+    path: "{{ grafana_dashboards_dir }}/prometheus-stats.json"
+    state: absent
+  notify: Restart Grafana
+
 - name: Download community dashboards from Grafana.com
   ansible.builtin.get_url:
     url: "https://grafana.com/api/dashboards/{{ item.id }}/revisions/{{ item.revision }}/download"
