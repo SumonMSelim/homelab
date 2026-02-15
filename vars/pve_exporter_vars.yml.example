@@ -1,0 +1,15 @@
+# PVE Exporter — Proxmox API credentials for metrics collection
+# Store these in Vault at kv/homelab/pve-exporter with keys: user, token_name, token_value
+#
+# Create a dedicated API token in Proxmox:
+#   1. Datacenter → Permissions → API Tokens → Add
+#   2. User: root@pam (or a dedicated monitoring user)
+#   3. Token ID: e.g. "prometheus"
+#   4. Uncheck "Privilege Separation" for full read access
+#   5. Save the token value
+#
+# Then store in Vault:
+#   vault kv put kv/homelab/pve-exporter \
+#     user="root@pam" \
+#     token_name="prometheus" \
+#     token_value="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"

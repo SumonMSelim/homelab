@@ -1,0 +1,14 @@
+---
+pve_exporter_version: "3.5.1"
+pve_exporter_port: 9221
+pve_exporter_venv: /opt/pve-exporter
+pve_exporter_config: /etc/pve-exporter/pve.yml
+pve_exporter_user: pve-exporter
+
+# Vault path for PVE API token
+pve_exporter_vault_path: "kv/homelab/data/pve-exporter"
+
+# PVE connection
+pve_exporter_pve_host: "localhost"
+pve_exporter_pve_port: 8006
+pve_exporter_verify_ssl: false

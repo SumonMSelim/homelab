@@ -1,0 +1,5 @@
+default:
+  user: {{ pve_vault_secret.data.data.data.user }}
+  token_name: {{ pve_vault_secret.data.data.data.token_name }}
+  token_value: {{ pve_vault_secret.data.data.data.token_value }}
+  verify_ssl: {{ pve_exporter_verify_ssl | lower }}
