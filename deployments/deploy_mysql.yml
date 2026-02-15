@@ -1,0 +1,8 @@
+---
+# Deploy MySQL — passwords fetched from Vault.
+# Usage: ansible-playbook deployments/deploy_mysql.yml -e "@vars/vault_auth_vars.yml" -e "@vars/mysql_apps.yml"
+- name: Deploy MySQL
+  hosts: mysql_host
+  become: true
+  roles:
+    - mysql
