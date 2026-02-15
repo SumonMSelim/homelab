@@ -4,9 +4,3 @@ postgres_apps:
   - user: homelab
     db: homelab
     vault_key: homelab
-  - user: nextcloud
-    db: nextcloud
-    vault_key: nextcloud
-  - user: jellyfin
-    db: jellyfin
-    vault_key: jellyfin
