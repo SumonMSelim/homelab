@@ -24,11 +24,11 @@ scrape_configs:
     static_configs:
       - targets:
           - "{{ pve_exporter_target }}"
+        labels:
+          node: "{{ pve_exporter_node_name }}"
     metrics_path: /pve
     params:
       module: [default]
-      cluster: ["1"]
-      node: ["1"]
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
