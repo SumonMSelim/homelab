@@ -1,0 +1,13 @@
+---
+- name: Create PostgreSQL user {{ app.user }}
+  community.postgresql.postgresql_user:
+    name: "{{ app.user }}"
+    password: "{{ pg_vault_secret.data.data[app.vault_key] }}"
+  become_user: postgres
+  no_log: true
+
+- name: Create PostgreSQL database {{ app.db }}
+  community.postgresql.postgresql_db:
+    name: "{{ app.db }}"
+    owner: "{{ app.user }}"
+  become_user: postgres

@@ -1,0 +1,10 @@
+---
+postgres_homelab_network: "192.168.178.0/24"
+postgres_vault_secret_path: "kv/homelab/data/postgresql"
+
+# List of apps — each gets a user, db, and pg_hba rule.
+# Password is fetched from Vault using vault_key.
+postgres_apps:
+  - user: homelab
+    db: homelab
+    vault_key: homelab

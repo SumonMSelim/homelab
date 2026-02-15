@@ -25,7 +25,7 @@ ansible-playbook deployments/destroy_lxc.yml -e "@vars/proxmox_create_vars.yml"
 ansible-playbook deployments/destroy_lxc.yml -e "@vars/proxmox_create_vars.yml" -e "vmid=253"  # single container
 ```
 
-### Services
+### Playbooks
 
 **AdGuard Home (DNS+DHCP):**
 ```bash
@@ -50,6 +50,11 @@ ansible-playbook deployments/deploy_vault.yml
 **Configure Vault (kv-v2, AppRole, OIDC, policies):**
 ```bash
 ansible-playbook deployments/configure_vault.yml -e "vault_token=<root-token>" -e "@vars/vault_config_vars.yml"
+```
+
+**PostgreSQL (database server):**
+```bash
+ansible-playbook deployments/deploy_postgresql.yml -e "@vars/vault_auth_vars.yml" -e "@vars/postgresql_apps.yml"
 ```
 
 > After deploying a new service that Caddy should proxy, redeploy Caddy to update routes.
