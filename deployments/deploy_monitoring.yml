@@ -1,0 +1,8 @@
+---
+# Deploy Prometheus + Grafana monitoring stack.
+# Usage: ansible-playbook deployments/deploy_monitoring.yml -e "@vars/vault_auth_vars.yml"
+- name: Deploy Monitoring
+  hosts: monitoring_host
+  become: true
+  roles:
+    - monitoring

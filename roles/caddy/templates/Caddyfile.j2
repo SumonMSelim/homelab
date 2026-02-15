@@ -54,6 +54,12 @@ http://vault.mol.la, vault.mol.la {
     reverse_proxy 192.168.178.123:8200
 }
 
+# Grafana — monitoring
+http://grafana.mol.la, grafana.mol.la {
+    import protected
+    reverse_proxy 192.168.178.124:3000
+}
+
 # AdGuard Primary — DNS UI
 http://dns1.mol.la, dns1.mol.la {
 	reverse_proxy 192.168.178.253:80
