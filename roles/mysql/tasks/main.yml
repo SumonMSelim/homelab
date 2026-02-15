@@ -1,0 +1,51 @@
+---
+- name: Install MySQL and Python bindings
+  ansible.builtin.apt:
+    name:
+      - mysql-server
+      - python3-pymysql
+    state: present
+    update_cache: true
+
+- name: Ensure MySQL service is running and enabled
+  ansible.builtin.service:
+    name: mysql
+    state: started
+    enabled: true
+
+- name: Configure MySQL to listen on all interfaces
+  ansible.builtin.lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: "^bind-address"
+    line: "bind-address = 0.0.0.0"
+  notify: Restart MySQL
+
+- name: Flush handlers before creating users/databases
+  ansible.builtin.meta: flush_handlers
+
+- name: Fetch passwords from Vault
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    path: "{{ mysql_vault_secret_path }}"
+    auth_method: approle
+    role_id: "{{ vault_role_id }}"
+    secret_id: "{{ vault_secret_id }}"
+  register: mysql_vault_secret
+  delegate_to: localhost
+  become: false
+
+- name: Set MySQL root password
+  community.mysql.mysql_user:
+    name: root
+    host: localhost
+    password: "{{ mysql_vault_secret.data.data.data[mysql_root_vault_key] }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    state: present
+  no_log: true
+
+- name: Create users and databases
+  ansible.builtin.include_tasks: create_app.yml
+  loop: "{{ mysql_apps }}"
+  loop_control:
+    loop_var: app
+    label: "{{ app.user }}/{{ app.db }}"

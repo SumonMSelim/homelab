@@ -1,0 +1,16 @@
+---
+- name: Create MySQL database {{ app.db }}
+  community.mysql.mysql_db:
+    name: "{{ app.db }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create MySQL user {{ app.user }}
+  community.mysql.mysql_user:
+    name: "{{ app.user }}"
+    host: "{{ mysql_homelab_network }}"
+    password: "{{ mysql_vault_secret.data.data.data[app.vault_key] }}"
+    priv: "{{ app.db }}.*:ALL"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  no_log: true

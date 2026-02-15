@@ -1,0 +1,6 @@
+# MySQL apps — each entry creates a user, database, and remote access grant.
+# Password is fetched from Vault at kv/homelab/mysql using vault_key.
+mysql_apps:
+  - user: homelab
+    db: homelab
+    vault_key: homelab
