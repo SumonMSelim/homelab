@@ -20,17 +20,6 @@
     line: "bind-address = 0.0.0.0"
   notify: Restart MySQL
 
-- name: Deploy /root/.my.cnf for local socket auth
-  ansible.builtin.copy:
-    dest: /root/.my.cnf
-    content: |
-      [client]
-      user=root
-      socket=/var/run/mysqld/mysqld.sock
-    mode: '0600'
-    owner: root
-    group: root
-
 - name: Flush handlers before creating users/databases
   ansible.builtin.meta: flush_handlers
 
@@ -44,6 +33,24 @@
   register: mysql_vault_secret
   delegate_to: localhost
   become: false
+
+- name: Set root password via shell (auth_socket allows this)
+  ansible.builtin.shell: >
+    mysql -u root -e "ALTER USER 'root'@'localhost'
+    IDENTIFIED WITH mysql_native_password
+    BY '{{ mysql_vault_secret.data.data.data[mysql_root_vault_key] }}';
+    FLUSH PRIVILEGES;"
+  no_log: true
+  changed_when: true
+
+- name: Deploy /root/.my.cnf with root credentials
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: /root/.my.cnf
+    mode: '0600'
+    owner: root
+    group: root
+  no_log: true
 
 - name: Create users and databases
   ansible.builtin.include_tasks: create_app.yml
