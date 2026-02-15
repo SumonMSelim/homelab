@@ -16,3 +16,4 @@ auth_url = {{ grafana_oidc_auth_url }}
 token_url = {{ grafana_oidc_token_url }}
 api_url = {{ grafana_oidc_api_url }}
 role_attribute_path = contains(groups[*], 'owner') && 'Admin' || 'Viewer'
+use_pkce = false
