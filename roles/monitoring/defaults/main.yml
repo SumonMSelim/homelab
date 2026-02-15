@@ -18,3 +18,17 @@ grafana_oidc_token_url: "https://id.mol.la/api/oidc/token"
 grafana_oidc_api_url: "https://id.mol.la/api/oidc/userinfo"
 grafana_oidc_scopes: "openid email profile groups"
 grafana_root_url: "https://grafana.mol.la"
+
+# Grafana dashboard provisioning
+grafana_dashboards_dir: /var/lib/grafana/dashboards
+
+# Community dashboards to download from Grafana.com by ID.
+# Browse: https://grafana.com/grafana/dashboards/
+# Workflow: find a dashboard → add its id + revision here → redeploy.
+grafana_community_dashboards:
+  - id: 1860
+    revision: 37
+    name: node-exporter-full
+  - id: 3662
+    revision: 2
+    name: prometheus-stats
