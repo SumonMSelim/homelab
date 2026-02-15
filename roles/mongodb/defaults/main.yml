@@ -1,0 +1,12 @@
+---
+mongodb_version: "8.0"
+mongodb_vault_secret_path: "kv/homelab/data/mongodb"
+mongodb_admin_user: "site_admin"
+mongodb_admin_vault_key: "admin_password"
+
+# List of apps — each gets a user, db, and readWrite role.
+# Password is fetched from Vault using vault_key.
+mongodb_apps:
+  - user: homelab
+    db: homelab
+    vault_key: homelab

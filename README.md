@@ -67,6 +67,11 @@ ansible-playbook deployments/deploy_mysql.yml -e "@vars/vault_auth_vars.yml" -e 
 ansible-playbook deployments/deploy_redis.yml -e "@vars/vault_auth_vars.yml"
 ```
 
+**MongoDB (document database):**
+```bash
+ansible-playbook deployments/deploy_mongodb.yml -e "@vars/vault_auth_vars.yml" -e "@vars/mongodb_apps.yml"
+```
+
 > After deploying a new service that Caddy should proxy, redeploy Caddy to update routes.
 
 ---

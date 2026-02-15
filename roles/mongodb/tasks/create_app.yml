@@ -1,0 +1,15 @@
+---
+- name: Create MongoDB user {{ app.user }} on {{ app.db }}
+  community.mongodb.mongodb_user:
+    database: "{{ app.db }}"
+    name: "{{ app.user }}"
+    password: "{{ mongo_vault_secret.data.data.data[app.vault_key] }}"
+    roles:
+      - db: "{{ app.db }}"
+        role: readWrite
+    login_user: "{{ mongodb_admin_user }}"
+    login_password: "{{ mongo_vault_secret.data.data.data[mongodb_admin_vault_key] }}"
+    login_host: localhost
+    login_port: 27017
+    state: present
+  no_log: true
