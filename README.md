@@ -62,6 +62,11 @@ ansible-playbook deployments/deploy_postgresql.yml -e "@vars/vault_auth_vars.yml
 ansible-playbook deployments/deploy_mysql.yml -e "@vars/vault_auth_vars.yml" -e "@vars/mysql_apps.yml"
 ```
 
+**Redis (in-memory data store):**
+```bash
+ansible-playbook deployments/deploy_redis.yml -e "@vars/vault_auth_vars.yml"
+```
+
 > After deploying a new service that Caddy should proxy, redeploy Caddy to update routes.
 
 ---
