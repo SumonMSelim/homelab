@@ -54,6 +54,10 @@ vault_host
 monitoring_host
 data_services
 
+# Applications
+[jellyfin_host]
+jellyfin ansible_host=192.168.178.140
+
 # DNS
 [adguard_primary_host]
 adguard_primary ansible_host=192.168.178.253

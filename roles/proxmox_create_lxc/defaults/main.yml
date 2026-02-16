@@ -15,6 +15,10 @@ proxmox_bridge: "vmbr0"
 
 proxmox_ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGPdbWBj0cioTEXSeNjotNxDol9QRGuhRTI1q3xsK4+D ansible-homelab"
 
+# Host path where media-storage is mounted on the Proxmox node (for Jellyfin LXC bind mount).
+# Set to the path shown in Datacenter → Storage → media-storage.
+jellyfin_media_storage_host_path: "/mnt/media"
+
 # LXCs to create.
 proxmox_containers:
   - vmid: 120
@@ -71,6 +75,18 @@ proxmox_containers:
     ip: "192.168.178.133/24"
     description: "MongoDB document database"
     unprivileged: 1
+  - vmid: 140
+    hostname: jellyfin
+    ip: "192.168.178.140/24"
+    description: "Jellyfin media server"
+    unprivileged: 1
+    cores: 4
+    memory: 2048
+    disk: "local-lvm:10"
+    mount_volumes:
+      - id: mp0
+        host_path: "{{ jellyfin_media_storage_host_path }}"
+        mountpoint: /media
   - vmid: 253
     hostname: adguard-primary
     ip: "192.168.178.253/24"
