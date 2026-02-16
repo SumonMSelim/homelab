@@ -48,6 +48,3 @@ grafana_community_dashboards:
   - id: 1860
     revision: 37
     name: node-exporter-full
-  - id: 10347
-    revision: 1
-    name: proxmox-via-prometheus

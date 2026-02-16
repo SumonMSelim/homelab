@@ -103,10 +103,16 @@
   ansible.builtin.replace:
     path: "{{ grafana_dashboards_dir }}/{{ item.name }}.json"
     regexp: '\$\{DS_PROMETHEUS\}'
-    replace: 'Prometheus'
+    replace: 'prometheus'
   loop: "{{ grafana_community_dashboards }}"
   loop_control:
     label: "{{ item.name }}"
+  notify: Restart Grafana
+
+- name: Remove old community Proxmox dashboard (replaced by custom)
+  ansible.builtin.file:
+    path: "{{ grafana_dashboards_dir }}/proxmox-via-prometheus.json"
+    state: absent
   notify: Restart Grafana
 
 - name: Copy custom dashboards
