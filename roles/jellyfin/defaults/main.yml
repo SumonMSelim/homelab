@@ -1,0 +1,8 @@
+---
+# Jellyfin media server — Docker on LXC.
+# Ensure the LXC has media-storage bind-mounted (e.g. Proxmox mp0=/path/on/host,/media).
+jellyfin_image: jellyfin/jellyfin:latest
+jellyfin_http_port: 8096
+# Path inside the LXC where media-storage is mounted (must exist; bind from Proxmox).
+jellyfin_media_path: /media
+jellyfin_tz: "Europe/Amsterdam"

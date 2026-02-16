@@ -1,8 +1,12 @@
 # Homelab inventory — 192.168.178.0/24, gw 192.168.178.1
 
-# Proxmox host
-[proxmox_host]
-proxmox ansible_host=192.168.178.110
+# AdGuard Primary
+[adguard_primary_host]
+adguard_primary ansible_host=192.168.178.253
+
+# AdGuard Secondary
+[adguard_secondary_host]
+adguard_secondary ansible_host=192.168.178.254
 
 # Ansible
 [ansible_host]
@@ -12,39 +16,43 @@ ansible ansible_host=192.168.178.120
 [caddy_host]
 caddy ansible_host=192.168.178.121
 
-# PocketID
-[pocketid_host]
-pocketid ansible_host=192.168.178.122
-
-# Vault
-[vault_host]
-vault ansible_host=192.168.178.123
+# Jellyfin
+[jellyfin_host]
+jellyfin ansible_host=192.168.178.140
 
 # Monitoring
 [monitoring_host]
 monitoring ansible_host=192.168.178.124
 
-# PostgreSQL
-[postgresql_host]
-postgresql ansible_host=192.168.178.130
+# MongoDB
+[mongodb_host]
+mongodb ansible_host=192.168.178.133
 
 # MySQL
 [mysql_host]
 mysql ansible_host=192.168.178.131
 
+# PocketID
+[pocketid_host]
+pocketid ansible_host=192.168.178.122
+
+# PostgreSQL
+[postgresql_host]
+postgresql ansible_host=192.168.178.130
+
+# Proxmox host
+[proxmox_host]
+proxmox ansible_host=192.168.178.110
+
 # Redis
 [redis_host]
 redis ansible_host=192.168.178.132
 
-# MongoDB
-[mongodb_host]
-mongodb ansible_host=192.168.178.133
+# Vault
+[vault_host]
+vault ansible_host=192.168.178.123
 
-[data_services:children]
-postgresql_host
-mysql_host
-redis_host
-mongodb_host
+# --- Children (groups) ---
 
 [core:children]
 ansible_host
@@ -54,19 +62,22 @@ vault_host
 monitoring_host
 data_services
 
-# DNS
-[adguard_primary_host]
-adguard_primary ansible_host=192.168.178.253
-
-[adguard_secondary_host]
-adguard_secondary ansible_host=192.168.178.254
+[data_services:children]
+postgresql_host
+mysql_host
+redis_host
+mongodb_host
 
 [dns:children]
 adguard_primary_host
 adguard_secondary_host
 
+[applications:children]
+jellyfin_host
+
 # All nodes — used for node_exporter deployment and Prometheus scraping
 [all_nodes:children]
 proxmox_host
 core
+applications
 dns

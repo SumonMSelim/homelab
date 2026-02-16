@@ -1,0 +1,22 @@
+# Jellyfin media server. Media dir must be bind-mounted into LXC from Proxmox (e.g. media-storage).
+services:
+  jellyfin:
+    image: {{ jellyfin_image }}
+    container_name: jellyfin-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "{{ jellyfin_http_port }}:8096"
+    volumes:
+      - jellyfin_config:/config
+      - jellyfin_cache:/cache
+      - "{{ jellyfin_media_path }}:/media:ro"
+    environment:
+      TZ: "{{ jellyfin_tz }}"
+    # Optional: run as specific uid/gid to match media ownership (set in group_vars if needed).
+{% if jellyfin_uid is defined and jellyfin_gid is defined %}
+    user: "{{ jellyfin_uid }}:{{ jellyfin_gid }}"
+{% endif %}
+
+volumes:
+  jellyfin_config:
+  jellyfin_cache:

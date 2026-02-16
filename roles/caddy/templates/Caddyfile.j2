@@ -60,6 +60,12 @@ http://grafana.mol.la, grafana.mol.la {
     reverse_proxy 192.168.178.124:3000
 }
 
+# Jellyfin — media server
+http://jellyfin.mol.la, jellyfin.mol.la {
+    import protected
+    reverse_proxy 192.168.178.140:8096
+}
+
 # AdGuard Primary — DNS UI
 http://dns1.mol.la, dns1.mol.la {
 	reverse_proxy 192.168.178.253:80

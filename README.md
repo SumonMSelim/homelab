@@ -87,6 +87,11 @@ ansible-playbook deployments/deploy_node_exporter.yml
 ansible-playbook deployments/deploy_pve_exporter.yml -e "@vars/vault_auth_vars.yml"
 ```
 
+**Jellyfin (media server):**
+```bash
+ansible-playbook deployments/deploy_jellyfin.yml
+```
+
 > After deploying a new service that Caddy should proxy, redeploy Caddy to update routes.
 > After adding a new LXC, run `deploy_node_exporter.yml` and add the host to `prometheus_scrape_jobs` in the monitoring role defaults, then redeploy monitoring.
 

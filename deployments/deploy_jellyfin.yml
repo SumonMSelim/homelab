@@ -1,0 +1,9 @@
+---
+# Deploy Jellyfin media server (Docker on LXC).
+# Prereq: LXC must have media-storage bind-mounted (see README).
+# Usage: ansible-playbook deployments/deploy_jellyfin.yml
+- name: Deploy Jellyfin
+  hosts: jellyfin_host
+  become: true
+  roles:
+    - jellyfin
