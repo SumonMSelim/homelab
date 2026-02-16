@@ -1,6 +1,7 @@
 ---
 # Create LXC containers on Proxmox VE (all entries in roles/proxmox_create_lxc/defaults/main.yml → proxmox_containers).
 # Run from a host that can reach the Proxmox API.
+# Bind mounts are applied in a second play on the Proxmox host (API token cannot set bind mounts).
 #
 # Required: Proxmox API token + root password for new containers (see vars/README.md).
 # With vars file: make create-lxc  (or -e "@vars/proxmox_create_vars.yml")
@@ -13,5 +14,37 @@
     proxmox_validate_certs: false
   roles:
     - proxmox_create_lxc
+  tags:
+    - lxc
+
+- name: Add bind mounts on Proxmox host (root only; API token cannot set bind mounts)
+  hosts: proxmox_host
+  gather_facts: false
+  vars_files:
+    - ../roles/proxmox_create_lxc/defaults/main.yml
+  tasks:
+    - name: Stop container before adding bind mount
+      ansible.builtin.command: "pct stop {{ item.vmid }}"
+      loop: "{{ proxmox_containers }}"
+      when: item.mount_volumes is defined and item.mount_volumes | length > 0
+      loop_control:
+        label: "{{ item.hostname }} ({{ item.vmid }})"
+      register: pct_stop
+      ignore_errors: true
+      changed_when: pct_stop.rc == 0
+
+    - name: Add bind mount to container
+      ansible.builtin.command: "pct set {{ item.vmid }} -mp0 {{ item.mount_volumes[0].host_path }},mp={{ item.mount_volumes[0].mountpoint }}"
+      loop: "{{ proxmox_containers }}"
+      when: item.mount_volumes is defined and item.mount_volumes | length > 0
+      loop_control:
+        label: "{{ item.hostname }} ({{ item.vmid }})"
+
+    - name: Start container
+      ansible.builtin.command: "pct start {{ item.vmid }}"
+      loop: "{{ proxmox_containers }}"
+      when: item.mount_volumes is defined and item.mount_volumes | length > 0
+      loop_control:
+        label: "{{ item.hostname }} ({{ item.vmid }})"
   tags:
     - lxc

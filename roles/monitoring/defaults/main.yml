@@ -21,6 +21,7 @@ prometheus_node_targets:
   - { addr: "192.168.178.131:9100", name: mysql }
   - { addr: "192.168.178.132:9100", name: redis }
   - { addr: "192.168.178.133:9100", name: mongodb }
+  - { addr: "192.168.178.140:9100", name: jellyfin }
   - { addr: "192.168.178.253:9100", name: adguard-primary }
   - { addr: "192.168.178.254:9100", name: adguard-secondary }
 

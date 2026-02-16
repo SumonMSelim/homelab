@@ -28,7 +28,6 @@
     onboot: true
     description: "{{ item.description }}"
     state: present
-    mount_volumes: "{{ item.mount_volumes | default(omit) }}"
   loop: "{{ proxmox_containers }}"
   loop_control:
     label: "{{ item.hostname }}"
