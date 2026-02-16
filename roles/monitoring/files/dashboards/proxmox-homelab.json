@@ -64,33 +64,18 @@
               { "id": "custom.cellOptions", "value": { "type": "color-text" } },
               { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "rgba(50, 172, 45, 0.97)", "value": null }, { "color": "rgba(237, 129, 40, 0.89)", "value": 0.7 }, { "color": "rgba(245, 54, 54, 0.9)", "value": 0.9 }] } }
             ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "vCPUs" },
-            "properties": [{ "id": "decimals", "value": 0 }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Memory" },
-            "properties": [{ "id": "unit", "value": "bytes" }, { "id": "decimals", "value": 1 }]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Disk" },
-            "properties": [{ "id": "unit", "value": "bytes" }, { "id": "decimals", "value": 1 }]
           }
         ]
       },
-      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 0 },
+      "gridPos": { "h": 20, "w": 24, "x": 0, "y": 0 },
       "id": 17,
       "options": { "cellHeight": "sm", "showHeader": true },
       "targets": [
         { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (id, name, type) (pve_guest_info{instance=\"$instance\",template!=\"1\"})", "format": "table", "instant": true, "refId": "A" },
         { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (id) (pve_up{instance=\"$instance\"} and on (id, instance) pve_guest_info)", "format": "table", "instant": true, "refId": "B" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (id) (pve_cpu_usage_limit{instance=\"$instance\"} and on (id, instance) pve_guest_info)", "format": "table", "instant": true, "refId": "C" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (id) (pve_memory_size_bytes{instance=\"$instance\"} and on (id, instance) pve_guest_info)", "format": "table", "instant": true, "refId": "D" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (id) (pve_cpu_usage_ratio{instance=\"$instance\"} / pve_cpu_usage_limit{instance=\"$instance\"} and on (id, instance) pve_guest_info)", "format": "table", "instant": true, "refId": "H" },
         { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (id) (pve_memory_usage_bytes{instance=\"$instance\"} / pve_memory_size_bytes and on (id, instance) pve_guest_info)", "format": "table", "instant": true, "refId": "E" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (id) (pve_disk_size_bytes{instance=\"$instance\"} and on (id, instance) pve_guest_info)", "format": "table", "instant": true, "refId": "F" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (id) (pve_disk_usage_bytes{instance=\"$instance\"} / pve_disk_size_bytes and on (id, instance) pve_guest_info)", "format": "table", "instant": true, "refId": "G" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (id) (pve_cpu_usage_ratio{instance=\"$instance\"} / pve_cpu_usage_limit{instance=\"$instance\"} and on (id, instance) pve_guest_info)", "format": "table", "instant": true, "refId": "H" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum by (id) (pve_disk_usage_bytes{instance=\"$instance\"} / pve_disk_size_bytes and on (id, instance) pve_guest_info)", "format": "table", "instant": true, "refId": "G" }
       ],
       "title": "Services Summary",
       "transformations": [
@@ -109,10 +94,7 @@
               "Value #B": 2,
               "Value #H": 3,
               "Value #E": 4,
-              "Value #G": 5,
-              "Value #C": 6,
-              "Value #D": 7,
-              "Value #F": 8
+              "Value #G": 5
             },
             "renameByName": {
               "id": "ID",
@@ -120,10 +102,7 @@
               "Value #B": "Status",
               "Value #H": "CPU (%)",
               "Value #E": "Mem (%)",
-              "Value #G": "Disk (%)",
-              "Value #C": "vCPUs",
-              "Value #D": "Memory",
-              "Value #F": "Disk"
+              "Value #G": "Disk (%)"
             }
           }
         }
@@ -134,13 +113,13 @@
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
-        "defaults": { "color": { "mode": "thresholds" }, "decimals": 1, "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 0.75 }, { "color": "red", "value": 0.9 }] }, "unit": "percentunit" },
+        "defaults": { "color": { "mode": "thresholds" }, "decimals": 1, "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "orange", "value": 0.75 }, { "color": "red", "value": 0.9 }] }, "unit": "percentunit" },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 4, "x": 0, "y": 10 },
+      "gridPos": { "h": 8, "w": 4, "x": 0, "y": 20 },
       "id": 11,
       "options": { "minVizHeight": 75, "minVizWidth": 75, "orientation": "auto", "reduceOptions": { "calcs": ["last"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "pve_disk_usage_bytes{instance=\"$instance\", id=~\"storage/.+\"}/pve_disk_size_bytes{instance=\"$instance\", id=~\"storage/.+\"}", "format": "time_series", "instant": true, "legendFormat": "{{id}}", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "label_replace(pve_disk_usage_bytes{instance=\"$instance\", id=~\"storage/.+\"} / pve_disk_size_bytes{instance=\"$instance\", id=~\"storage/.+\"}, \"storage\", \"$1\", \"id\", \"^storage/[^/]+/(.+)$\")", "format": "time_series", "instant": true, "legendFormat": "{{storage}}", "refId": "A" }],
       "title": "Storage Usage",
       "type": "gauge"
     },
@@ -148,135 +127,88 @@
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
-        "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisPlacement": "auto", "fillOpacity": 80, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineWidth": 1, "scaleDistribution": { "type": "linear" }, "thresholdsStyle": { "mode": "off" } }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "decbytes" },
-        "overrides": [{ "matcher": { "id": "byName", "options": "Field" }, "properties": [{ "id": "custom.axisPlacement", "value": "hidden" }] }]
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisPlacement": "auto", "fillOpacity": 80, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineWidth": 1, "scaleDistribution": { "type": "linear" }, "thresholdsStyle": { "mode": "off" } },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] },
+          "unit": "decbytes"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Field" }, "properties": [{ "id": "custom.axisPlacement", "value": "hidden" }] },
+          { "matcher": { "id": "byName", "options": "Used" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Free" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-blue", "mode": "fixed" } }, { "id": "custom.fillOpacity", "value": 30 }] }
+        ]
       },
-      "gridPos": { "h": 8, "w": 5, "x": 4, "y": 10 },
+      "gridPos": { "h": 8, "w": 5, "x": 4, "y": 20 },
       "id": 15,
-      "options": { "barRadius": 0, "barWidth": 0.97, "fullHighlight": false, "groupWidth": 1, "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "orientation": "auto", "showValue": "auto", "stacking": "none", "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" }, "xTickLabelRotation": 0, "xTickLabelSpacing": 0 },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "label_replace(pve_disk_size_bytes{instance=\"$instance\", id=~\"storage/.+\"}, \"legend\", \"$2\", \"id\", \"^([^\\\\/]+\\\\/)*([^\\\\/]+)$\")", "format": "time_series", "instant": true, "legendFormat": "{{legend}}", "refId": "A" }],
+      "options": { "barRadius": 0, "barWidth": 0.97, "fullHighlight": false, "groupWidth": 1, "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "orientation": "auto", "showValue": "auto", "stacking": "normal", "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" }, "xTickLabelRotation": 0, "xTickLabelSpacing": 0 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "label_replace(pve_disk_usage_bytes{instance=\"$instance\", id=~\"storage/.+\"}, \"storage\", \"$1\", \"id\", \"^storage/[^/]+/(.+)$\")", "format": "table", "instant": true, "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "label_replace(pve_disk_size_bytes{instance=\"$instance\", id=~\"storage/.+\"} - pve_disk_usage_bytes{instance=\"$instance\", id=~\"storage/.+\"}, \"storage\", \"$1\", \"id\", \"^storage/[^/]+/(.+)$\")", "format": "table", "instant": true, "refId": "B" }
+      ],
       "title": "Space Allocation",
-      "transformations": [{ "id": "reduce", "options": { "reducers": ["lastNotNull"] } }, { "id": "transpose", "options": {} }],
+      "transformations": [
+        { "id": "merge", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "id": true,
+              "instance": true
+            },
+            "renameByName": {
+              "storage": "Storage",
+              "Value #A": "Used",
+              "Value #B": "Free"
+            }
+          }
+        }
+      ],
       "type": "barchart"
     },
 
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
-        "defaults": { "color": { "fixedColor": "rgb(31, 120, 193)", "mode": "fixed" }, "decimals": 2, "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "#299c46", "value": 0 }, { "color": "rgba(237, 129, 40, 0.89)", "value": 0.7 }, { "color": "#d44a3a", "value": 0.9 }] }, "unit": "percentunit" },
+        "defaults": { "color": { "mode": "thresholds" }, "decimals": 2, "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "orange", "value": 0.7 }, { "color": "red", "value": 0.9 }] }, "unit": "percentunit" },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 5, "x": 9, "y": 10 },
+      "gridPos": { "h": 8, "w": 5, "x": 9, "y": 20 },
       "id": 7,
-      "maxDataPoints": 100,
-      "options": { "colorMode": "none", "graphMode": "area", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showPercentChange": false, "textMode": "auto", "wideLayout": true },
+      "options": { "minVizHeight": 75, "minVizWidth": 75, "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto" },
       "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "pve_cpu_usage_ratio{instance=\"$instance\", id=~\"node/.+\"}/pve_cpu_usage_limit{instance=\"$instance\", id=~\"node/.+\"}", "format": "time_series", "refId": "A" }],
       "title": "Host CPU",
-      "type": "stat"
-    },
-
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": { "color": { "fixedColor": "rgb(31, 120, 193)", "mode": "fixed" }, "decimals": 2, "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "#299c46", "value": 0 }, { "color": "rgba(237, 129, 40, 0.89)", "value": 0.6 }, { "color": "#d44a3a", "value": 0.8 }] }, "unit": "percentunit" },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 5, "x": 14, "y": 10 },
-      "id": 8,
-      "maxDataPoints": 100,
-      "options": { "colorMode": "none", "graphMode": "area", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showPercentChange": false, "textMode": "auto", "wideLayout": true },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "pve_memory_usage_bytes{instance=\"$instance\", id=~\"node/.+\"}/pve_memory_size_bytes{instance=\"$instance\", id=~\"node/.+\"}", "format": "time_series", "refId": "A" }],
-      "title": "Host Memory",
-      "type": "stat"
-    },
-
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": { "color": { "fixedColor": "rgb(31, 120, 193)", "mode": "fixed" }, "decimals": 2, "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "#299c46", "value": 0 }, { "color": "rgba(237, 129, 40, 0.89)", "value": 0.7 }, { "color": "#d44a3a", "value": 0.9 }] }, "unit": "percentunit" },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 5, "x": 19, "y": 10 },
-      "id": 18,
-      "maxDataPoints": 100,
-      "options": { "colorMode": "none", "graphMode": "area", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showPercentChange": false, "textMode": "auto", "wideLayout": true },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "pve_disk_usage_bytes{instance=\"$instance\", id=~\"node/.+\"}/pve_disk_size_bytes{instance=\"$instance\", id=~\"node/.+\"}", "format": "time_series", "refId": "A" }],
-      "title": "Host Disk",
-      "type": "stat"
-    },
-
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": { "color": { "mode": "thresholds" }, "decimals": 1, "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 0.75 }, { "color": "red", "value": 0.9 }] }, "unit": "percentunit" },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 4, "x": 0, "y": 18 },
-      "id": 19,
-      "options": { "minVizHeight": 75, "minVizWidth": 75, "orientation": "auto", "reduceOptions": { "calcs": ["last"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "pve_disk_usage_bytes{id=~\"storage/.+\"}/pve_disk_size_bytes{id=~\"storage/.+\"}", "format": "time_series", "instant": true, "legendFormat": "{{id}}", "refId": "A" }],
-      "title": "Cluster Storage",
       "type": "gauge"
     },
 
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
-        "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisPlacement": "auto", "fillOpacity": 80, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineWidth": 1, "scaleDistribution": { "type": "linear" }, "thresholdsStyle": { "mode": "off" } }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "decbytes" },
-        "overrides": [{ "matcher": { "id": "byName", "options": "Field" }, "properties": [{ "id": "custom.axisPlacement", "value": "hidden" }] }]
+        "defaults": { "color": { "mode": "thresholds" }, "decimals": 2, "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "orange", "value": 0.6 }, { "color": "red", "value": 0.8 }] }, "unit": "percentunit" },
+        "overrides": []
       },
-      "gridPos": { "h": 8, "w": 5, "x": 4, "y": 18 },
-      "id": 20,
-      "options": { "barRadius": 0, "barWidth": 0.97, "fullHighlight": false, "groupWidth": 1, "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "orientation": "auto", "showValue": "auto", "stacking": "none", "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" }, "xTickLabelRotation": 0, "xTickLabelSpacing": 0 },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "label_replace(pve_disk_size_bytes{id=~\"storage/.+\"}, \"legend\", \"$2\", \"id\", \"^([^\\\\/]+\\\\/)*([^\\\\/]+)$\")", "format": "time_series", "instant": true, "legendFormat": "{{legend}}", "refId": "A" }],
-      "title": "Cluster Space",
-      "transformations": [{ "id": "reduce", "options": { "reducers": ["lastNotNull"] } }, { "id": "transpose", "options": {} }],
-      "type": "barchart"
+      "gridPos": { "h": 8, "w": 5, "x": 14, "y": 20 },
+      "id": 8,
+      "options": { "minVizHeight": 75, "minVizWidth": 75, "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "pve_memory_usage_bytes{instance=\"$instance\", id=~\"node/.+\"}/pve_memory_size_bytes{instance=\"$instance\", id=~\"node/.+\"}", "format": "time_series", "refId": "A" }],
+      "title": "Host Memory",
+      "type": "gauge"
     },
 
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
-        "defaults": { "color": { "fixedColor": "rgb(31, 120, 193)", "mode": "fixed" }, "decimals": 2, "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "#299c46", "value": 0 }, { "color": "rgba(237, 129, 40, 0.89)", "value": 0.7 }, { "color": "#d44a3a", "value": 0.9 }] }, "unit": "percentunit" },
+        "defaults": { "color": { "mode": "thresholds" }, "decimals": 2, "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "orange", "value": 0.7 }, { "color": "red", "value": 0.9 }] }, "unit": "percentunit" },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 5, "x": 9, "y": 18 },
-      "id": 21,
-      "maxDataPoints": 100,
-      "options": { "colorMode": "none", "graphMode": "area", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showPercentChange": false, "textMode": "auto", "wideLayout": true },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(pve_cpu_usage_ratio{id=~\"node/.+\"}) / sum(pve_cpu_usage_limit{id=~\"node/.+\"})", "format": "time_series", "refId": "A" }],
-      "title": "Cluster CPU",
-      "type": "stat"
-    },
-
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": { "color": { "fixedColor": "rgb(31, 120, 193)", "mode": "fixed" }, "decimals": 2, "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "#299c46", "value": 0 }, { "color": "rgba(237, 129, 40, 0.89)", "value": 0.6 }, { "color": "#d44a3a", "value": 0.8 }] }, "unit": "percentunit" },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 5, "x": 14, "y": 18 },
-      "id": 22,
-      "maxDataPoints": 100,
-      "options": { "colorMode": "none", "graphMode": "area", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showPercentChange": false, "textMode": "auto", "wideLayout": true },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(pve_memory_usage_bytes{id=~\"node/.+\"}) / sum(pve_memory_size_bytes{id=~\"node/.+\"})", "format": "time_series", "refId": "A" }],
-      "title": "Cluster Memory",
-      "type": "stat"
-    },
-
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": { "color": { "fixedColor": "rgb(31, 120, 193)", "mode": "fixed" }, "decimals": 2, "mappings": [{ "options": { "match": "null", "result": { "text": "N/A" } }, "type": "special" }], "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "#299c46", "value": 0 }, { "color": "rgba(237, 129, 40, 0.89)", "value": 0.7 }, { "color": "#d44a3a", "value": 0.9 }] }, "unit": "percentunit" },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 5, "x": 19, "y": 18 },
-      "id": 23,
-      "maxDataPoints": 100,
-      "options": { "colorMode": "none", "graphMode": "area", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showPercentChange": false, "textMode": "auto", "wideLayout": true },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(pve_disk_usage_bytes{id=~\"node/.+\"}) / sum(pve_disk_size_bytes{id=~\"node/.+\"})", "format": "time_series", "refId": "A" }],
-      "title": "Cluster Disk",
-      "type": "stat"
+      "gridPos": { "h": 8, "w": 5, "x": 19, "y": 20 },
+      "id": 18,
+      "options": { "minVizHeight": 75, "minVizWidth": 75, "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "pve_disk_usage_bytes{instance=\"$instance\", id=~\"node/.+\"}/pve_disk_size_bytes{instance=\"$instance\", id=~\"node/.+\"}", "format": "time_series", "refId": "A" }],
+      "title": "Host Disk",
+      "type": "gauge"
     },
 
     {
@@ -285,7 +217,7 @@
         "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 0, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "area" } }, "decimals": 2, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "transparent", "value": 0 }, { "color": "red", "value": 1 }] }, "unit": "percentunit" },
         "overrides": []
       },
-      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 26 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 28 },
       "id": 2,
       "options": { "legend": { "calcs": ["mean", "lastNotNull", "max"], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "hideZeros": false, "mode": "multi", "sort": "asc" } },
       "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "(pve_cpu_usage_ratio{instance=\"$instance\"} / pve_cpu_usage_limit{instance=\"$instance\"}) * on(id, instance) group_left(name) pve_guest_info{instance=\"$instance\"}", "format": "time_series", "intervalFactor": 4, "legendFormat": "{{name}}", "refId": "A" }],
@@ -299,7 +231,7 @@
         "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 0, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "area" } }, "decimals": 1, "mappings": [], "max": 1.2, "thresholds": { "mode": "absolute", "steps": [{ "color": "transparent", "value": 0 }, { "color": "red", "value": 0.9 }] }, "unit": "percentunit" },
         "overrides": []
       },
-      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 36 },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 38 },
       "id": 5,
       "options": { "legend": { "calcs": ["mean", "lastNotNull", "max"], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" } },
       "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "(pve_memory_usage_bytes{instance=\"$instance\"} / pve_memory_size_bytes{instance=\"$instance\"}) * on(id, instance) group_left(name) pve_guest_info{instance=\"$instance\"}", "format": "time_series", "intervalFactor": 4, "legendFormat": "{{name}}", "refId": "A" }],
@@ -313,7 +245,7 @@
         "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 0, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "area" } }, "decimals": 1, "mappings": [], "max": 1.2, "thresholds": { "mode": "absolute", "steps": [{ "color": "transparent", "value": 0 }, { "color": "orange", "value": 0.75 }, { "color": "red", "value": 0.9 }] }, "unit": "percentunit" },
         "overrides": []
       },
-      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 36 },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 38 },
       "id": 9,
       "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" } },
       "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "(pve_disk_usage_bytes{instance=\"$instance\"} / pve_disk_size_bytes{instance=\"$instance\"}) * on(id, instance) group_left(name) pve_guest_info{instance=\"$instance\"}", "format": "time_series", "legendFormat": "{{name}}", "refId": "A" }],
@@ -323,7 +255,7 @@
 
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 46 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 48 },
       "id": 13,
       "targets": [
         { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "rate(pve_network_receive_bytes{instance=\"$instance\"}[5m]) * on(id, instance) group_left(name) pve_guest_info{instance=\"$instance\"}", "format": "time_series", "intervalFactor": 3, "legendFormat": "{{name}} recv", "refId": "A" },
@@ -336,7 +268,7 @@
 
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 56 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 58 },
       "id": 12,
       "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "(rate(pve_disk_write_bytes{instance=\"$instance\"}[5m]) + rate(pve_disk_read_bytes{instance=\"$instance\"}[5m])) * on(id, instance) group_left(name) pve_guest_info{instance=\"$instance\"}", "format": "time_series", "intervalFactor": 2, "legendFormat": "{{name}}", "refId": "A" }],
       "timeFrom": "3h",
