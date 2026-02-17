@@ -63,7 +63,35 @@ http://grafana.mol.la, grafana.mol.la {
 # Jellyfin — media server (media.mol.la)
 http://media.mol.la, media.mol.la {
     import protected
-    reverse_proxy 192.168.178.140:8096
+    reverse_proxy {{ hostvars['jellyfin'].ansible_host }}:8096
+}
+
+# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Bazarr, Jellyseerr (arr LXC)
+# Backend: arr_lxc_ip from group_vars/caddy_host or role defaults
+http://sabnzbd.mol.la, sabnzbd.mol.la {
+    import protected
+    reverse_proxy {{ arr_lxc_ip }}:8080
+}
+http://prowlarr.mol.la, prowlarr.mol.la {
+    import protected
+    reverse_proxy {{ arr_lxc_ip }}:9696
+}
+http://radarr.mol.la, radarr.mol.la {
+    import protected
+    reverse_proxy {{ arr_lxc_ip }}:7878
+}
+http://sonarr.mol.la, sonarr.mol.la {
+    import protected
+    reverse_proxy {{ arr_lxc_ip }}:8989
+}
+http://bazarr.mol.la, bazarr.mol.la {
+    import protected
+    reverse_proxy {{ arr_lxc_ip }}:6767
+}
+# Jellyseerr — request/approval UI
+http://requests.mol.la, requests.mol.la {
+    import protected
+    reverse_proxy {{ arr_lxc_ip }}:5055
 }
 
 # AdGuard Primary — DNS UI
