@@ -1,24 +1,24 @@
-# *arr stack — qBittorrent, Prowlarr, Radarr, Sonarr
+# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Bazarr, Jellyseerr
 # Media directories must be bind-mounted into the LXC from Proxmox (same as Jellyfin).
 services:
-  # qBittorrent - Torrent client
-  qbittorrent:
-    image: {{ arr_qbittorrent_image }}
-    container_name: qbittorrent-{{ inventory_hostname }}
+  # SABnzbd - Usenet downloader
+  # After deployment, configure your Usenet provider (server, port 563/443 SSL, username/password, connections)
+  # and set categories in SABnzbd UI
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd-{{ inventory_hostname }}
     restart: unless-stopped
     ports:
-      - "{{ arr_qbittorrent_port }}:8080"
-      - "6881:6881"
-      - "6881:6881/udp"
+      - "8080:8080"
     volumes:
-      - {{ arr_config_path }}/qbittorrent:/config
+      - {{ arr_config_path }}/sabnzbd:/config
       - {{ arr_downloads_path }}:/downloads
+      - {{ arr_movies_path }}:/movies
+      - {{ arr_tv_path }}:/tv
     environment:
       PUID: "{{ arr_uid }}"
       PGID: "{{ arr_gid }}"
       TZ: "{{ arr_tz }}"
-      # WebUI port (inside container)
-      WEBUI_PORT: "8080"
 
   # Prowlarr - Indexer manager
   prowlarr:
@@ -62,6 +62,40 @@ services:
       - {{ arr_config_path }}/sonarr:/config
       - {{ arr_tv_path }}:/tv
       - {{ arr_downloads_path }}:/downloads
+    environment:
+      PUID: "{{ arr_uid }}"
+      PGID: "{{ arr_gid }}"
+      TZ: "{{ arr_tz }}"
+
+  # Bazarr - Automatic subtitle downloader
+  # Connect to Radarr/Sonarr in Bazarr UI for auto subtitle scanning/downloading
+  # (supports many languages/subtitle providers)
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "6767:6767"
+    volumes:
+      - {{ arr_config_path }}/bazarr:/config
+      - {{ arr_movies_path }}:/movies
+      - {{ arr_tv_path }}:/tv
+    environment:
+      PUID: "{{ arr_uid }}"
+      PGID: "{{ arr_gid }}"
+      TZ: "{{ arr_tz }}"
+
+  # Jellyseerr - Request frontend for Jellyfin
+  # Access at :5055 — connect to Jellyfin (https://media.mol.la), Radarr (http://radarr:7878),
+  # Sonarr (http://sonarr:8989) during setup for requests to auto-add
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "5055:5055"
+    volumes:
+      - {{ arr_config_path }}/jellyseerr:/app/config
     environment:
       PUID: "{{ arr_uid }}"
       PGID: "{{ arr_gid }}"

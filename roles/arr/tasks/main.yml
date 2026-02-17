@@ -1,5 +1,5 @@
 ---
-# *arr stack — qBittorrent, Prowlarr, Radarr, Sonarr in Docker.
+# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Bazarr, Jellyseerr in Docker.
 # Requires LXC to have /media bind-mounted from Proxmox (same as Jellyfin).
 - name: Ensure compose project directory exists
   ansible.builtin.file:
