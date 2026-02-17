@@ -1,0 +1,73 @@
+# *arr stack — qBittorrent, Prowlarr, Radarr, Sonarr
+# Media directories must be bind-mounted into the LXC from Proxmox (same as Jellyfin).
+services:
+  # qBittorrent - Torrent client
+  qbittorrent:
+    image: {{ arr_qbittorrent_image }}
+    container_name: qbittorrent-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "{{ arr_qbittorrent_port }}:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
+    volumes:
+      - {{ arr_config_path }}/qbittorrent:/config
+      - {{ arr_downloads_path }}:/downloads
+    environment:
+      PUID: "{{ arr_uid }}"
+      PGID: "{{ arr_gid }}"
+      TZ: "{{ arr_tz }}"
+      # WebUI port (inside container)
+      WEBUI_PORT: "8080"
+
+  # Prowlarr - Indexer manager
+  prowlarr:
+    image: {{ arr_prowlarr_image }}
+    container_name: prowlarr-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "{{ arr_prowlarr_port }}:9696"
+    volumes:
+      - {{ arr_config_path }}/prowlarr:/config
+      - {{ arr_config_path }}/prowlarr:/data
+    environment:
+      PUID: "{{ arr_uid }}"
+      PGID: "{{ arr_gid }}"
+      TZ: "{{ arr_tz }}"
+
+  # Radarr - Movie manager
+  radarr:
+    image: {{ arr_radarr_image }}
+    container_name: radarr-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "{{ arr_radarr_port }}:7878"
+    volumes:
+      - {{ arr_config_path }}/radarr:/config
+      - {{ arr_movies_path }}:/movies
+      - {{ arr_downloads_path }}:/downloads
+    environment:
+      PUID: "{{ arr_uid }}"
+      PGID: "{{ arr_gid }}"
+      TZ: "{{ arr_tz }}"
+
+  # Sonarr - TV show manager
+  sonarr:
+    image: {{ arr_sonarr_image }}
+    container_name: sonarr-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "{{ arr_sonarr_port }}:8989"
+    volumes:
+      - {{ arr_config_path }}/sonarr:/config
+      - {{ arr_tv_path }}:/tv
+      - {{ arr_downloads_path }}:/downloads
+    environment:
+      PUID: "{{ arr_uid }}"
+      PGID: "{{ arr_gid }}"
+      TZ: "{{ arr_tz }}"
+
+# Shared network for inter-container communication
+networks:
+  default:
+    name: arr_network

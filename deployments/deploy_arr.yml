@@ -1,0 +1,20 @@
+---
+# Deploy *arr stack — qBittorrent, Prowlarr, Radarr, Sonarr (Docker on LXC).
+# Prereq: LXC must have media-storage bind-mounted from Proxmox (same as Jellyfin).
+# 
+# Required vars (pass via -e "@vars/arr_vars.yml" or on CLI):
+#   - arr_uid: PUID for container user (default: 1000)
+#   - arr_gid: PGID for container group (default: 1000)
+#   - arr_tz: Timezone (default: Etc/UTC)
+#
+# Optional overrides:
+#   - arr_qbittorrent_port, arr_prowlarr_port, arr_radarr_port, arr_sonarr_port
+#
+# Usage:
+#   ansible-playbook deployments/deploy_arr.yml -e "@vars/arr_vars.yml"
+#
+- name: Deploy *arr stack
+  hosts: arr_host
+  become: true
+  roles:
+    - arr

@@ -1,0 +1,6 @@
+---
+# Handlers for the *arr stack.
+- name: Restart ARR stack
+  community.docker.docker_compose_v2:
+    project_src: "/opt/compose/arr-{{ inventory_hostname }}"
+    state: present

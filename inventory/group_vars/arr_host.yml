@@ -1,0 +1,4 @@
+---
+# ARR stack LXC at 192.168.178.141. Override media paths if mount differs.
+# arr_media_path: /media   # default; must be bind-mounted from Proxmox media-storage
+ansible_user: root

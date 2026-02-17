@@ -1,0 +1,60 @@
+---
+# *arr stack — qBittorrent, Prowlarr, Radarr, Sonarr in Docker.
+# Requires LXC to have /media bind-mounted from Proxmox (same as Jellyfin).
+- name: Ensure compose project directory exists
+  ansible.builtin.file:
+    path: "/opt/compose/arr-{{ inventory_hostname }}"
+    state: directory
+    mode: '0755'
+
+- name: Ensure config directory exists
+  ansible.builtin.file:
+    path: "{{ arr_config_path }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ arr_uid }}"
+    group: "{{ arr_gid }}"
+
+- name: Check media path exists (bind-mount from Proxmox media-storage before deploy)
+  ansible.builtin.stat:
+    path: "{{ arr_media_path }}"
+  register: media_path_stat
+
+- name: Fail if media path is missing
+  ansible.builtin.fail:
+    msg: "Media path '{{ arr_media_path }}' must exist on the LXC. Add a bind mount in Proxmox (e.g. mp0=/path/to/media-storage,{{ arr_media_path }}) and create the LXC mount point."
+  when: not media_path_stat.stat.exists or not media_path_stat.stat.isdir
+
+- name: Ensure media subdirectories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ arr_downloads_path }}"
+    - "{{ arr_movies_path }}"
+    - "{{ arr_tv_path }}"
+
+- name: Set ownership on media directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ arr_uid }}"
+    group: "{{ arr_gid }}"
+    mode: '0755'
+    recurse: yes
+  loop:
+    - "{{ arr_downloads_path }}"
+    - "{{ arr_movies_path }}"
+    - "{{ arr_tv_path }}"
+
+- name: Deploy ARR stack compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "/opt/compose/arr-{{ inventory_hostname }}/compose.yml"
+    mode: '0644'
+  notify: Restart ARR stack
+
+- name: Start ARR stack with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "/opt/compose/arr-{{ inventory_hostname }}"
+    state: present
