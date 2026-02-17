@@ -23,6 +23,24 @@
   vars_files:
     - ../roles/proxmox_create_lxc/defaults/main.yml
   tasks:
+    # Unprivileged LXC: bind mount appears as nobody; container root maps to another UID.
+    # Make media dirs world-writable so both can write (Radarr/Sonarr root folder).
+    - name: Ensure media libraries parent exists and is writable on Proxmox host
+      ansible.builtin.file:
+        path: "{{ jellyfin_media_storage_host_path }}/libraries"
+        state: directory
+        mode: "0777"
+
+    - name: Ensure media libraries subdirs exist and are writable on Proxmox host
+      ansible.builtin.file:
+        path: "{{ jellyfin_media_storage_host_path }}/libraries/{{ item }}"
+        state: directory
+        mode: "0777"
+      loop:
+        - downloads
+        - movies
+        - tv
+
     - name: Stop container before adding bind mount
       ansible.builtin.command: "pct stop {{ item.vmid }}"
       loop: "{{ proxmox_containers }}"
