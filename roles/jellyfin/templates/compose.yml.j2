@@ -9,7 +9,7 @@ services:
     volumes:
       - jellyfin_config:/config
       - jellyfin_cache:/cache
-      - "{{ jellyfin_media_path }}:/media/libraries"
+      - "{{ jellyfin_media_path }}:/media"
     environment:
       TZ: "{{ jellyfin_tz }}"
     # Optional: run as specific uid/gid to match media ownership (set in group_vars if needed).
