@@ -1,4 +1,4 @@
 ---
 # Jellyfin LXC at 192.168.178.140. Override jellyfin_media_path if mount differs.
-# jellyfin_media_path: /media   # default; must be bind-mounted from Proxmox media-storage
+# jellyfin_media_path: /media/libraries   # default; must be bind-mounted from Proxmox media-storage
 ansible_user: root
