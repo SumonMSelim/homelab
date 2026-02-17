@@ -60,9 +60,8 @@ http://grafana.mol.la, grafana.mol.la {
     reverse_proxy 192.168.178.124:3000
 }
 
-# Jellyfin — media server (media.mol.la)
+# Jellyfin — media server (media.mol.la), public; auth via Jellyfin users only
 http://media.mol.la, media.mol.la {
-    import protected
     reverse_proxy {{ hostvars['jellyfin'].ansible_host }}:8096
 }
 
