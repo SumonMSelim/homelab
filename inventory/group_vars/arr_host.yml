@@ -1,7 +1,6 @@
 ---
 # ARR stack LXC at 192.168.178.141. Override media paths if mount differs.
-# arr_media_path: /media   # default; must be bind-mounted from Proxmox media-storage
-# Media dirs are root:root — run *arr containers as root to read/write.
-arr_uid: 0
-arr_gid: 0
+# Unprivileged LXC: /media bind mount appears as nobody (65534) — run *arr as nobody to see/write.
+arr_uid: 65534
+arr_gid: 65534
 ansible_user: root
