@@ -1,3 +1,5 @@
 ---
 # Caddy host(s) — reverse proxy + Cloudflare Tunnel
 ansible_user: root
+# *arr stack LXC IP — from inventory (override here if needed)
+arr_lxc_ip: "{{ hostvars['arr'].ansible_host }}"
