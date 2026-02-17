@@ -25,10 +25,9 @@ arr_gid: 1000
 # Timezone
 arr_tz: "Etc/UTC"
 
-# Media paths (inside the LXC — bind-mounted from Proxmox)
-# The LXC should have /media bound from Proxmox (same as Jellyfin).
+# Media paths (inside the LXC — bind-mounted from Proxmox, same as Jellyfin)
+# Arr LXC mount: host /mnt/media → guest /media (see proxmox_create_lxc defaults, same as jellyfin).
 arr_media_path: /media
-# Subdirectories under /media/libraries
 arr_downloads_path: "{{ arr_media_path }}/libraries/downloads"
 arr_movies_path: "{{ arr_media_path }}/libraries/movies"
 arr_tv_path: "{{ arr_media_path }}/libraries/tv"
