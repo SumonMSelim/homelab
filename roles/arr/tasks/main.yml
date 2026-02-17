@@ -35,18 +35,6 @@
     - "{{ arr_movies_path }}"
     - "{{ arr_tv_path }}"
 
-- name: Set ownership on media directories
-  ansible.builtin.file:
-    path: "{{ item }}"
-    owner: "{{ arr_uid }}"
-    group: "{{ arr_gid }}"
-    mode: '0755'
-    recurse: yes
-  loop:
-    - "{{ arr_downloads_path }}"
-    - "{{ arr_movies_path }}"
-    - "{{ arr_tv_path }}"
-
 - name: Deploy ARR stack compose file
   ansible.builtin.template:
     src: docker-compose.yml.j2
