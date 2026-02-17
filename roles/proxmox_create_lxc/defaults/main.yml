@@ -87,6 +87,18 @@ proxmox_containers:
       - id: mp0
         host_path: "{{ jellyfin_media_storage_host_path }}"
         mountpoint: /media
+  - vmid: 141
+    hostname: arr
+    ip: "192.168.178.141/24"
+    description: "*arr stack — qBittorrent, Prowlarr, Radarr, Sonarr"
+    unprivileged: 1
+    cores: 2
+    memory: 2048
+    disk: "local-lvm:15"
+    mount_volumes:
+      - id: mp0
+        host_path: "{{ jellyfin_media_storage_host_path }}"
+        mountpoint: /media
   - vmid: 253
     hostname: adguard-primary
     ip: "192.168.178.253/24"

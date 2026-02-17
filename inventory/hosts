@@ -20,6 +20,10 @@ caddy ansible_host=192.168.178.121
 [jellyfin_host]
 jellyfin ansible_host=192.168.178.140
 
+# *arr stack (qBittorrent, Prowlarr, Radarr, Sonarr)
+[arr_host]
+arr ansible_host=192.168.178.141
+
 # Monitoring
 [monitoring_host]
 monitoring ansible_host=192.168.178.124
@@ -74,6 +78,7 @@ adguard_secondary_host
 
 [applications:children]
 jellyfin_host
+arr_host
 
 # All nodes — used for node_exporter deployment and Prometheus scraping
 [all_nodes:children]
