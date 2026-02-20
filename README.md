@@ -92,6 +92,19 @@ ansible-playbook deployments/deploy_pve_exporter.yml -e "@vars/vault_auth_vars.y
 ansible-playbook deployments/deploy_jellyfin.yml
 ```
 
+**ARR stack (Radarr, Sonarr, SABnzbd, etc.):**
+```bash
+ansible-playbook deployments/deploy_arr.yml
+```
+
+**Immich (photo/video backup):**
+```bash
+ansible-playbook deployments/deploy_immich.yml -e "@vars/vault_auth_vars.yml"
+```
+Uses central PostgreSQL and Redis. Ensure `immich` user/db exist (in `postgresql_apps`), PostgreSQL has `pgvector`, and Vault `kv/homelab/data/postgresql` has key `immich` (db password).
+
+OIDC (PocketID) login: create client at https://id.mol.la/settings/admin/oidc-clients with redirect URIs `https://photos.mol.la/auth/login`, `https://photos.mol.la/user-settings`, `app.immich:///oauth-callback`; then `vault kv put kv/homelab/data/immich_oidc client_id="..." client_secret="..."`
+
 > After deploying a new service that Caddy should proxy, redeploy Caddy to update routes.
 > After adding a new LXC, run `deploy_node_exporter.yml` and add the host to `prometheus_scrape_jobs` in the monitoring role defaults, then redeploy monitoring.
 

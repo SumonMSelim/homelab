@@ -20,6 +20,14 @@ scrape_configs:
       - source_labels: [nodename]
         target_label: instance
 
+  - job_name: "immich"
+    static_configs:
+{% for node in prometheus_immich_targets | default([]) %}
+      - targets: ["{{ node.addr }}"]
+        labels:
+          instance: "{{ node.name }}"
+{% endfor %}
+
   - job_name: "pve"
     scrape_interval: 30s
     scrape_timeout: 30s
