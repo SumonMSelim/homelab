@@ -23,6 +23,13 @@
   ansible.builtin.set_fact:
     postgresql_conf_dir: "/etc/postgresql/{{ postgresql_versions.stdout_lines[0] }}/main"
 
+- name: Install pgvector extension package
+  ansible.builtin.apt:
+    name: "postgresql-{{ postgresql_versions.stdout_lines[0] }}-pgvector"
+    state: present
+    update_cache: true
+  ignore_errors: true
+
 - name: Set listen_addresses to all interfaces
   ansible.builtin.lineinfile:
     path: "{{ postgresql_conf_dir }}/postgresql.conf"

@@ -11,3 +11,10 @@
     name: "{{ app.db }}"
     owner: "{{ app.user }}"
   become_user: postgres
+
+- name: Create vector extension in {{ app.db }}
+  community.postgresql.postgresql_ext:
+    name: vector
+    db: "{{ app.db }}"
+  become_user: postgres
+  when: app.vector_extension | default(false) | bool
