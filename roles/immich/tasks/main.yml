@@ -59,8 +59,7 @@
     path: "{{ immich_upload_path }}"
     state: directory
     mode: '0755'
-    owner: root
-    group: root
+  become: false
 
 - name: Deploy Immich .env file
   ansible.builtin.template:
