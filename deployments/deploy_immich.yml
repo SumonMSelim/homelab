@@ -1,0 +1,7 @@
+---
+# Usage: ansible-playbook deployments/deploy_immich.yml -e "@vars/vault_auth_vars.yml"
+- name: Deploy Immich
+  hosts: immich_host
+  become: true
+  roles:
+    - immich

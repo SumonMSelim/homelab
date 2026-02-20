@@ -23,10 +23,15 @@ prometheus_node_targets:
   - { addr: "192.168.178.133:9100", name: mongodb }
   - { addr: "192.168.178.140:9100", name: jellyfin }
   - { addr: "192.168.178.141:9100", name: arr }
+  - { addr: "192.168.178.142:9100", name: immich }
   - { addr: "192.168.178.253:9100", name: adguard-primary }
   - { addr: "192.168.178.254:9100", name: adguard-secondary }
 
-# PVE exporter — Proxmox VE metrics
+prometheus_immich_targets:
+  - { addr: "{{ prometheus_immich_host | default('192.168.178.142') }}:8081", name: "immich-api" }
+  - { addr: "{{ prometheus_immich_host | default('192.168.178.142') }}:8082", name: "immich-microservices" }
+
+# PVE exporter
 pve_exporter_target: "192.168.178.110"
 pve_exporter_scrape_addr: "192.168.178.110:9221"
 pve_exporter_node_name: "one"

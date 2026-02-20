@@ -93,6 +93,11 @@ http://requests.mol.la, requests.mol.la {
     reverse_proxy {{ arr_lxc_ip }}:5055
 }
 
+# Immich — photo/video backup (PocketID OIDC login in-app)
+http://photos.mol.la, photos.mol.la {
+    reverse_proxy {{ hostvars['immich'].ansible_host }}:2283
+}
+
 # AdGuard Primary — DNS UI
 http://dns1.mol.la, dns1.mol.la {
 	reverse_proxy 192.168.178.253:80
