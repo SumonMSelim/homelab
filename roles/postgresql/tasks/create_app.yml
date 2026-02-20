@@ -18,3 +18,17 @@
     db: "{{ app.db }}"
   become_user: postgres
   when: app.vector_extension | default(false) | bool
+
+- name: Create cube extension in {{ app.db }}
+  community.postgresql.postgresql_ext:
+    name: cube
+    db: "{{ app.db }}"
+  become_user: postgres
+  when: app.earthdistance_extension | default(false) | bool
+
+- name: Create earthdistance extension in {{ app.db }}
+  community.postgresql.postgresql_ext:
+    name: earthdistance
+    db: "{{ app.db }}"
+  become_user: postgres
+  when: app.earthdistance_extension | default(false) | bool
