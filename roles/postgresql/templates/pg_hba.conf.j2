@@ -4,5 +4,5 @@ local   all             postgres                                peer
 host    all             all             127.0.0.1/32            scram-sha-256
 host    all             all             ::1/128                 scram-sha-256
 {% for app in postgres_apps %}
-host    {{ app.db }}  {{ app.user }}  {{ postgres_homelab_network }}  scram-sha-256
+host    {{ '%-15s' | format(app.db) }} {{ '%-15s' | format(app.user) }} {{ '%-23s' | format(postgres_homelab_network) }} scram-sha-256
 {% endfor %}
