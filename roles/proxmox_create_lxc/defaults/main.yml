@@ -99,14 +99,6 @@ proxmox_containers:
       - id: mp0
         host_path: "{{ jellyfin_media_storage_host_path }}"
         mountpoint: /media
-  - vmid: 142
-    hostname: immich
-    ip: "192.168.178.142/24"
-    description: "Immich — self-hosted photo/video backup"
-    unprivileged: 1
-    cores: 2
-    memory: 4096
-    disk: "local-lvm:20"
   - vmid: 253
     hostname: adguard-primary
     ip: "192.168.178.253/24"

@@ -1,4 +1,2 @@
 ---
 ansible_user: root
-# Prometheus scrape targets from inventory (e.g. immich) — used by monitoring role
-prometheus_immich_host: "{{ hostvars['immich'].ansible_host }}"

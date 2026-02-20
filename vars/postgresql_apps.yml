@@ -1,8 +1,6 @@
+# PostgreSQL apps — each entry creates a user, database, and pg_hba rule.
+# Password is fetched from Vault at kv/homelab/postgresql using vault_key.
 postgres_apps:
   - user: homelab
     db: homelab
     vault_key: homelab
-  - user: immich
-    db: immich
-    vault_key: immich
-    vector_extension: true
