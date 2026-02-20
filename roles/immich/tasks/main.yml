@@ -54,12 +54,15 @@
     msg: "/media mount point does not exist. Ensure the LXC has the media storage volume mounted at /media. Re-create the LXC with: ansible-playbook deployments/create_lxc.yml -e '@vars/proxmox_create_vars.yml'"
   when: not media_mount_stat.stat.exists
 
-- name: Ensure Immich upload directory exists
-  ansible.builtin.file:
+- name: Check if Immich upload directory exists
+  ansible.builtin.stat:
     path: "{{ immich_upload_path }}"
-    state: directory
-    mode: '0755'
-  become: false
+  register: immich_upload_stat
+
+- name: Fail if Immich upload directory does not exist
+  ansible.builtin.fail:
+    msg: "{{ immich_upload_path }} does not exist. Create it on the Proxmox host: ssh root@proxmox 'mkdir -p /mnt/media/immich && chmod 777 /mnt/media/immich'"
+  when: not immich_upload_stat.stat.exists
 
 - name: Deploy Immich .env file
   ansible.builtin.template:
