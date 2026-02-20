@@ -24,6 +24,10 @@ jellyfin ansible_host=192.168.178.140
 [arr_host]
 arr ansible_host=192.168.178.141
 
+# Immich — photo/video backup
+[immich_host]
+immich ansible_host=192.168.178.142
+
 # Monitoring
 [monitoring_host]
 monitoring ansible_host=192.168.178.124
@@ -79,6 +83,7 @@ adguard_secondary_host
 [applications:children]
 jellyfin_host
 arr_host
+immich_host
 
 # All nodes — used for node_exporter deployment and Prometheus scraping
 [all_nodes:children]
