@@ -6,3 +6,4 @@ postgres_apps:
     db: immich
     vault_key: immich
     vector_extension: true
+    earthdistance_extension: true
