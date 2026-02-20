@@ -17,7 +17,7 @@ immich_redis_vault_key: "password"
 
 immich_db_username: "immich"
 immich_db_database: "immich"
-immich_upload_path: "/opt/immich/library"
+immich_upload_path: "/media/immich"
 
 # OIDC (PocketID) — set immich_oidc_enabled: true and store client_id/client_secret in Vault
 immich_oidc_enabled: true
