@@ -10,3 +10,11 @@
     name: prometheus-node-exporter
     state: started
     enabled: true
+
+- name: Allow monitoring host to scrape node-exporter (port 9100)
+  community.general.ufw:
+    rule: allow
+    port: "9100"
+    proto: tcp
+    src: "192.168.178.124"
+  when: ansible_facts['os_family'] == 'Debian'

@@ -75,9 +75,3 @@
     proto: tcp
     src: "{{ monitoring_host_ip }}"
 
-- name: Allow monitoring host to scrape node-exporter (port 9100)
-  community.general.ufw:
-    rule: allow
-    port: "9100"
-    proto: tcp
-    src: "{{ monitoring_host_ip }}"
