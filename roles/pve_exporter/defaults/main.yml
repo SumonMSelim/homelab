@@ -12,3 +12,6 @@ pve_exporter_vault_path: "kv/homelab/data/pve-exporter"
 pve_exporter_pve_host: "192.168.178.110"
 pve_exporter_pve_port: 8006
 pve_exporter_verify_ssl: false
+
+# Firewall: monitoring LXC that scrapes this host
+monitoring_host_ip: "192.168.178.124"
