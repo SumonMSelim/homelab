@@ -94,8 +94,8 @@ http://requests.mol.la, requests.mol.la {
 }
 
 # Immich — photo/video backup (PocketID OIDC login in-app)
+# flush_interval -1 disables response buffering for large file transfers
 http://photos.mol.la, photos.mol.la {
-    request_body_max_size 0
     reverse_proxy {{ hostvars['immich'].ansible_host }}:2283 {
         flush_interval -1
     }
