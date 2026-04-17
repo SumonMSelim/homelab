@@ -4,108 +4,102 @@ Source-of-truth for a Proxmox-based homelab: Ansible playbooks and roles to crea
 
 ## Prerequisites
 
-- Ansible installed (`brew install ansible` on macOS or `pip install ansible-core`)
+- Ansible installed on the ansible LXC (`pip install ansible-core`)
 - Access to the Proxmox API and target hosts
-- Create vars files in `vars/` (see `vars/*.example`)
+- Vars files in `vars/` on the ansible LXC (see `vars/*.example`)
+- SSH access from your machine to the ansible LXC (`ansible_user@192.168.178.120`)
 
-## Deploy Commands
+## Usage
 
-Run from the project root. Some playbooks require a vars file via `-e "@vars/<name>_vars.yml"`.
+All commands run via the `lab` script from your local machine. It SSHes into the ansible LXC, pulls the latest code, and runs the playbook there.
 
-### Infrastructure
-
-**Create LXC containers (Proxmox):**
 ```bash
-ansible-playbook deployments/create_lxc.yml -e "@vars/proxmox_create_vars.yml"
+./lab <command> [options]
 ```
 
-**Destroy LXC containers:**
+> **macOS:** requires bash 4+ — `brew install bash`
+
+Run `./lab help` to see all commands.
+
+## Infrastructure
+
 ```bash
-ansible-playbook deployments/destroy_lxc.yml -e "@vars/proxmox_create_vars.yml"
-ansible-playbook deployments/destroy_lxc.yml -e "@vars/proxmox_create_vars.yml" -e "vmid=253"  # single container
+./lab lxc create              # create all LXC containers
+./lab lxc destroy             # destroy all LXC containers (prompts for confirmation)
+./lab lxc destroy 253         # destroy a single container
 ```
 
-### Playbooks
+Requires `vars/proxmox_create_vars.yml` (Proxmox API token + container password).
 
-**AdGuard Home (DNS+DHCP):**
+## Deploy Services
+
 ```bash
-ansible-playbook deployments/deploy_adguard.yml
+./lab deploy <service>        # deploy (or redeploy) a service
+./lab deploy                  # list all available services
 ```
 
-**Caddy (reverse proxy + Cloudflare Tunnel):**
+| Service | Description | Requires |
+|---|---|---|
+| `adguard` | AdGuard Home (DNS + DHCP) | — |
+| `caddy` | Caddy reverse proxy + Cloudflare Tunnel | `caddy_vars.yml` |
+| `pocketid` | PocketID identity + Tinyauth | `pocketid_vars.yml` |
+| `vault` | HashiCorp Vault | — |
+| `postgresql` | PostgreSQL | `vault_auth_vars.yml` |
+| `mysql` | MySQL | `vault_auth_vars.yml` |
+| `redis` | Redis | `vault_auth_vars.yml` |
+| `mongodb` | MongoDB | `vault_auth_vars.yml` |
+| `monitoring` | Prometheus + Grafana | `vault_auth_vars.yml` |
+| `node-exporter` | Node Exporter (all hosts) | — |
+| `pve-exporter` | Proxmox VE metrics exporter | `vault_auth_vars.yml` |
+| `jellyfin` | Jellyfin media server | — |
+| `arr` | *arr stack (Radarr, Sonarr, SABnzbd, etc.) | — |
+| `immich` | Immich photo/video backup | `vault_auth_vars.yml` |
+
+Redeploying an existing service is safe — it applies config changes and restarts only if something changed.
+
+## Upgrade Services
+
 ```bash
-ansible-playbook deployments/deploy_caddy.yml -e "@vars/caddy_vars.yml"
+./lab upgrade                 # pull latest images + restart all services
+./lab upgrade arr             # upgrade a single service
 ```
 
-**PocketID (identity + Tinyauth):**
+Services with pinned versions (`immich`, `vault`, `mongodb`, `pve-exporter`) must have their version bumped in `roles/<service>/defaults/main.yml` before redeploying.
+
+## Configure Vault
+
 ```bash
-ansible-playbook deployments/deploy_pocketid.yml -e "@vars/pocketid_vars.yml"
+./lab vault-config <root-token>
 ```
 
-**HashiCorp Vault (secrets management):**
+Requires `vars/vault_config_vars.yml`.
+
+## Notes
+
+### Adding a new LXC
+
+1. Add the container to `proxmox_containers` in `roles/proxmox_create_lxc/defaults/main.yml` (vmid, hostname, IP, resources)
+2. Run `./lab lxc create` — existing containers are skipped, only new ones are created
+
+If you want to deploy services to it via Ansible (not manage it manually):
+
+3. Add the host and group to `inventory/hosts`
+4. Add it to `prometheus_scrape_jobs` in `roles/monitoring/defaults/main.yml`, then:
+   ```bash
+   ./lab deploy node-exporter
+   ./lab deploy monitoring
+   ```
+
+- After deploying a new service that Caddy should proxy, redeploy Caddy: `./lab deploy caddy`
+
+### Immich prerequisites
+
+Uses central PostgreSQL and Redis. Before deploying:
+- Ensure `immich` user/db exist in `postgresql_apps`
+- PostgreSQL has `pgvector` extension
+- Vault `kv/homelab/data/postgresql` has key `immich` (db password)
+
+OIDC (PocketID): create client at `https://id.mol.la/settings/admin/oidc-clients` with redirect URIs `https://photos.mol.la/auth/login`, `https://photos.mol.la/user-settings`, `app.immich:///oauth-callback`; then:
 ```bash
-ansible-playbook deployments/deploy_vault.yml
+vault kv put kv/homelab/data/immich_oidc client_id="..." client_secret="..."
 ```
-
-**Configure Vault (kv-v2, AppRole, OIDC, policies):**
-```bash
-ansible-playbook deployments/configure_vault.yml -e "vault_token=<root-token>" -e "@vars/vault_config_vars.yml"
-```
-
-**PostgreSQL (database server):**
-```bash
-ansible-playbook deployments/deploy_postgresql.yml -e "@vars/vault_auth_vars.yml" -e "@vars/postgresql_apps.yml"
-```
-
-**MySQL (database server):**
-```bash
-ansible-playbook deployments/deploy_mysql.yml -e "@vars/vault_auth_vars.yml" -e "@vars/mysql_apps.yml"
-```
-
-**Redis (in-memory data store):**
-```bash
-ansible-playbook deployments/deploy_redis.yml -e "@vars/vault_auth_vars.yml"
-```
-
-**MongoDB (document database):**
-```bash
-ansible-playbook deployments/deploy_mongodb.yml -e "@vars/vault_auth_vars.yml" -e "@vars/mongodb_apps.yml"
-```
-
-**Monitoring (Prometheus + Grafana):**
-```bash
-ansible-playbook deployments/deploy_monitoring.yml -e "@vars/vault_auth_vars.yml"
-```
-
-**Node Exporter (metrics agent on all hosts):**
-```bash
-ansible-playbook deployments/deploy_node_exporter.yml
-```
-
-**PVE Exporter (Proxmox VE metrics):**
-```bash
-ansible-playbook deployments/deploy_pve_exporter.yml -e "@vars/vault_auth_vars.yml"
-```
-
-**Jellyfin (media server):**
-```bash
-ansible-playbook deployments/deploy_jellyfin.yml
-```
-
-**ARR stack (Radarr, Sonarr, SABnzbd, etc.):**
-```bash
-ansible-playbook deployments/deploy_arr.yml
-```
-
-**Immich (photo/video backup):**
-```bash
-ansible-playbook deployments/deploy_immich.yml -e "@vars/vault_auth_vars.yml"
-```
-Uses central PostgreSQL and Redis. Ensure `immich` user/db exist (in `postgresql_apps`), PostgreSQL has `pgvector`, and Vault `kv/homelab/data/postgresql` has key `immich` (db password).
-
-OIDC (PocketID) login: create client at https://id.mol.la/settings/admin/oidc-clients with redirect URIs `https://photos.mol.la/auth/login`, `https://photos.mol.la/user-settings`, `app.immich:///oauth-callback`; then `vault kv put kv/homelab/data/immich_oidc client_id="..." client_secret="..."`
-
-> After deploying a new service that Caddy should proxy, redeploy Caddy to update routes.
-> After adding a new LXC, run `deploy_node_exporter.yml` and add the host to `prometheus_scrape_jobs` in the monitoring role defaults, then redeploy monitoring.
-
----

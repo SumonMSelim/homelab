@@ -20,7 +20,7 @@ caddy ansible_host=192.168.178.121
 [jellyfin_host]
 jellyfin ansible_host=192.168.178.140
 
-# *arr stack (qBittorrent, Prowlarr, Radarr, Sonarr)
+# *arr stack (Bazarr, Prowlarr, Radarr, Sonarr)
 [arr_host]
 arr ansible_host=192.168.178.141
 

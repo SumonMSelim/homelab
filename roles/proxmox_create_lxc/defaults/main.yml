@@ -111,6 +111,14 @@ proxmox_containers:
       - id: mp0
         host_path: "{{ jellyfin_media_storage_host_path }}"
         mountpoint: /media
+  - vmid: 252
+    hostname: humaun
+    ip: "192.168.178.252/24"
+    description: "LXC for Humaun"
+    unprivileged: 0
+    cores: 2
+    memory: 8192
+    disk: "local-lvm:20"
   - vmid: 253
     hostname: adguard-primary
     ip: "192.168.178.253/24"

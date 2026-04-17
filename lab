@@ -1,0 +1,290 @@
+#!/usr/bin/env bash
+# lab — homelab management CLI
+set -euo pipefail
+
+if (( BASH_VERSINFO[0] < 4 )); then
+  echo "bash 4+ required (found $BASH_VERSION). On macOS: brew install bash" >&2
+  exit 1
+fi
+
+# ── Config ────────────────────────────────────────────────────────────────────
+VARS_DIR="vars"
+DEPLOYMENTS_DIR="deployments"
+ANSIBLE_HOST="192.168.178.120"
+ANSIBLE_USER="ansible_user"
+ANSIBLE_REPO="/home/ansible_user/homelab"
+
+# ── Colors & symbols ──────────────────────────────────────────────────────────
+if [[ -t 1 ]]; then
+  BOLD='\033[1m';    DIM='\033[2m';     RESET='\033[0m'
+  RED='\033[0;31m';  GREEN='\033[0;32m'; YELLOW='\033[0;33m'
+  BLUE='\033[0;34m'; CYAN='\033[0;36m';  WHITE='\033[0;37m'
+  MAGENTA='\033[0;35m'
+else
+  BOLD=''; DIM=''; RESET=''
+  RED=''; GREEN=''; YELLOW=''; BLUE=''; CYAN=''; WHITE=''; MAGENTA=''
+fi
+
+_header()  { echo -e "\n${BOLD}${BLUE}┌─ $* ${RESET}"; }
+_info()    { echo -e "  ${CYAN}ℹ${RESET}  $*"; }
+_run_msg() { echo -e "  ${GREEN}▶${RESET}  ${DIM}$*${RESET}"; }
+_ok()      { echo -e "  ${GREEN}✔${RESET}  ${GREEN}$*${RESET}"; }
+_warn()    { echo -e "  ${YELLOW}⚠${RESET}  ${YELLOW}$*${RESET}"; }
+_error()   { echo -e "  ${RED}✖${RESET}  ${RED}$*${RESET}"; }
+_step()    { echo -e "\n  ${BOLD}${WHITE}$*${RESET}"; }
+
+_run() {
+  _run_msg "$*"
+  "$@"
+}
+
+_run_secret() {
+  _run_msg "$1 [args hidden]"
+  "$@"
+}
+
+_require_vars() {
+  local file="$VARS_DIR/$1"
+  if [[ ! -f "$file" ]]; then
+    _error "Missing vars file: ${BOLD}$file"
+    _info  "Copy ${DIM}$file.example${RESET} → ${BOLD}$file${RESET} and fill in your values."
+    exit 1
+  fi
+}
+
+_confirm() {
+  local msg="$1"
+  echo -e "\n  ${BOLD}${YELLOW}⚠  $msg${RESET}"
+  echo -en "  ${DIM}Type 'yes' to confirm: ${RESET}"
+  read -r confirm
+  [[ "$confirm" == "yes" ]] || { _info "Aborted."; exit 0; }
+}
+
+_elapsed() {
+  local start=$1
+  local end=$SECONDS
+  local secs=$(( end - start ))
+  printf '%dm%02ds' $(( secs/60 )) $(( secs%60 ))
+}
+
+# ── Remote forwarding ─────────────────────────────────────────────────────────
+_is_ansible_host() {
+  local self
+  self=$(hostname -I 2>/dev/null || ifconfig 2>/dev/null | grep -oE 'inet [0-9.]+' | awk '{print $2}')
+  [[ "$self" == *"$ANSIBLE_HOST"* ]]
+}
+
+if ! _is_ansible_host; then
+  echo -e "${BOLD}${BLUE}  lab${RESET} ${DIM}→ forwarding to ansible host (${ANSIBLE_HOST})${RESET}"
+  ssh -o StrictHostKeyChecking=no -o BatchMode=yes "$ANSIBLE_USER@$ANSIBLE_HOST" \
+    "cd $ANSIBLE_REPO && git pull --ff-only && bash ./lab $(printf '%q ' "$@")"
+  exit $?
+fi
+
+# ── Commands ──────────────────────────────────────────────────────────────────
+
+cmd_lxc() {
+  local action="${1:-help}"
+  case "$action" in
+    create)
+      _header "LXC Create"
+      _require_vars proxmox_create_vars.yml
+      local start=$SECONDS
+      _run ansible-playbook "$DEPLOYMENTS_DIR/create_lxc.yml" -e "@$VARS_DIR/proxmox_create_vars.yml"
+      _ok "Done in $(_elapsed $start)"
+      ;;
+    destroy)
+      _header "LXC Destroy"
+      _require_vars proxmox_create_vars.yml
+      if [[ -n "${2:-}" ]]; then
+        _confirm "Destroy container ${BOLD}$2${RESET}${YELLOW}? This is irreversible."
+        _run ansible-playbook "$DEPLOYMENTS_DIR/destroy_lxc.yml" \
+          -e "@$VARS_DIR/proxmox_create_vars.yml" -e "vmid=$2"
+      else
+        _confirm "Destroy ${BOLD}ALL${RESET}${YELLOW} containers in proxmox_create_vars.yml? This is irreversible."
+        _run ansible-playbook "$DEPLOYMENTS_DIR/destroy_lxc.yml" -e "@$VARS_DIR/proxmox_create_vars.yml"
+      fi
+      _ok "Done."
+      ;;
+    *)
+      _error "Usage: lab lxc <create|destroy> [vmid]"
+      exit 1
+      ;;
+  esac
+}
+
+cmd_deploy() {
+  local service="${1:-}"
+
+  declare -A SERVICE_LABELS=(
+    [adguard]="AdGuard Home (DNS + DHCP)"
+    [caddy]="Caddy reverse proxy + Cloudflare Tunnel"
+    [pocketid]="PocketID identity + Tinyauth"
+    [vault]="HashiCorp Vault"
+    [postgresql]="PostgreSQL"
+    [mysql]="MySQL"
+    [redis]="Redis"
+    [mongodb]="MongoDB"
+    [monitoring]="Prometheus + Grafana"
+    [node-exporter]="Node Exporter (all hosts)"
+    [pve-exporter]="Proxmox VE metrics exporter"
+    [jellyfin]="Jellyfin media server"
+    [arr]="*arr stack"
+    [immich]="Immich photo/video backup"
+  )
+
+  if [[ -z "$service" || -z "${SERVICE_LABELS[$service]+_}" ]]; then
+    _header "Deploy — available services"
+    for svc in adguard caddy pocketid vault postgresql mysql redis mongodb \
+                monitoring node-exporter pve-exporter jellyfin arr immich; do
+      printf "    ${CYAN}%-18s${RESET} %s\n" "$svc" "${SERVICE_LABELS[$svc]}"
+    done
+    echo ""
+    _info "Usage: ${BOLD}lab deploy <service>${RESET}"
+    [[ -z "$service" ]] || { echo ""; _error "Unknown service: $service"; exit 1; }
+    exit 0
+  fi
+
+  _header "Deploy → ${SERVICE_LABELS[$service]}"
+  local start=$SECONDS
+
+  case "$service" in
+    adguard)       _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_adguard.yml" ;;
+    caddy)         _require_vars caddy_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_caddy.yml" -e "@$VARS_DIR/caddy_vars.yml" ;;
+    pocketid)      _require_vars pocketid_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_pocketid.yml" -e "@$VARS_DIR/pocketid_vars.yml" ;;
+    vault)         _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_vault.yml" ;;
+    postgresql)    _require_vars vault_auth_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_postgresql.yml" \
+                     -e "@$VARS_DIR/vault_auth_vars.yml" -e "@$VARS_DIR/postgresql_apps.yml" ;;
+    mysql)         _require_vars vault_auth_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_mysql.yml" \
+                     -e "@$VARS_DIR/vault_auth_vars.yml" -e "@$VARS_DIR/mysql_apps.yml" ;;
+    redis)         _require_vars vault_auth_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_redis.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
+    mongodb)       _require_vars vault_auth_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_mongodb.yml" \
+                     -e "@$VARS_DIR/vault_auth_vars.yml" -e "@$VARS_DIR/mongodb_apps.yml" ;;
+    monitoring)    _require_vars vault_auth_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_monitoring.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
+    node-exporter) _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_node_exporter.yml" ;;
+    pve-exporter)  _require_vars vault_auth_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_pve_exporter.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
+    jellyfin)      _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_jellyfin.yml" ;;
+    arr)           _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_arr.yml" ;;
+    immich)        _require_vars vault_auth_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_immich.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
+  esac
+
+  _ok "Deployed ${SERVICE_LABELS[$service]} in $(_elapsed $start)"
+}
+
+cmd_upgrade() {
+  local service="${1:-all}"
+
+  declare -A COMPOSE_HOSTS=(
+    [adguard-primary]="192.168.178.253 /opt/compose/adguard-adguard_primary"
+    [adguard-secondary]="192.168.178.254 /opt/compose/adguard-adguard_secondary"
+    [caddy]="192.168.178.121 /opt/compose/caddy-caddy"
+    [pocketid]="192.168.178.122 /opt/compose/pocketid-pocketid"
+    [jellyfin]="192.168.178.140 /opt/compose/jellyfin-jellyfin"
+    [arr]="192.168.178.141 /opt/compose/arr-arr"
+  )
+
+  declare -A PINNED=(
+    [immich]="immich_version in roles/immich/defaults/main.yml"
+    [vault]="vault_version in roles/vault/defaults/main.yml"
+    [mongodb]="mongodb_version in roles/mongodb/defaults/main.yml"
+    [pve-exporter]="pve_exporter_version in roles/pve_exporter/defaults/main.yml"
+  )
+
+  _pull_and_restart() {
+    local name=$1 host=$2 dir=$3
+    _step "[$name] → $host"
+    ssh -o StrictHostKeyChecking=no "root@$host" \
+      "docker compose -f $dir/compose.yml pull && docker compose -f $dir/compose.yml up -d --remove-orphans" \
+      && _ok "$name upgraded" || _error "$name failed"
+  }
+
+  if [[ "$service" == "all" ]]; then
+    _header "Upgrade — all services"
+    local start=$SECONDS
+    for name in "${!COMPOSE_HOSTS[@]}"; do
+      read -r host dir <<< "${COMPOSE_HOSTS[$name]}"
+      _pull_and_restart "$name" "$host" "$dir"
+    done
+    echo ""
+    _warn "Pinned-version services — bump var + redeploy to upgrade:"
+    for name in "${!PINNED[@]}"; do
+      printf "    ${YELLOW}%-18s${RESET} %s\n" "$name" "${PINNED[$name]}"
+    done
+    echo ""
+    _ok "Upgrade complete in $(_elapsed $start)"
+  elif [[ -n "${COMPOSE_HOSTS[$service]+_}" ]]; then
+    _header "Upgrade → $service"
+    local start=$SECONDS
+    read -r host dir <<< "${COMPOSE_HOSTS[$service]}"
+    _pull_and_restart "$service" "$host" "$dir"
+    _ok "Done in $(_elapsed $start)"
+  elif [[ -n "${PINNED[$service]+_}" ]]; then
+    _header "Upgrade → $service"
+    _warn "$service uses a pinned version: ${PINNED[$service]}"
+    _info "Bump the version, then run: ${BOLD}./lab deploy $service${RESET}"
+  else
+    _error "Unknown service: $service"
+    _info "Usage: lab upgrade [all|${!COMPOSE_HOSTS[*]}|${!PINNED[*]}]"
+    exit 1
+  fi
+}
+
+cmd_vault_config() {
+  _header "Vault Configure"
+  _require_vars vault_config_vars.yml
+  local token="${1:-}"
+  if [[ -z "$token" ]]; then
+    _error "Usage: lab vault-config <root-token>"
+    exit 1
+  fi
+  local start=$SECONDS
+  _run_secret ansible-playbook "$DEPLOYMENTS_DIR/configure_vault.yml" \
+    -e "vault_token=$token" -e "@$VARS_DIR/vault_config_vars.yml"
+  _ok "Vault configured in $(_elapsed $start)"
+}
+
+cmd_help() {
+  echo -e "
+${BOLD}${BLUE}  ██╗      █████╗ ██████╗ ${RESET}
+${BOLD}${BLUE}  ██║     ██╔══██╗██╔══██╗${RESET}
+${BOLD}${BLUE}  ██║     ███████║██████╔╝${RESET}
+${BOLD}${BLUE}  ██║     ██╔══██║██╔══██╗${RESET}
+${BOLD}${BLUE}  ███████╗██║  ██║██████╔╝${RESET}
+${BOLD}${BLUE}  ╚══════╝╚═╝  ╚═╝╚═════╝ ${DIM}homelab CLI${RESET}
+"
+  echo -e "  ${BOLD}Commands${RESET}"
+  printf "    ${CYAN}%-26s${RESET} %s\n" \
+    "lxc create"           "Create all LXC containers on Proxmox" \
+    "lxc destroy [vmid]"   "Destroy all (or one) LXC container" \
+    "deploy <service>"     "Deploy a service  (no args → list)" \
+    "upgrade [service]"    "Pull latest images + restart  (no args → all)" \
+    "vault-config <token>" "Configure Vault (KV, AppRole, OIDC, policies)" \
+    "help"                 "Show this help"
+  echo -e "\n  ${BOLD}Examples${RESET}"
+  echo -e "    ${DIM}./lab lxc create"
+  echo -e "    ./lab lxc destroy 253"
+  echo -e "    ./lab deploy caddy"
+  echo -e "    ./lab upgrade"
+  echo -e "    ./lab upgrade arr"
+  echo -e "    ./lab vault-config s.xxxx${RESET}"
+  echo ""
+}
+
+# ── Dispatch ──────────────────────────────────────────────────────────────────
+case "${1:-help}" in
+  lxc)          shift; cmd_lxc "$@" ;;
+  deploy)       shift; cmd_deploy "$@" ;;
+  upgrade)      shift; cmd_upgrade "$@" ;;
+  vault-config) shift; cmd_vault_config "$@" ;;
+  help|--help)  cmd_help ;;
+  *)            _error "Unknown command: $1"; cmd_help; exit 1 ;;
+esac
