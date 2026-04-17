@@ -115,7 +115,7 @@ proxmox_containers:
     hostname: humaun
     ip: "192.168.178.252/24"
     description: "LXC for Humaun"
-    unprivileged: 0
+    unprivileged: 1
     cores: 2
     memory: 8192
     disk: "local-lvm:20"
