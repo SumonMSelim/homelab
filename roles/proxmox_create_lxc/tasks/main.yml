@@ -27,6 +27,8 @@
     features: "{{ item.features | default(['nesting=1']) }}"
     onboot: true
     description: "{{ item.description }}"
+    nameserver: "{{ proxmox_nameserver }}"
+    searchdomain: "{{ proxmox_searchdomain }}"
     state: present
   loop: "{{ proxmox_containers }}"
   loop_control:
@@ -48,3 +50,4 @@
   loop_control:
     label: "{{ item.hostname }}"
   no_log: true
+  ignore_errors: true
