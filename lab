@@ -131,12 +131,13 @@ cmd_deploy() {
     [jellyfin]="Jellyfin media server"
     [arr]="*arr stack"
     [immich]="Immich photo/video backup"
+    [llm]="Ollama LLM inference"
   )
 
   if [[ -z "$service" || -z "${SERVICE_LABELS[$service]+_}" ]]; then
     _header "Deploy — available services"
     for svc in adguard caddy pocketid vault postgresql mysql redis mongodb \
-                monitoring node-exporter pve-exporter jellyfin arr immich; do
+                monitoring node-exporter pve-exporter jellyfin arr immich llm; do
       printf "    ${CYAN}%-18s${RESET} %s\n" "$svc" "${SERVICE_LABELS[$svc]}"
     done
     echo ""
@@ -175,6 +176,7 @@ cmd_deploy() {
     arr)           _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_arr.yml" ;;
     immich)        _require_vars vault_auth_vars.yml
                    _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_immich.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
+    llm)           _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_llm.yml" ;;
   esac
 
   _ok "Deployed ${SERVICE_LABELS[$service]} in $(_elapsed $start)"
@@ -186,13 +188,14 @@ cmd_upgrade() {
   declare -A COMPOSE_HOSTS=(
     [adguard-primary]="192.168.178.253 /opt/compose/adguard-adguard_primary"
     [adguard-secondary]="192.168.178.254 /opt/compose/adguard-adguard_secondary"
-    [caddy]="192.168.178.121 /opt/compose/caddy-caddy"
     [pocketid]="192.168.178.122 /opt/compose/pocketid-pocketid"
     [jellyfin]="192.168.178.140 /opt/compose/jellyfin-jellyfin"
     [arr]="192.168.178.141 /opt/compose/arr-arr"
+    [llm]="192.168.178.125 /opt/compose/ollama-llm"
   )
 
   declare -A PINNED=(
+    [caddy]="custom image built via xcaddy — run: ./lab deploy caddy"
     [immich]="immich_version in roles/immich/defaults/main.yml"
     [vault]="vault_version in roles/vault/defaults/main.yml"
     [mongodb]="mongodb_version in roles/mongodb/defaults/main.yml"

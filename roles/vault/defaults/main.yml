@@ -1,5 +1,5 @@
 ---
-vault_version: "1.21.2"
+vault_version: "1.21.5"
 vault_listen_address: "0.0.0.0:8200"
 vault_data_dir: "/var/lib/vault/data"
 vault_config_dir: "/etc/vault.d"
