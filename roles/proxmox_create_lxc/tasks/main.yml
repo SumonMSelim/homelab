@@ -34,9 +34,9 @@
   loop_control:
     label: "{{ item.hostname }}"
   when: (item.unprivileged | default(1) | int) != 0 or (proxmox_api_password is defined and proxmox_api_password | default('') | length > 0)
-  no_log: true
+  register: lxc_create_result
 
-- name: Start LXC container on Proxmox
+- name: Start newly created LXC containers
   community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
     api_port: "{{ proxmox_api_port | default(8006) }}"
@@ -44,10 +44,9 @@
     api_token_id: "{{ proxmox_api_token_id }}"
     api_token_secret: "{{ proxmox_api_token_secret }}"
     validate_certs: "{{ proxmox_validate_certs | default(false) }}"
-    vmid: "{{ item.vmid }}"
+    vmid: "{{ item.item.vmid }}"
     state: started
-  loop: "{{ proxmox_containers }}"
+  loop: "{{ lxc_create_result.results }}"
   loop_control:
-    label: "{{ item.hostname }}"
-  no_log: true
-  ignore_errors: true
+    label: "{{ item.item.hostname }}"
+  when: item.changed
