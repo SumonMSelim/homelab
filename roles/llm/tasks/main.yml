@@ -1,0 +1,33 @@
+---
+- name: Ensure compose project directory exists
+  ansible.builtin.file:
+    path: "/opt/compose/ollama-{{ inventory_hostname }}"
+    state: directory
+    mode: '0755'
+
+- name: Deploy Ollama compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "/opt/compose/ollama-{{ inventory_hostname }}/compose.yml"
+    mode: '0644'
+  notify: Restart Ollama
+
+- name: Start Ollama with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "/opt/compose/ollama-{{ inventory_hostname }}"
+    state: present
+
+- name: Wait for Ollama API to be ready
+  ansible.builtin.uri:
+    url: "http://localhost:{{ ollama_port }}"
+    status_code: 200
+  register: ollama_ready
+  retries: 12
+  delay: 5
+  until: ollama_ready.status == 200
+
+- name: Pull {{ ollama_model }} model
+  ansible.builtin.command:
+    cmd: "docker exec ollama-{{ inventory_hostname }} ollama pull {{ ollama_model }}"
+  register: pull_result
+  changed_when: "'already up to date' not in pull_result.stdout"

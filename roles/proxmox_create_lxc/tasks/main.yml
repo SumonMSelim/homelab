@@ -3,6 +3,18 @@
 # Requires: community.proxmox collection (ansible-galaxy collection install community.proxmox)
 # Required: proxmox_api_user; proxmox_api_token_id; proxmox_api_token_secret; proxmox_container_password
 # Skip create for privileged (unprivileged: 0) when using token auth — Proxmox requires root@pam (password) for those.
+
+- name: Get current LXC container status from Proxmox
+  ansible.builtin.command:
+    cmd: "pvesh get /nodes/{{ proxmox_node }}/lxc/{{ item.vmid }}/status/current --output-format json"
+  delegate_to: "{{ proxmox_api_host }}"
+  loop: "{{ proxmox_containers }}"
+  loop_control:
+    label: "{{ item.hostname }}"
+  register: lxc_status
+  ignore_errors: true
+  changed_when: false
+
 - name: Create LXC container on Proxmox
   community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
@@ -12,28 +24,30 @@
     api_token_secret: "{{ proxmox_api_token_secret }}"
     validate_certs: "{{ proxmox_validate_certs | default(false) }}"
     node: "{{ proxmox_node }}"
-    vmid: "{{ item.vmid }}"
-    hostname: "{{ item.hostname }}"
+    vmid: "{{ item.item.vmid }}"
+    hostname: "{{ item.item.hostname }}"
     ostemplate: "{{ proxmox_ostemplate }}"
     password: "{{ proxmox_container_password }}"
     pubkey: "{{ proxmox_ssh_pubkey }}"
-    disk: "{{ item.disk | default(proxmox_disk) }}"
-    cores: "{{ item.cores | default(proxmox_cores) }}"
-    memory: "{{ item.memory | default(proxmox_memory) }}"
-    swap: "{{ item.swap | default(proxmox_swap) }}"
+    disk: "{{ item.item.disk | default(proxmox_disk) }}"
+    cores: "{{ item.item.cores | default(proxmox_cores) }}"
+    memory: "{{ item.item.memory | default(proxmox_memory) }}"
+    swap: "{{ item.item.swap | default(proxmox_swap) }}"
     netif:
-      net0: "name=eth0,bridge={{ proxmox_bridge }},gw={{ proxmox_gw }},ip={{ item.ip }}"
-    unprivileged: "{{ item.unprivileged | default(1) }}"
-    features: "{{ item.features | default(['nesting=1']) }}"
+      net0: "name=eth0,bridge={{ proxmox_bridge }},gw={{ proxmox_gw }},ip={{ item.item.ip }}"
+    unprivileged: "{{ item.item.unprivileged | default(1) }}"
+    features: "{{ item.item.features | default(['nesting=1']) }}"
     onboot: true
-    description: "{{ item.description }}"
+    description: "{{ item.item.description }}"
     nameserver: "{{ proxmox_nameserver }}"
     searchdomain: "{{ proxmox_searchdomain }}"
     state: present
-  loop: "{{ proxmox_containers }}"
+  loop: "{{ lxc_status.results }}"
   loop_control:
-    label: "{{ item.hostname }}"
-  when: (item.unprivileged | default(1) | int) != 0 or (proxmox_api_password is defined and proxmox_api_password | default('') | length > 0)
+    label: "{{ item.item.hostname }}"
+  when:
+    - (item.item.unprivileged | default(1) | int) != 0 or (proxmox_api_password is defined and proxmox_api_password | default('') | length > 0)
+    - item.rc != 0
   register: lxc_create_result
 
 - name: Start newly created LXC containers
@@ -44,9 +58,9 @@
     api_token_id: "{{ proxmox_api_token_id }}"
     api_token_secret: "{{ proxmox_api_token_secret }}"
     validate_certs: "{{ proxmox_validate_certs | default(false) }}"
-    vmid: "{{ item.item.vmid }}"
+    vmid: "{{ item.item.item.vmid }}"
     state: started
   loop: "{{ lxc_create_result.results }}"
   loop_control:
-    label: "{{ item.item.hostname }}"
-  when: item.changed
+    label: "{{ item.item.item.hostname }}"
+  when: item.changed | default(false)

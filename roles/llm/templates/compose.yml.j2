@@ -1,0 +1,14 @@
+services:
+  ollama:
+    image: {{ ollama_image }}
+    container_name: ollama-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "{{ ollama_port }}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      TZ: "{{ ollama_tz }}"
+
+volumes:
+  ollama_data:

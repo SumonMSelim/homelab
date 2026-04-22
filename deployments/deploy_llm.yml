@@ -1,0 +1,9 @@
+---
+# Deploy Ollama LLM inference server (Docker on LXC).
+# Pulls gemma4:4b model on first deploy (~3 GB download).
+# Usage: ansible-playbook deployments/deploy_llm.yml
+- name: Deploy LLM (Ollama)
+  hosts: llm_host
+  become: true
+  roles:
+    - llm

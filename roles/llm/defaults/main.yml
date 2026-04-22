@@ -1,0 +1,5 @@
+---
+ollama_image: ollama/ollama:latest
+ollama_port: 11434
+ollama_model: gemma4:4b
+ollama_tz: "Europe/Amsterdam"
