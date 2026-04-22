@@ -27,6 +27,12 @@ ansible-galaxy install -r requirements.yml
 ansible-playbook deployments/deploy_<service>.yml -vv
 ```
 
+Makefile aliases (equivalent to `./lab lxc`):
+```bash
+make create-lxc    # same as ./lab lxc create
+make destroy-lxc   # same as ./lab lxc destroy
+```
+
 `ansible.cfg` sets `become_ask_pass = True` — playbooks prompt for sudo password unless `ansible_become_pass` is set in `vars/vault_auth_vars.yml`.
 
 No test suite or linter. Validation is manual (SSH into deployed hosts, verify Docker Compose status).
@@ -70,6 +76,10 @@ vars/                    → runtime secrets/config (gitignored); *.example file
 | 192.168.178.140 | Jellyfin                          | Docker Compose |
 | 192.168.178.141 | *arr stack                        | Docker Compose |
 | 192.168.178.142 | Immich                            | Docker Compose |
+| 192.168.178.125 | LLM (Ollama + Gemma 4)            | Docker Compose |
+| 192.168.178.250 | Dash (Open WebUI + dashboards)    | Docker Compose |
+| 192.168.178.251 | OpenClaw AI agent                 | Node.js        |
+| 192.168.178.252 | Humaun                            | Docker Compose |
 | 192.168.178.253 | AdGuard Primary                   | Docker Compose |
 | 192.168.178.254 | AdGuard Secondary                 | Docker Compose |
 
@@ -103,6 +113,14 @@ Most playbooks need runtime secrets that are gitignored. Copy the `.example` fil
 10. **Open UFW port** for monitoring host scrape: allow `192.168.178.124` → port `9100` (see `roles/node_exporter`)
 11. **Caddy**: add route to `roles/caddy/templates/Caddyfile.j2`, run `./lab deploy caddy`
 
+### Ansible Galaxy Collections
+
+```
+community.proxmox, community.docker, community.hashi_vault, community.postgresql, community.mysql
+```
+
+Install before first run: `ansible-galaxy install -r requirements.yml`
+
 ### Key Conventions
 
 - Docker Compose files are templated via Jinja2 (`compose.yml.j2`) and deployed to `/opt/compose/<service>-{{ inventory_hostname }}/`
@@ -112,6 +130,7 @@ Most playbooks need runtime secrets that are gitignored. Copy the `.example` fil
 - Caddy handles all SSL termination and external access (including Cloudflare Tunnel); services listen internally only
 - Caddy uses a custom Dockerfile (in `roles/caddy/files/`) that builds the Cloudflare DNS plugin via `xcaddy`; runs in `network_mode: host`
 - Caddy Caddyfile defines a reusable `(protected)` snippet for Tinyauth forward-auth; import it with `import protected` on protected routes
+- Database roles (postgresql, mysql, mongodb) have a `create_app.yml` task file separate from `main.yml` — included by playbooks that need per-app users/databases. PostgreSQL apps also specify extensions (e.g. `vector`, `earthdistance` for Immich).
 - PostgreSQL has pgvector installed for Immich; `pg_hba.conf` is templated
 - Monitoring: Prometheus + Grafana scrape all hosts via node_exporter; add new scrape targets in `roles/monitoring/defaults/main.yml` → `prometheus_node_targets`
 - AdGuard Primary runs in host network mode (required for DHCP broadcasts); Secondary uses bridge
