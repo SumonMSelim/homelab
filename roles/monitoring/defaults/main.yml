@@ -24,6 +24,10 @@ prometheus_node_targets:
   - { addr: "192.168.178.140:9100", name: jellyfin }
   - { addr: "192.168.178.141:9100", name: arr }
   - { addr: "192.168.178.142:9100", name: immich }
+  - { addr: "192.168.178.125:9100", name: llm }
+  - { addr: "192.168.178.250:9100", name: dash }
+  - { addr: "192.168.178.251:9100", name: openclaw }
+  - { addr: "192.168.178.252:9100", name: humaun }
   - { addr: "192.168.178.253:9100", name: adguard-primary }
   - { addr: "192.168.178.254:9100", name: adguard-secondary }
 
