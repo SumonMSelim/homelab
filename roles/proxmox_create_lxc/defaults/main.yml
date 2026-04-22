@@ -12,6 +12,8 @@ proxmox_memory: 1024
 proxmox_swap: 512
 proxmox_gw: "192.168.178.1"
 proxmox_bridge: "vmbr0"
+proxmox_nameserver: "192.168.178.253 192.168.178.254"
+proxmox_searchdomain: "mol.la"
 
 proxmox_ssh_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGPdbWBj0cioTEXSeNjotNxDol9QRGuhRTI1q3xsK4+D ansible-homelab"
 
