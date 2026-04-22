@@ -60,6 +60,22 @@ redis ansible_host=192.168.178.132
 [vault_host]
 vault ansible_host=192.168.178.123
 
+# LLM (Ollama)
+[llm_host]
+llm ansible_host=192.168.178.125
+
+# Dash (Dashboard)
+[dash_host]
+dash ansible_host=192.168.178.250
+
+# OpenClaw
+[openclaw_host]
+openclaw ansible_host=192.168.178.251
+
+# Humaun
+[humaun_host]
+humaun ansible_host=192.168.178.252
+
 # --- Children (groups) ---
 
 [core:children]
@@ -84,6 +100,10 @@ adguard_secondary_host
 jellyfin_host
 arr_host
 immich_host
+llm_host
+dash_host
+openclaw_host
+humaun_host
 
 # All nodes — used for node_exporter deployment and Prometheus scraping
 [all_nodes:children]
