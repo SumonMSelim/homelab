@@ -8,6 +8,61 @@
     proxmox_has_token_auth: "{{ proxmox_api_token_id is defined and proxmox_api_token_secret is defined and (proxmox_api_token_id | string | length) > 0 and (proxmox_api_token_secret | string | length) > 0 }}"
     proxmox_has_password_auth: "{{ proxmox_api_password is defined and (proxmox_api_password | string | length) > 0 }}"
 
+- name: Validate required Proxmox LXC variables
+  ansible.builtin.assert:
+    that:
+      - proxmox_api_host is defined
+      - proxmox_api_user is defined
+      - proxmox_node is defined
+      - proxmox_ostemplate is defined
+      - proxmox_container_password is defined
+      - proxmox_ssh_pubkey is defined
+      - proxmox_disk is defined
+      - proxmox_cores is defined
+      - proxmox_memory is defined
+      - proxmox_swap is defined
+      - proxmox_gw is defined
+      - proxmox_bridge is defined
+      - proxmox_containers is defined
+      - proxmox_containers | length > 0
+      - proxmox_has_token_auth | bool or proxmox_has_password_auth | bool
+    fail_msg: "Missing required Proxmox LXC variables or authentication credentials."
+
+- name: Validate each Proxmox LXC definition
+  ansible.builtin.assert:
+    that:
+      - item.vmid is defined
+      - item.hostname is defined
+      - item.ip is defined
+      - item.description is defined
+      - item.ip is match('^[0-9]{1,3}(\\.[0-9]{1,3}){3}/[0-9]{1,2}$')
+      - item.unprivileged is not defined or item.unprivileged | int in [0, 1]
+    fail_msg: "Each proxmox_containers entry must define vmid, hostname, ip/CIDR, description, and a valid unprivileged value."
+  loop: "{{ proxmox_containers }}"
+  loop_control:
+    label: "{{ item.hostname | default(item.vmid | default('unknown')) }}"
+
+- name: Build Proxmox LXC validation lists
+  ansible.builtin.set_fact:
+    proxmox_container_vmids: "{{ proxmox_containers | map(attribute='vmid') | list }}"
+    proxmox_container_hostnames: "{{ proxmox_containers | map(attribute='hostname') | list }}"
+    proxmox_container_ips: "{{ proxmox_containers | map(attribute='ip') | map('regex_replace', '/.*$', '') | list }}"
+
+- name: Validate Proxmox LXC definitions are unique
+  ansible.builtin.assert:
+    that:
+      - proxmox_container_vmids | length == proxmox_container_vmids | unique | list | length
+      - proxmox_container_hostnames | length == proxmox_container_hostnames | unique | list | length
+      - proxmox_container_ips | length == proxmox_container_ips | unique | list | length
+    fail_msg: "Duplicate VMID, hostname, or IP address found in proxmox_containers."
+
+- name: Validate privileged LXC authentication
+  ansible.builtin.assert:
+    that:
+      - proxmox_has_password_auth | bool
+    fail_msg: "Privileged LXC containers require proxmox_api_password. Set it before creating: {{ proxmox_containers | selectattr('unprivileged', 'defined') | selectattr('unprivileged', 'equalto', 0) | map(attribute='hostname') | list | join(', ') }}"
+  when: proxmox_containers | selectattr('unprivileged', 'defined') | selectattr('unprivileged', 'equalto', 0) | list | length > 0
+
 - name: Read LXC status before changes
   community.proxmox.proxmox_vm_info:
     api_host: "{{ proxmox_api_host }}"
