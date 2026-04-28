@@ -6,6 +6,8 @@ proxmox_node: one
 proxmox_api_user: root@pam
 proxmox_api_token_id: "CHANGE_ME"
 proxmox_api_token_secret: "CHANGE_ME"
+# Required when proxmox_containers includes privileged containers (unprivileged: 0).
+proxmox_api_password: "CHANGE_ME"
 proxmox_container_password: "CHANGE_ME"
 
 # Optional overrides (defaults in roles/proxmox_create_lxc/defaults/main.yml):

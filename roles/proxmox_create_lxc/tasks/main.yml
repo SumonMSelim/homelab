@@ -1,66 +1,89 @@
 ---
 # Create LXC containers on Proxmox VE
 # Requires: community.proxmox collection (ansible-galaxy collection install community.proxmox)
-# Required: proxmox_api_user; proxmox_api_token_id; proxmox_api_token_secret; proxmox_container_password
-# Skip create for privileged (unprivileged: 0) when using token auth — Proxmox requires root@pam (password) for those.
+# Required: proxmox_api_user; proxmox_api_token_id/proxmox_api_token_secret or proxmox_api_password; proxmox_container_password
+# Privileged containers (unprivileged: 0) require password auth; Proxmox API tokens cannot create them.
+- name: Detect Proxmox authentication methods
+  ansible.builtin.set_fact:
+    proxmox_has_token_auth: "{{ proxmox_api_token_id is defined and proxmox_api_token_secret is defined and (proxmox_api_token_id | string | length) > 0 and (proxmox_api_token_secret | string | length) > 0 }}"
+    proxmox_has_password_auth: "{{ proxmox_api_password is defined and (proxmox_api_password | string | length) > 0 }}"
 
-- name: Get current LXC container status from Proxmox
-  ansible.builtin.command:
-    cmd: "pvesh get /nodes/{{ proxmox_node }}/lxc/{{ item.vmid }}/status/current --output-format json"
-  delegate_to: "{{ proxmox_api_host }}"
+- name: Read LXC status before changes
+  community.proxmox.proxmox_vm_info:
+    api_host: "{{ proxmox_api_host }}"
+    api_port: "{{ proxmox_api_port | default(8006) }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ (proxmox_has_token_auth | bool) | ternary(proxmox_api_token_id | default(omit), omit) }}"
+    api_token_secret: "{{ (proxmox_has_token_auth | bool) | ternary(proxmox_api_token_secret | default(omit), omit) }}"
+    api_password: "{{ (not (proxmox_has_token_auth | bool)) | ternary(proxmox_api_password | default(omit), omit) }}"
+    validate_certs: "{{ proxmox_validate_certs | default(false) }}"
+    node: "{{ proxmox_node }}"
+    type: lxc
+    vmid: "{{ item.vmid }}"
   loop: "{{ proxmox_containers }}"
   loop_control:
     label: "{{ item.hostname }}"
-  register: lxc_status
-  ignore_errors: true
+  register: proxmox_lxc_pre_status_results
   changed_when: false
+  no_log: true
+
+- name: Build LXC pre-change status map
+  ansible.builtin.set_fact:
+    proxmox_lxc_pre_status_by_vmid: "{{ proxmox_lxc_pre_status_by_vmid | default({}) | combine({(item.item.vmid | string): ((item.proxmox_vms | default([]) | length > 0) | ternary((item.proxmox_vms | first).status, 'absent'))}) }}"
+  loop: "{{ proxmox_lxc_pre_status_results.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.hostname }}"
 
 - name: Create LXC container on Proxmox
   community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
     api_port: "{{ proxmox_api_port | default(8006) }}"
     api_user: "{{ proxmox_api_user }}"
-    api_token_id: "{{ proxmox_api_token_id }}"
-    api_token_secret: "{{ proxmox_api_token_secret }}"
+    api_token_id: "{{ ((item.unprivileged | default(1) | int) != 0 and proxmox_has_token_auth | bool) | ternary(proxmox_api_token_id | default(omit), omit) }}"
+    api_token_secret: "{{ ((item.unprivileged | default(1) | int) != 0 and proxmox_has_token_auth | bool) | ternary(proxmox_api_token_secret | default(omit), omit) }}"
+    api_password: "{{ ((item.unprivileged | default(1) | int) == 0 or not (proxmox_has_token_auth | bool)) | ternary(proxmox_api_password | default(omit), omit) }}"
     validate_certs: "{{ proxmox_validate_certs | default(false) }}"
     node: "{{ proxmox_node }}"
-    vmid: "{{ item.item.vmid }}"
-    hostname: "{{ item.item.hostname }}"
+    vmid: "{{ item.vmid }}"
+    hostname: "{{ item.hostname }}"
     ostemplate: "{{ proxmox_ostemplate }}"
     password: "{{ proxmox_container_password }}"
     pubkey: "{{ proxmox_ssh_pubkey }}"
-    disk: "{{ item.item.disk | default(proxmox_disk) }}"
-    cores: "{{ item.item.cores | default(proxmox_cores) }}"
-    memory: "{{ item.item.memory | default(proxmox_memory) }}"
-    swap: "{{ item.item.swap | default(proxmox_swap) }}"
+    disk: "{{ item.disk | default(proxmox_disk) }}"
+    cores: "{{ item.cores | default(proxmox_cores) }}"
+    memory: "{{ item.memory | default(proxmox_memory) }}"
+    swap: "{{ item.swap | default(proxmox_swap) }}"
     netif:
-      net0: "name=eth0,bridge={{ proxmox_bridge }},gw={{ proxmox_gw }},ip={{ item.item.ip }}"
-    unprivileged: "{{ item.item.unprivileged | default(1) }}"
-    features: "{{ item.item.features | default(['nesting=1']) }}"
+      net0: "name=eth0,bridge={{ proxmox_bridge }},gw={{ proxmox_gw }},ip={{ item.ip }}"
+    unprivileged: "{{ item.unprivileged | default(1) }}"
+    features: "{{ item.features | default(['nesting=1']) }}"
     onboot: true
-    description: "{{ item.item.description }}"
+    description: "{{ item.description }}"
     nameserver: "{{ proxmox_nameserver }}"
     searchdomain: "{{ proxmox_searchdomain }}"
     state: present
-  loop: "{{ lxc_status.results }}"
+  loop: "{{ proxmox_containers }}"
   loop_control:
-    label: "{{ item.item.hostname }}"
-  when:
-    - (item.item.unprivileged | default(1) | int) != 0 or (proxmox_api_password is defined and proxmox_api_password | default('') | length > 0)
-    - item.rc != 0
-  register: lxc_create_result
+    label: "{{ item.hostname }}"
+  when: (item.unprivileged | default(1) | int) != 0 or proxmox_has_password_auth | bool
+  register: proxmox_lxc_create_results
+  no_log: true
 
 - name: Start newly created LXC containers
   community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
     api_port: "{{ proxmox_api_port | default(8006) }}"
     api_user: "{{ proxmox_api_user }}"
-    api_token_id: "{{ proxmox_api_token_id }}"
-    api_token_secret: "{{ proxmox_api_token_secret }}"
+    api_token_id: "{{ ((item.item.unprivileged | default(1) | int) != 0 and proxmox_has_token_auth | bool) | ternary(proxmox_api_token_id | default(omit), omit) }}"
+    api_token_secret: "{{ ((item.item.unprivileged | default(1) | int) != 0 and proxmox_has_token_auth | bool) | ternary(proxmox_api_token_secret | default(omit), omit) }}"
+    api_password: "{{ ((item.item.unprivileged | default(1) | int) == 0 or not (proxmox_has_token_auth | bool)) | ternary(proxmox_api_password | default(omit), omit) }}"
     validate_certs: "{{ proxmox_validate_certs | default(false) }}"
-    vmid: "{{ item.item.item.vmid }}"
+    vmid: "{{ item.item.vmid }}"
     state: started
-  loop: "{{ lxc_create_result.results }}"
+  loop: "{{ proxmox_lxc_create_results.results | default([]) }}"
   loop_control:
-    label: "{{ item.item.item.hostname }}"
-  when: item.changed | default(false)
+    label: "{{ item.item.hostname }}"
+  when:
+    - item.changed | default(false)
+    - proxmox_lxc_pre_status_by_vmid[item.item.vmid | string] in ['absent', 'running']
+  no_log: true
