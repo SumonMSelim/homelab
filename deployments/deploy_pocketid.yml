@@ -1,6 +1,7 @@
 ---
 # Deploy Pocket ID + Tinyauth (identity portal at id.mol.la).
-# Vars: -e "@vars/pocketid_vars.yml"
+# Secrets: encryption key + Tinyauth OIDC credentials from Vault (kv/homelab/data/pocketid).
+# Vars: -e "@vars/vault_auth_vars.yml"
 - name: Deploy PocketID
   hosts: pocketid_host
   become: yes

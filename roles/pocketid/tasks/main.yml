@@ -1,5 +1,25 @@
 ---
-# Pocket ID — OIDC/Passkey provider. Pass pocketid_encryption_key via vars (e.g. -e "@vars/pocketid_vars.yml"). Generate with: openssl rand -base64 32
+# Pocket ID — OIDC/Passkey provider. Secrets fetched from Vault.
+- name: Fetch PocketID secrets from Vault
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    path: "{{ pocketid_vault_secret_path }}"
+    auth_method: approle
+    role_id: "{{ vault_role_id }}"
+    secret_id: "{{ vault_secret_id }}"
+  register: pocketid_vault_secret
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: Set PocketID secrets from Vault
+  ansible.builtin.set_fact:
+    pocketid_encryption_key: "{{ pocketid_vault_secret.data.data.data.pocketid_encryption_key }}"
+    tinyauth_pocketid_client_id: "{{ pocketid_vault_secret.data.data.data.tinyauth_pocketid_client_id }}"
+    tinyauth_pocketid_client_secret: "{{ pocketid_vault_secret.data.data.data.tinyauth_pocketid_client_secret }}"
+    pocketid_maxmind_license_key: "{{ pocketid_vault_secret.data.data.data.pocketid_maxmind_license_key | default('') }}"
+  no_log: true
+
 - name: Ensure compose project directory exists
   ansible.builtin.file:
     path: "/opt/compose/pocketid-{{ inventory_hostname }}"

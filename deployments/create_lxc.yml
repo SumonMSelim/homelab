@@ -1,5 +1,5 @@
 ---
-# Create LXC containers on Proxmox VE (all entries in roles/proxmox_create_lxc/defaults/main.yml → proxmox_containers).
+# Create LXC containers on Proxmox VE (all entries in inventory/group_vars/all/lxc.yml → proxmox_containers).
 # Run from a host that can reach the Proxmox API.
 # Bind mounts are applied in a second play on the Proxmox host (API token cannot set bind mounts).
 #
@@ -41,28 +41,69 @@
         - movies
         - tv
 
-    - name: Stop container before adding bind mount
-      ansible.builtin.command: "pct stop {{ item.vmid }}"
-      loop: "{{ proxmox_containers }}"
-      when: item.mount_volumes is defined and item.mount_volumes | length > 0
+    - name: Validate bind mount definitions
+      ansible.builtin.assert:
+        that:
+          - item.1.id is defined
+          - item.1.id is match('^mp[0-9]+$')
+          - item.1.host_path is defined
+          - item.1.mountpoint is defined
+        fail_msg: "Each mount_volumes entry must define id, host_path, and mountpoint."
+      loop: "{{ query('subelements', proxmox_containers, 'mount_volumes', {'skip_missing': true}) }}"
       loop_control:
-        label: "{{ item.hostname }} ({{ item.vmid }})"
-      register: pct_stop
-      ignore_errors: true
-      changed_when: pct_stop.rc == 0
+        label: "{{ item.0.hostname }} {{ item.1.id | default('missing-id') }}"
 
-    - name: Add bind mount to container
-      ansible.builtin.command: "pct set {{ item.vmid }} -mp0 {{ item.mount_volumes[0].host_path }},mp={{ item.mount_volumes[0].mountpoint }}"
-      loop: "{{ proxmox_containers }}"
-      when: item.mount_volumes is defined and item.mount_volumes | length > 0
+    - name: Build bind mount entries
+      ansible.builtin.set_fact:
+        bind_mount_entries: "{{ (bind_mount_entries | default([])) + [{'vmid': item.0.vmid, 'hostname': item.0.hostname, 'id': item.1.id, 'pct_mount': item.1.host_path ~ ',mp=' ~ item.1.mountpoint, 'pct_config_line': item.1.id ~ ': ' ~ item.1.host_path ~ ',mp=' ~ item.1.mountpoint}] }}"
+      loop: "{{ query('subelements', proxmox_containers, 'mount_volumes', {'skip_missing': true}) }}"
       loop_control:
-        label: "{{ item.hostname }} ({{ item.vmid }})"
+        label: "{{ item.0.hostname }} {{ item.1.id }}"
 
-    - name: Start container
-      ansible.builtin.command: "pct start {{ item.vmid }}"
-      loop: "{{ proxmox_containers }}"
-      when: item.mount_volumes is defined and item.mount_volumes | length > 0
+    - name: Read current LXC config for bind mounts
+      ansible.builtin.command: "pct config {{ item.vmid }}"
+      loop: "{{ bind_mount_entries | default([]) }}"
       loop_control:
-        label: "{{ item.hostname }} ({{ item.vmid }})"
+        label: "{{ item.hostname }} {{ item.id }}"
+      register: pct_config_results
+      changed_when: false
+
+    - name: Determine bind mounts requiring changes
+      ansible.builtin.set_fact:
+        bind_mounts_to_apply: "{{ (bind_mounts_to_apply | default([])) + [item.item] }}"
+      loop: "{{ pct_config_results.results | default([]) }}"
+      loop_control:
+        label: "{{ item.item.hostname }} {{ item.item.id }}"
+      when: item.item.pct_config_line not in item.stdout_lines
+
+    - name: Build bind mount restart list
+      ansible.builtin.set_fact:
+        bind_mount_vmids_to_check: "{{ bind_mounts_to_apply | default([]) | map(attribute='vmid') | unique | list }}"
+
+    - name: Read status for containers with bind mount changes
+      ansible.builtin.command: "pct status {{ item }}"
+      loop: "{{ bind_mount_vmids_to_check | default([]) }}"
+      register: pct_status_results
+      changed_when: false
+
+    - name: Stop running containers before bind mount changes
+      ansible.builtin.command: "pct stop {{ item.item }}"
+      loop: "{{ pct_status_results.results | default([]) }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when: "'status: running' in item.stdout"
+
+    - name: Add or update bind mounts
+      ansible.builtin.command: "pct set {{ item.vmid }} -{{ item.id }} {{ item.pct_mount }}"
+      loop: "{{ bind_mounts_to_apply | default([]) }}"
+      loop_control:
+        label: "{{ item.hostname }} {{ item.id }}"
+
+    - name: Start containers that were running before bind mount changes
+      ansible.builtin.command: "pct start {{ item.item }}"
+      loop: "{{ pct_status_results.results | default([]) }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when: "'status: running' in item.stdout"
   tags:
     - lxc

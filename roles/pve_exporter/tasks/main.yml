@@ -35,6 +35,7 @@
   register: pve_vault_secret
   delegate_to: localhost
   become: false
+  no_log: true
 
 - name: Create config directory
   ansible.builtin.file:

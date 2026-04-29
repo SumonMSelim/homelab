@@ -59,6 +59,7 @@
   register: pg_vault_secret
   delegate_to: localhost
   become: false
+  no_log: true
 
 - name: Create users and databases
   ansible.builtin.include_tasks: create_app.yml

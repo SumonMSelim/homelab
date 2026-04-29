@@ -9,6 +9,7 @@
   register: immich_db_vault_secret
   delegate_to: localhost
   become: false
+  no_log: true
 
 - name: Fetch Redis password from Vault
   community.hashi_vault.vault_read:
@@ -20,6 +21,7 @@
   register: immich_redis_vault_secret
   delegate_to: localhost
   become: false
+  no_log: true
 
 - name: Fetch Immich OIDC credentials from Vault
   community.hashi_vault.vault_read:
@@ -31,12 +33,14 @@
   register: immich_oidc_vault_secret
   delegate_to: localhost
   become: false
+  no_log: true
   when: immich_oidc_enabled | default(false) | bool
 
 - name: Set Immich credentials from Vault
   ansible.builtin.set_fact:
     immich_db_password: "{{ immich_db_vault_secret.data.data.data[immich_db_password_vault_key] }}"
     immich_redis_password: "{{ immich_redis_vault_secret.data.data.data[immich_redis_vault_key] }}"
+  no_log: true
 
 - name: Ensure compose project directory exists
   ansible.builtin.file:
