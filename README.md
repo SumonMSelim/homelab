@@ -11,6 +11,7 @@ Proxmox VE (192.168.178.110)
 ├── LXC 122  PocketID + Tinyauth (identity / OIDC)
 ├── LXC 123  HashiCorp Vault (secrets)
 ├── LXC 124  Monitoring (Prometheus + Grafana)
+├── LXC 125  LLM (Ollama + Gemma 4)
 ├── LXC 130  PostgreSQL
 ├── LXC 131  MySQL
 ├── LXC 132  Redis
@@ -18,11 +19,44 @@ Proxmox VE (192.168.178.110)
 ├── LXC 140  Jellyfin (media)
 ├── LXC 141  ARR stack (Radarr, Sonarr, SABnzbd, …)
 ├── LXC 142  Immich (photo/video backup)
+├── LXC 250  Dash (Open WebUI + personal dashboards)
+├── LXC 251  OpenClaw (AI agent)
+├── LXC 252  Humaun
 ├── LXC 253  AdGuard Home Primary (DNS + DHCP)
 └── LXC 254  AdGuard Home Secondary (DNS)
 ```
 
 All secrets are managed through Vault and fetched at deploy time via AppRole auth. Container definitions live in `inventory/group_vars/all/lxc.yml`.
+
+## Deploying Changes
+
+The primary interface is `./lab` — run it from your **local machine**. It SSHes into the Ansible LXC (`192.168.178.120`), does `git pull`, and runs the playbook there. Requires bash 4+ (`brew install bash` on macOS).
+
+```bash
+./lab deploy <service>        # deploy or redeploy a service
+./lab deploy                  # list all available services
+./lab upgrade                 # pull latest images + restart all Docker Compose services
+./lab upgrade <service>       # upgrade a single service
+./lab lxc create              # create all LXC containers
+./lab lxc destroy [vmid]      # destroy all or one container
+./lab vault-config <token>    # configure Vault (AppRole, policies, OIDC)
+./lab help                    # show all commands
+```
+
+> **Note:** Caddy uses a custom-built image (`xcaddy` + Cloudflare plugin) and cannot be upgraded via `./lab upgrade`. Use `./lab deploy caddy` instead.
+
+> **Note:** Immich, Vault, MongoDB, and pve-exporter use pinned versions. Bump the version var in `roles/<service>/defaults/main.yml` before redeploying to upgrade.
+
+If you need to run a playbook directly (e.g. with extra flags):
+
+```bash
+# SSH into Ansible LXC first
+ssh ansible_user@192.168.178.120
+cd ~/homelab && git pull
+
+# Then run the playbook
+ansible-playbook deployments/deploy_<service>.yml -e "@vars/vault_auth_vars.yml" -vv
+```
 
 ## Prerequisites
 
