@@ -1,6 +1,7 @@
 ---
 # Deploy Caddy (reverse proxy + Cloudflare Tunnel). Tinyauth runs on PocketID host — see deploy_pocketid.
-# Vars: -e "@vars/caddy_vars.yml"
+# Secrets: Cloudflare API token + tunnel token from Vault (kv/homelab/data/caddy).
+# Vars: -e "@vars/vault_auth_vars.yml"
 - name: Deploy Caddy
   hosts: caddy_host
   become: yes

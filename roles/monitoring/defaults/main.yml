@@ -8,28 +8,9 @@ prometheus_scrape_jobs:
   - job_name: prometheus
     targets: ["localhost:9090"]
 
-# Node exporter targets — "name" becomes the instance label in Prometheus/Grafana.
-# To add a new host: append an entry here and redeploy monitoring.
-prometheus_node_targets:
-  - { addr: "192.168.178.110:9100", name: proxmox }
-  - { addr: "192.168.178.120:9100", name: ansible }
-  - { addr: "192.168.178.121:9100", name: caddy }
-  - { addr: "192.168.178.122:9100", name: pocketid }
-  - { addr: "192.168.178.123:9100", name: vault }
-  - { addr: "192.168.178.124:9100", name: monitoring }
-  - { addr: "192.168.178.130:9100", name: postgresql }
-  - { addr: "192.168.178.131:9100", name: mysql }
-  - { addr: "192.168.178.132:9100", name: redis }
-  - { addr: "192.168.178.133:9100", name: mongodb }
-  - { addr: "192.168.178.140:9100", name: jellyfin }
-  - { addr: "192.168.178.141:9100", name: arr }
-  - { addr: "192.168.178.142:9100", name: immich }
-  - { addr: "192.168.178.125:9100", name: llm }
-  - { addr: "192.168.178.250:9100", name: dash }
-  - { addr: "192.168.178.251:9100", name: openclaw }
-  - { addr: "192.168.178.252:9100", name: humaun }
-  - { addr: "192.168.178.253:9100", name: adguard-primary }
-  - { addr: "192.168.178.254:9100", name: adguard-secondary }
+# Node exporter targets are derived from proxmox_containers.
+prometheus_node_exporter_port: 9100
+proxmox_host_ip: "192.168.178.110"
 
 prometheus_immich_targets:
   - { addr: "{{ prometheus_immich_host | default('192.168.178.142') }}:8081", name: "immich-api" }

@@ -1,5 +1,24 @@
 ---
-# Caddy reverse proxy + Cloudflare Tunnel. Pass cloudflare_api_token and cloudflare_tunnel_token via vars file or -e.
+# Caddy reverse proxy + Cloudflare Tunnel. Secrets fetched from Vault.
+- name: Fetch Caddy secrets from Vault
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    path: "{{ caddy_vault_secret_path }}"
+    auth_method: approle
+    role_id: "{{ vault_role_id }}"
+    secret_id: "{{ vault_secret_id }}"
+  register: caddy_vault_secret
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: Set Caddy secrets from Vault
+  ansible.builtin.set_fact:
+    cloudflare_api_token: "{{ caddy_vault_secret.data.data.data.cloudflare_api_token }}"
+    cloudflare_tunnel_token: "{{ caddy_vault_secret.data.data.data.cloudflare_tunnel_token }}"
+    caddy_cloudflare_email: "{{ caddy_vault_secret.data.data.data.caddy_cloudflare_email | default('') }}"
+  no_log: true
+
 - name: Ensure compose project directory exists
   ansible.builtin.file:
     path: "/opt/compose/caddy-{{ inventory_hostname }}"

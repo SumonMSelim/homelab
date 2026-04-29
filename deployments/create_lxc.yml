@@ -1,5 +1,5 @@
 ---
-# Create LXC containers on Proxmox VE (all entries in roles/proxmox_create_lxc/defaults/main.yml → proxmox_containers).
+# Create LXC containers on Proxmox VE (all entries in inventory/group_vars/all/lxc.yml → proxmox_containers).
 # Run from a host that can reach the Proxmox API.
 # Bind mounts are applied in a second play on the Proxmox host (API token cannot set bind mounts).
 #

@@ -16,6 +16,19 @@
       - prometheus-node-exporter
     state: present
 
+- name: Reset Prometheus node targets
+  ansible.builtin.set_fact:
+    prometheus_node_targets:
+      - addr: "{{ proxmox_host_ip }}:{{ prometheus_node_exporter_port }}"
+        name: proxmox
+
+- name: Build Prometheus node targets from LXC definitions
+  ansible.builtin.set_fact:
+    prometheus_node_targets: "{{ prometheus_node_targets + [{'addr': (item.ip | regex_replace('/.*$', '')) ~ ':' ~ prometheus_node_exporter_port | string, 'name': item.hostname}] }}"
+  loop: "{{ proxmox_containers }}"
+  loop_control:
+    label: "{{ item.hostname }}"
+
 - name: Deploy prometheus.yml
   ansible.builtin.template:
     src: prometheus.yml.j2
@@ -59,6 +72,7 @@
   register: grafana_vault_secret
   delegate_to: localhost
   become: false
+  no_log: true
 
 - name: Deploy Grafana datasource provisioning
   ansible.builtin.template:

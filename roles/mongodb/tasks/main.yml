@@ -50,6 +50,7 @@
   register: mongo_vault_secret
   delegate_to: localhost
   become: false
+  no_log: true
 
 - name: Check if admin user exists
   ansible.builtin.shell: >

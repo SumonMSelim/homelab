@@ -54,6 +54,7 @@
     token: "{{ vault_token }}"
     path: "auth/approle/role/{{ vault_approle_name }}/role-id"
   register: approle_role_id
+  no_log: true
 
 - name: Generate AppRole secret-id
   community.hashi_vault.vault_write:
@@ -61,6 +62,7 @@
     token: "{{ vault_token }}"
     path: "auth/approle/role/{{ vault_approle_name }}/secret-id"
   register: approle_secret_id
+  no_log: true
 
 - name: Display AppRole credentials
   ansible.builtin.debug:
@@ -68,6 +70,7 @@
       - "role_id: {{ approle_role_id.data.data.role_id }}"
       - "secret_id: {{ approle_secret_id.data.data.secret_id }}"
       - "Store these securely. The secret_id cannot be retrieved again."
+  # Intentionally not no_log — operator needs these values once during bootstrap.
 
 # --- OIDC (PocketID) ---
 

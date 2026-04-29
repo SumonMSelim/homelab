@@ -1,3 +1,6 @@
 ---
 # Caddy role defaults. Override arr_lxc_ip in group_vars/caddy_host.yml or vars.
 arr_lxc_ip: "192.168.178.141"
+
+# Vault path for Cloudflare secrets (cloudflare_api_token, cloudflare_tunnel_token)
+caddy_vault_secret_path: "kv/homelab/data/caddy"

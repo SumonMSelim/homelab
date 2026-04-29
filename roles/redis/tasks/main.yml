@@ -15,6 +15,7 @@
   register: redis_vault_secret
   delegate_to: localhost
   become: false
+  no_log: true
 
 - name: Deploy redis.conf
   ansible.builtin.template:
