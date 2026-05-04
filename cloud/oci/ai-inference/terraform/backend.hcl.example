@@ -8,7 +8,7 @@ region   = "eu-frankfurt-1"
 
 # OCI Object Storage S3-compat endpoint.
 # Format: https://<namespace>.compat.objectstorage.<region>.oraclecloud.com
-endpoint = "https://<namespace>.compat.objectstorage.eu-frankfurt-1.oraclecloud.com"
+endpoints = { s3 = "https://<namespace>.compat.objectstorage.eu-frankfurt-1.oraclecloud.com" }
 
 # Customer Secret Key (IAM → User → Customer Secret Keys)
 access_key = "YOUR_CUSTOMER_SECRET_KEY_ID"
