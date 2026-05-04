@@ -107,17 +107,17 @@ jobs:
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
         run: |
+          set +e
           # OCI Always-Free A1 capacity is often constrained — retry until available.
           for attempt in $(seq 1 20); do
             echo "Apply attempt $attempt/20..."
-            apply_output=$(terraform apply -auto-approve -input=false tfplan 2>&1)
-            exit_code=$?
-            echo "$apply_output"
+            terraform apply -auto-approve -input=false tfplan 2>&1 | tee /tmp/tf_apply.log
+            exit_code=${PIPESTATUS[0]}
             if [ $exit_code -eq 0 ]; then
               echo "Apply succeeded."
               exit 0
             fi
-            if echo "$apply_output" | grep -q "Out of host capacity"; then
+            if grep -q "Out of host capacity" /tmp/tf_apply.log; then
               echo "Out of capacity — waiting 5 min before retry..."
               sleep 300
               terraform plan -out=tfplan -input=false
