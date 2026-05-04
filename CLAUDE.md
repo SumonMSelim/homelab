@@ -91,8 +91,8 @@ Most playbooks need runtime secrets that are gitignored. Copy the `.example` fil
 
 | Playbook          | Required vars flags                                             |
 |-------------------|-----------------------------------------------------------------|
-| deploy_caddy      | `-e "@vars/caddy_vars.yml" -e "@vars/vault_auth_vars.yml"`      |
-| deploy_pocketid   | `-e "@vars/pocketid_vars.yml"`                                  |
+| deploy_caddy      | `-e "@vars/vault_auth_vars.yml"`                                |
+| deploy_pocketid   | `-e "@vars/vault_auth_vars.yml"`                                |
 | configure_vault   | `-e "vault_token=<root>" -e "@vars/vault_config_vars.yml"`      |
 | deploy_monitoring | `-e "@vars/vault_auth_vars.yml"`                                |
 | deploy_postgresql | `-e "@vars/vault_auth_vars.yml" -e "@vars/postgresql_apps.yml"` |

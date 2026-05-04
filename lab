@@ -151,12 +151,11 @@ cmd_deploy() {
 
   case "$service" in
     adguard)       _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_adguard.yml" ;;
-    caddy)         _require_vars caddy_vars.yml
-                   _require_vars vault_auth_vars.yml
+    caddy)         _require_vars vault_auth_vars.yml
                    _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_caddy.yml" \
-                     -e "@$VARS_DIR/caddy_vars.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
-    pocketid)      _require_vars pocketid_vars.yml
-                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_pocketid.yml" -e "@$VARS_DIR/pocketid_vars.yml" ;;
+                     -e "@$VARS_DIR/vault_auth_vars.yml" ;;
+    pocketid)      _require_vars vault_auth_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_pocketid.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
     vault)         _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_vault.yml" ;;
     postgresql)    _require_vars vault_auth_vars.yml
                    _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_postgresql.yml" \
