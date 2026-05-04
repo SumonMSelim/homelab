@@ -16,6 +16,7 @@
   community.docker.docker_compose_v2:
     project_src: "/opt/compose/ollama-{{ inventory_hostname }}"
     state: present
+    pull: always
 
 - name: Wait for Ollama API to be ready
   ansible.builtin.uri:

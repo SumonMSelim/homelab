@@ -66,6 +66,7 @@
   community.docker.docker_compose_v2:
     project_src: "/opt/compose/adguard-{{ inventory_hostname }}"
     state: present
+    pull: always
 
 - name: Switch host DNS to AdGuard (127.0.0.1) now that container is up
   ansible.builtin.copy:

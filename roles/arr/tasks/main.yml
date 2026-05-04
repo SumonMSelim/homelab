@@ -53,3 +53,4 @@
   community.docker.docker_compose_v2:
     project_src: "/opt/compose/arr-{{ inventory_hostname }}"
     state: present
+    pull: always

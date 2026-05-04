@@ -34,6 +34,14 @@ proxmox_containers:
     cores: 2
     memory: 2048
     disk: "local-lvm:20"
+  - vmid: 125
+    hostname: llm
+    ip: "192.168.178.125/24"
+    description: "Ollama LLM inference (Gemma 4)"
+    unprivileged: 1
+    cores: 4
+    memory: 16384
+    disk: "local-lvm:30"
   - vmid: 130
     hostname: postgresql
     ip: "192.168.178.130/24"
@@ -96,6 +104,30 @@ proxmox_containers:
       - id: mp0
         host_path: "{{ jellyfin_media_storage_host_path }}"
         mountpoint: /media
+  - vmid: 250
+    hostname: dash
+    ip: "192.168.178.250/24"
+    description: "Open WebUI + personal dashboards"
+    unprivileged: 1
+    cores: 2
+    memory: 4096
+    disk: "local-lvm:20"
+  - vmid: 251
+    hostname: timothy
+    ip: "192.168.178.251/24"
+    description: "OpenClaw AI agent"
+    unprivileged: 1
+    cores: 2
+    memory: 4096
+    disk: "local-lvm:20"
+  - vmid: 252
+    hostname: humaun
+    ip: "192.168.178.252/24"
+    description: "Humaun"
+    unprivileged: 1
+    cores: 2
+    memory: 4096
+    disk: "local-lvm:20"
   - vmid: 253
     hostname: adguard-primary
     ip: "192.168.178.253/24"
