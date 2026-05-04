@@ -59,7 +59,8 @@ jobs:
             -backend-config="skip_credentials_validation=true" \
             -backend-config="skip_metadata_api_check=true" \
             -backend-config="skip_requesting_account_id=true" \
-            -backend-config="use_path_style=true"
+            -backend-config="use_path_style=true" \
+            -backend-config="skip_s3_checksum=true"
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
