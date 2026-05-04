@@ -96,7 +96,7 @@ services:
     ports:
       - "5055:5055"
     volumes:
-      - {{ arr_config_path }}/seerr:/seerr
+      - {{ arr_config_path }}/seerr:/app/config
     environment:
       TZ: "{{ arr_tz }}"
 
