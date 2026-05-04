@@ -23,7 +23,7 @@ TOKEN=<root_token>
 
 - `cloudflare_api_token` — [dash.cloudflare.com](https://dash.cloudflare.com) → My Profile → API Tokens → Create Token → *Edit zone DNS* template → scope to `mol.la`
 - `cloudflare_tunnel_token` — Zero Trust → Networks → Tunnels → your tunnel → Configure → Docker command → copy the `--token` value
-- `caddy_cloudflare_email` — your Cloudflare account email
+- `cloudflare_account_email` — your Cloudflare account email
 
 ```bash
 curl -s -X POST $VAULT/v1/kv/homelab/data/caddy \
@@ -33,7 +33,7 @@ curl -s -X POST $VAULT/v1/kv/homelab/data/caddy \
     "data": {
       "cloudflare_api_token": "YOUR_CF_API_TOKEN",
       "cloudflare_tunnel_token": "YOUR_TUNNEL_TOKEN",
-      "caddy_cloudflare_email": "you@example.com"
+      "cloudflare_account_email": "you@example.com"
     }
   }'
 ```

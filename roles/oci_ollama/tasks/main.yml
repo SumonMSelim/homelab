@@ -1,0 +1,54 @@
+---
+- name: Ensure Ollama environment file is current
+  ansible.builtin.copy:
+    dest: /etc/ollama/environment
+    owner: root
+    group: ollama
+    mode: "0600"
+    content: |
+      # Bind to all interfaces — UFW restricts access to tailscale0 only.
+      OLLAMA_HOST=0.0.0.0:{{ ollama_port }}
+      OLLAMA_MODELS={{ ollama_models_dir }}
+      OLLAMA_MAX_LOADED_MODELS={{ ollama_max_loaded_models }}
+      OLLAMA_KEEP_ALIVE={{ ollama_keep_alive }}
+      OLLAMA_NUM_PARALLEL={{ ollama_num_parallel }}
+  notify: Restart Ollama
+
+- name: Ensure Ollama service is running and enabled
+  ansible.builtin.systemd:
+    name: ollama
+    state: started
+    enabled: true
+
+- name: Wait for Ollama API to be ready
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ ollama_port }}/"
+    status_code: 200
+  register: ollama_ready
+  retries: 12
+  delay: 5
+  until: ollama_ready.status == 200
+
+- name: Pull {{ ollama_model }} (idempotent)
+  ansible.builtin.command:
+    cmd: ollama pull {{ ollama_model }}
+  become: true
+  become_user: ollama
+  environment:
+    HOME: /var/lib/ollama
+  register: pull_result
+  changed_when: "'already up to date' not in pull_result.stdout"
+
+- name: Allow Prometheus to scrape node-exporter
+  community.general.ufw:
+    rule: allow
+    port: "9100"
+    proto: tcp
+    src: "{{ prometheus_host }}"
+
+- name: Ensure prometheus-node-exporter is running and enabled
+  ansible.builtin.systemd:
+    name: prometheus-node-exporter
+    state: started
+    enabled: true
+

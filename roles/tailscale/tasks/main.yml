@@ -1,0 +1,64 @@
+---
+- name: Fetch Tailscale auth key from Vault
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    path: "{{ tailscale_vault_secret_path }}"
+    auth_method: approle
+    role_id: "{{ vault_role_id }}"
+    secret_id: "{{ vault_secret_id }}"
+  register: tailscale_vault_secret
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: Set Tailscale auth key
+  ansible.builtin.set_fact:
+    tailscale_auth_key: "{{ tailscale_vault_secret.data.data.data.auth_key }}"
+  no_log: true
+
+- name: Install Tailscale apt signing key
+  ansible.builtin.get_url:
+    url: https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg
+    dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    mode: "0644"
+
+- name: Add Tailscale apt repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/tailscale.list
+    mode: "0644"
+    content: |
+      deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/ubuntu noble main
+
+- name: Install Tailscale
+  ansible.builtin.apt:
+    name: tailscale
+    state: present
+    update_cache: true
+
+- name: Enable and start tailscaled
+  ansible.builtin.systemd:
+    name: tailscaled
+    state: started
+    enabled: true
+
+- name: Check if already connected to Tailscale
+  ansible.builtin.command: tailscale status --json
+  register: tailscale_status_raw
+  changed_when: false
+  no_log: true
+
+- name: Parse Tailscale connection state
+  ansible.builtin.set_fact:
+    tailscale_connected: "{{ (tailscale_status_raw.stdout | from_json).BackendState == 'Running' }}"
+  no_log: true
+
+- name: Connect to Tailscale
+  ansible.builtin.command: >
+    tailscale up
+    --authkey={{ tailscale_auth_key }}
+    --hostname={{ inventory_hostname }}
+    --advertise-tags={{ tailscale_tags }}
+    {{ tailscale_args }}
+  when: not tailscale_connected
+  no_log: true
+  notify: Confirm Tailscale connected

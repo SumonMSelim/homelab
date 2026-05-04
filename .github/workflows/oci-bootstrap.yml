@@ -1,0 +1,109 @@
+name: OCI Bootstrap
+
+on:
+  workflow_dispatch:
+    inputs:
+      bucket_name:
+        description: "State bucket name"
+        required: true
+        default: "homelab-tfstate"
+      secret_key_display_name:
+        description: "Customer Secret Key display name"
+        required: true
+        default: "github-actions-tfstate"
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    name: Create state bucket + secret key
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install OCI CLI
+        run: |
+          pip install oci-cli --quiet
+
+      - name: Configure OCI CLI
+        run: |
+          mkdir -p ~/.oci
+          echo "${{ secrets.OCI_PRIVATE_KEY_CONTENT }}" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          cat > ~/.oci/config << EOF
+          [DEFAULT]
+          user=${{ secrets.OCI_USER_OCID }}
+          fingerprint=${{ secrets.OCI_FINGERPRINT }}
+          tenancy=${{ secrets.OCI_TENANCY_OCID }}
+          region=${{ vars.OCI_REGION }}
+          key_file=~/.oci/oci_api_key.pem
+          EOF
+          chmod 600 ~/.oci/config
+
+      - name: Create state bucket (idempotent)
+        run: |
+          BUCKET="${{ github.event.inputs.bucket_name }}"
+          COMPARTMENT="${{ secrets.OCI_COMPARTMENT_OCID }}"
+
+          # Check if bucket exists
+          if oci os bucket get --bucket-name "$BUCKET" --namespace "${{ vars.OCI_STATE_NAMESPACE }}" > /dev/null 2>&1; then
+            echo "Bucket $BUCKET already exists — skipping creation."
+          else
+            echo "Creating bucket $BUCKET..."
+            oci os bucket create \
+              --compartment-id "$COMPARTMENT" \
+              --name "$BUCKET" \
+              --namespace "${{ vars.OCI_STATE_NAMESPACE }}" \
+              --versioning Enabled \
+              --storage-tier Standard
+            echo "Bucket created."
+          fi
+
+      - name: Create Customer Secret Key
+        id: secret_key
+        run: |
+          USER_OCID="${{ secrets.OCI_USER_OCID }}"
+          DISPLAY_NAME="${{ github.event.inputs.secret_key_display_name }}"
+
+          echo "Creating Customer Secret Key '$DISPLAY_NAME'..."
+          RESULT=$(oci iam customer-secret-key create \
+            --user-id "$USER_OCID" \
+            --display-name "$DISPLAY_NAME")
+
+          # Extract values — key secret is only shown once at creation
+          KEY_ID=$(echo "$RESULT" | jq -r '.data.id')
+          KEY_SECRET=$(echo "$RESULT" | jq -r '.data.key')
+
+          # Mask values in logs
+          echo "::add-mask::$KEY_ID"
+          echo "::add-mask::$KEY_SECRET"
+
+          echo "key_id=$KEY_ID" >> "$GITHUB_OUTPUT"
+          echo "key_secret=$KEY_SECRET" >> "$GITHUB_OUTPUT"
+          echo "Customer Secret Key created (ID masked)."
+
+      - name: Set GHA secrets via GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          REPO="${{ github.repository }}"
+          gh secret set OCI_STATE_ACCESS_KEY \
+            --body "${{ steps.secret_key.outputs.key_id }}" \
+            --repo "$REPO"
+          gh secret set OCI_STATE_SECRET_KEY \
+            --body "${{ steps.secret_key.outputs.key_secret }}" \
+            --repo "$REPO"
+          echo "OCI_STATE_ACCESS_KEY and OCI_STATE_SECRET_KEY set in repository secrets."
+
+      - name: Summary
+        run: |
+          echo "### Bootstrap complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Resource | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| State bucket \`${{ github.event.inputs.bucket_name }}\` | ✅ Ready |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Customer Secret Key \`${{ github.event.inputs.secret_key_display_name }}\` | ✅ Created |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| \`OCI_STATE_ACCESS_KEY\` GHA secret | ✅ Set |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| \`OCI_STATE_SECRET_KEY\` GHA secret | ✅ Set |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Run **OCI AI Inference → apply** to provision the instance." >> "$GITHUB_STEP_SUMMARY"

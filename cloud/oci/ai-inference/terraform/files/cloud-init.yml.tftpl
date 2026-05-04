@@ -1,0 +1,133 @@
+#cloud-config
+# Bootstraps: Tailscale, Ollama, ${ollama_model}, node-exporter, UFW hardening.
+# Runs once on first boot. Subsequent config managed by Ansible.
+
+hostname: ${hostname}
+manage_etc_hosts: true
+
+package_update: true
+package_upgrade: true
+packages:
+  - curl
+  - ufw
+  - iptables-persistent
+  - prometheus-node-exporter
+  - ca-certificates
+  - gnupg
+
+write_files:
+  - path: /etc/ollama/environment
+    permissions: "0600"
+    owner: root:root
+    content: |
+      # Bind to all interfaces — UFW restricts access to tailscale0 only.
+      OLLAMA_HOST=0.0.0.0:11434
+      OLLAMA_MODELS=/var/lib/ollama/models
+      OLLAMA_MAX_LOADED_MODELS=1
+      OLLAMA_KEEP_ALIVE=10m
+      OLLAMA_NUM_PARALLEL=1
+
+  - path: /etc/systemd/system/ollama.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Ollama Service
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      User=ollama
+      Group=ollama
+      EnvironmentFile=/etc/ollama/environment
+      ExecStart=/usr/local/bin/ollama serve
+      Restart=always
+      RestartSec=3
+      StandardOutput=journal
+      StandardError=journal
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /usr/local/bin/pull-ollama-model.sh
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      MODEL="${ollama_model}"
+      echo "[pull-model] Waiting for Ollama API..."
+      for i in $(seq 1 30); do
+        if curl -sf http://127.0.0.1:11434/ > /dev/null 2>&1; then
+          break
+        fi
+        sleep 5
+      done
+      echo "[pull-model] Pulling $MODEL..."
+      /usr/local/bin/ollama pull "$MODEL"
+      echo "[pull-model] Done."
+
+  - path: /etc/systemd/system/ollama-pull-model.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Pull Ollama model on first boot
+      After=ollama.service network-online.target
+      Wants=ollama.service network-online.target
+      ConditionPathExists=!/var/lib/ollama/.model-pulled
+
+      [Service]
+      Type=oneshot
+      User=ollama
+      Environment=HOME=/var/lib/ollama
+      ExecStart=/usr/local/bin/pull-ollama-model.sh
+      ExecStartPost=/bin/touch /var/lib/ollama/.model-pulled
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  # ── Tailscale ──────────────────────────────────────────────────────────────
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg > /dev/null
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list
+  - apt-get update -qq
+  - apt-get install -y tailscale
+  - systemctl enable --now tailscaled
+  - tailscale up --authkey="${tailscale_auth_key}" --hostname="${hostname}" --advertise-tags="tag:homelab" --accept-dns=false
+
+  # ── Ollama ─────────────────────────────────────────────────────────────────
+  # Download the official ARM64 binary directly (avoids pipe-to-shell).
+  - curl -fsSL https://github.com/ollama/ollama/releases/latest/download/ollama-linux-arm64 -o /usr/local/bin/ollama
+  - chmod +x /usr/local/bin/ollama
+  # Create ollama system user and model storage directory
+  - useradd -r -s /bin/false -m -d /var/lib/ollama ollama 2>/dev/null || true
+  - mkdir -p /var/lib/ollama/models /etc/ollama
+  - chown -R ollama:ollama /var/lib/ollama
+  # /etc/ollama/environment was written above; fix ownership now that user exists
+  - chown root:ollama /etc/ollama/environment
+  - systemctl daemon-reload
+  - systemctl enable --now ollama
+  - systemctl enable ollama-pull-model.service
+  - systemctl start ollama-pull-model.service
+
+  # ── node-exporter ──────────────────────────────────────────────────────────
+  - systemctl enable --now prometheus-node-exporter
+
+  # ── UFW ────────────────────────────────────────────────────────────────────
+  # OCI security list is the outer firewall; UFW is defence-in-depth.
+  # Ollama (11434) and node-exporter (9100) are reachable via Tailscale only.
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  # Allow all traffic on the Tailscale interface (covers 11434, 9100, SSH via Tailscale)
+  - ufw allow in on tailscale0 to any
+  # Allow Tailscale WireGuard handshake and DERP relay on the public interface
+  - ufw allow 41641/udp comment 'Tailscale WireGuard'
+  - ufw allow 443/tcp comment 'Tailscale DERP relay'
+  - ufw --force enable
+
+  # ── Flush OCI default iptables rules ───────────────────────────────────────
+  # OCI Ubuntu images ship with permissive iptables ACCEPT rules that would
+  # bypass UFW. Flush them AFTER UFW is enabled so there is no open window.
+  # iptables-persistent (installed above) ensures UFW rules survive reboots.
+  - iptables -F INPUT
+  - iptables -F FORWARD
+  - netfilter-persistent save

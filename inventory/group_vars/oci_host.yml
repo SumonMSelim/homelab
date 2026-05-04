@@ -1,0 +1,6 @@
+---
+# OCI A1 Flex AI inference node.
+# Connects via Tailscale hostname — not a LAN IP like other homelab hosts.
+# The instance uses 'ubuntu' (not 'root') as the default user on Ubuntu 24.04.
+ansible_user: ubuntu
+ansible_python_interpreter: /usr/bin/python3

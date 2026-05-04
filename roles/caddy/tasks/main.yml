@@ -16,7 +16,7 @@
   ansible.builtin.set_fact:
     cloudflare_api_token: "{{ caddy_vault_secret.data.data.data.cloudflare_api_token }}"
     cloudflare_tunnel_token: "{{ caddy_vault_secret.data.data.data.cloudflare_tunnel_token }}"
-    caddy_cloudflare_email: "{{ caddy_vault_secret.data.data.data.caddy_cloudflare_email | default('') }}"
+    cloudflare_account_email: "{{ caddy_vault_secret.data.data.data.cloudflare_account_email | default('') }}"
   no_log: true
 
 - name: Ensure compose project directory exists

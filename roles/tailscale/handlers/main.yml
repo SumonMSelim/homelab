@@ -1,0 +1,4 @@
+---
+- name: Confirm Tailscale connected
+  ansible.builtin.command: tailscale status
+  changed_when: false

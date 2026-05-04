@@ -35,6 +35,17 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Terraform
+*.tfvars
+!*.tfvars.example
+backend.hcl
+!backend.hcl.example
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfplan
+
 # Logs and temp
 *.log
 *.tmp

@@ -1,0 +1,25 @@
+# Copy to terraform.tfvars and fill in values.
+# terraform.tfvars is gitignored — never commit it.
+
+tenancy_ocid     = "ocid1.tenancy.oc1..example"
+user_ocid        = "ocid1.user.oc1..example"
+fingerprint      = "aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99"
+private_key_path = "~/.oci/oci_api_key.pem"
+region           = "eu-frankfurt-1"
+
+compartment_ocid    = "ocid1.compartment.oc1..example"
+availability_domain = "XoEF:EU-FRANKFURT-1-AD-1"
+
+# cat ~/.ssh/id_ed25519.pub
+ssh_public_key = "ssh-ed25519 AAAA... user@host"
+
+# Generate at: https://login.tailscale.com/admin/settings/keys
+# Use ephemeral + pre-approved + tag:homelab
+tailscale_auth_key = "tskey-auth-..."
+
+instance_display_name = "oci-ai-inference"
+boot_volume_size_gb   = 100
+ollama_model          = "qwen3.6:27b"
+
+vcn_cidr    = "10.10.0.0/16"
+subnet_cidr = "10.10.0.0/24"

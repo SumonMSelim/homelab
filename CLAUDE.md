@@ -143,15 +143,16 @@ Install before first run: `ansible-galaxy install -r requirements.yml`
 
 All secrets live under `kv/homelab/data/<service>` (kv-v2 engine):
 
-| Path                          | Keys                                  |
-|-------------------------------|---------------------------------------|
-| `kv/homelab/data/postgresql`  | `homelab_password`, `immich_password` |
-| `kv/homelab/data/redis`       | `password`                            |
-| `kv/homelab/data/mysql`       | `mysql_password`                      |
-| `kv/homelab/data/grafana`     | `client_id`, `client_secret` (OIDC)   |
-| `kv/homelab/data/immich_oidc` | `client_id`, `client_secret` (OIDC)   |
-| `kv/homelab/data/pve-exporter`| `user`, `token_name`, `token_value`   |
-| `kv/homelab/data/caddy`       | `cloudflare_api_token`, `cloudflare_tunnel_token`, `caddy_cloudflare_email` |
-| `kv/homelab/data/pocketid`    | `pocketid_encryption_key`, `tinyauth_pocketid_client_id`, `tinyauth_pocketid_client_secret`, `pocketid_maxmind_license_key` |
+| Path                           | Keys                                                                                                                        |
+|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| `kv/homelab/data/postgresql`   | `homelab_password`, `immich_password`                                                                                       |
+| `kv/homelab/data/redis`        | `password`                                                                                                                  |
+| `kv/homelab/data/mysql`        | `mysql_password`                                                                                                            |
+| `kv/homelab/data/grafana`      | `client_id`, `client_secret` (OIDC)                                                                                         |
+| `kv/homelab/data/immich_oidc`  | `client_id`, `client_secret` (OIDC)                                                                                         |
+| `kv/homelab/data/pve-exporter` | `user`, `token_name`, `token_value`                                                                                         |
+| `kv/homelab/data/caddy`        | `cloudflare_api_token`, `cloudflare_tunnel_token`, `cloudflare_account_email`                                               |
+| `kv/homelab/data/pocketid`     | `pocketid_encryption_key`, `tinyauth_pocketid_client_id`, `tinyauth_pocketid_client_secret`, `pocketid_maxmind_license_key` |
+| `kv/homelab/data/tailscale`    | `auth_key`                                                                                                                  |
 
 Vault reads always use `delegate_to: localhost` + `become: false` (runs on Ansible control, not target host).

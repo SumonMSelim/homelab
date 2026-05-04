@@ -1,0 +1,23 @@
+# Copy to backend.hcl and fill in values for local terraform init.
+# In CI these are passed via -backend-config flags in the workflow.
+# backend.hcl is gitignored.
+
+bucket   = "homelab-tfstate"
+key      = "oci-ai-inference/terraform.tfstate"
+region   = "eu-frankfurt-1"
+
+# OCI Object Storage S3-compat endpoint.
+# Format: https://<namespace>.compat.objectstorage.<region>.oraclecloud.com
+endpoint = "https://<namespace>.compat.objectstorage.eu-frankfurt-1.oraclecloud.com"
+
+# Customer Secret Key (IAM → User → Customer Secret Keys)
+access_key = "YOUR_CUSTOMER_SECRET_KEY_ID"
+secret_key = "YOUR_CUSTOMER_SECRET_KEY_SECRET"
+
+# Required for OCI S3-compat backend
+skip_region_validation      = true
+skip_credentials_validation = true
+skip_metadata_api_check     = true
+skip_requesting_account_id  = true
+force_path_style            = true
+use_lockfile                = true

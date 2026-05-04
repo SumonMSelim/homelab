@@ -1,0 +1,7 @@
+---
+# Extra Prometheus node targets not in proxmox_containers.
+# Requires the Prometheus host to resolve these hostnames via Tailscale MagicDNS,
+# or replace with static Tailscale IPs (100.x.x.x) if MagicDNS is unavailable.
+prometheus_extra_node_targets:
+  - addr: "oci-ai-inference:9100"
+    name: oci-ai-inference
