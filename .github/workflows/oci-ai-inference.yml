@@ -1,10 +1,6 @@
 name: OCI AI Inference
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "cloud/oci/ai-inference/terraform/**"
   workflow_dispatch:
     inputs:
       action:
@@ -56,7 +52,7 @@ jobs:
             -backend-config="bucket=${TF_BACKEND_BUCKET}" \
             -backend-config="key=${TF_BACKEND_KEY}" \
             -backend-config="region=${TF_BACKEND_REGION}" \
-            -backend-config="endpoint=${TF_BACKEND_ENDPOINT}" \
+            -backend-config="endpoints={s3=\"${TF_BACKEND_ENDPOINT}\"}" \
             -backend-config="access_key=${{ secrets.OCI_STATE_ACCESS_KEY }}" \
             -backend-config="secret_key=${{ secrets.OCI_STATE_SECRET_KEY }}" \
             -backend-config="skip_region_validation=true" \
