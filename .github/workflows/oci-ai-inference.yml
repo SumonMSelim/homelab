@@ -98,7 +98,26 @@ jobs:
           TF_VAR_availability_domain: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
           TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
           TF_VAR_tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY_OCI }}
-        run: terraform apply -auto-approve -input=false tfplan
+        run: |
+          # OCI Always-Free A1 capacity is often constrained — retry until available.
+          for attempt in $(seq 1 20); do
+            echo "Apply attempt $attempt/20..."
+            if terraform apply -auto-approve -input=false tfplan; then
+              echo "Apply succeeded."
+              exit 0
+            fi
+            if terraform show -json errored.tfstate 2>/dev/null | grep -q "Out of host capacity"; then
+              echo "Out of capacity — waiting 5 min before retry..."
+              sleep 300
+              # Re-plan to get fresh tfplan before next attempt
+              terraform plan -out=tfplan -input=false
+            else
+              echo "Apply failed for non-capacity reason — aborting."
+              exit 1
+            fi
+          done
+          echo "All 20 attempts exhausted."
+          exit 1
 
       - name: Terraform Destroy
         if: >
