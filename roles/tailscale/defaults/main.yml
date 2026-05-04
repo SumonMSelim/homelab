@@ -1,0 +1,4 @@
+---
+tailscale_vault_secret_path: "kv/homelab/data/tailscale"
+tailscale_args: "--accept-dns=false"
+tailscale_tags: "tag:homelab"

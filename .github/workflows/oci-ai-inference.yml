@@ -1,0 +1,122 @@
+name: OCI AI Inference
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cloud/oci/ai-inference/terraform/**"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Terraform action"
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+permissions:
+  contents: read
+
+env:
+  TF_VERSION: "1.15.1"
+  TF_WORKING_DIR: cloud/oci/ai-inference/terraform
+  # OCI S3-compat backend
+  TF_BACKEND_BUCKET: ${{ vars.OCI_STATE_BUCKET }}
+  TF_BACKEND_KEY: "oci-ai-inference/terraform.tfstate"
+  TF_BACKEND_REGION: ${{ vars.OCI_REGION }}
+  TF_BACKEND_ENDPOINT: "https://${{ vars.OCI_STATE_NAMESPACE }}.compat.objectstorage.${{ vars.OCI_REGION }}.oraclecloud.com"
+
+jobs:
+  terraform:
+    name: Terraform ${{ github.event.inputs.action || 'plan' }}
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Write OCI API private key
+        run: |
+          mkdir -p ~/.oci
+          echo "${{ secrets.OCI_PRIVATE_KEY_CONTENT }}" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${TF_BACKEND_BUCKET}" \
+            -backend-config="key=${TF_BACKEND_KEY}" \
+            -backend-config="region=${TF_BACKEND_REGION}" \
+            -backend-config="endpoint=${TF_BACKEND_ENDPOINT}" \
+            -backend-config="access_key=${{ secrets.OCI_STATE_ACCESS_KEY }}" \
+            -backend-config="secret_key=${{ secrets.OCI_STATE_SECRET_KEY }}" \
+            -backend-config="skip_region_validation=true" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_requesting_account_id=true" \
+            -backend-config="force_path_style=true" \
+            -backend-config="use_lockfile=true"
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          TF_VAR_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+          TF_VAR_user_ocid: ${{ secrets.OCI_USER_OCID }}
+          TF_VAR_fingerprint: ${{ secrets.OCI_FINGERPRINT }}
+          TF_VAR_private_key_content: ${{ secrets.OCI_PRIVATE_KEY_CONTENT }}
+          TF_VAR_region: ${{ vars.OCI_REGION }}
+          TF_VAR_compartment_ocid: ${{ secrets.OCI_COMPARTMENT_OCID }}
+          TF_VAR_availability_domain: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
+          TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
+          TF_VAR_tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY_OCI }}
+        run: terraform plan -out=tfplan -input=false
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.TF_WORKING_DIR }}/tfplan
+          retention-days: 1
+
+      - name: Terraform Apply
+        if: >
+          github.event.inputs.action == 'apply' &&
+          github.ref == 'refs/heads/main'
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          TF_VAR_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+          TF_VAR_user_ocid: ${{ secrets.OCI_USER_OCID }}
+          TF_VAR_fingerprint: ${{ secrets.OCI_FINGERPRINT }}
+          TF_VAR_private_key_content: ${{ secrets.OCI_PRIVATE_KEY_CONTENT }}
+          TF_VAR_region: ${{ vars.OCI_REGION }}
+          TF_VAR_compartment_ocid: ${{ secrets.OCI_COMPARTMENT_OCID }}
+          TF_VAR_availability_domain: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
+          TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
+          TF_VAR_tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY_OCI }}
+        run: terraform apply -auto-approve -input=false tfplan
+
+      - name: Terraform Destroy
+        if: >
+          github.event.inputs.action == 'destroy' &&
+          github.ref == 'refs/heads/main'
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          TF_VAR_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+          TF_VAR_user_ocid: ${{ secrets.OCI_USER_OCID }}
+          TF_VAR_fingerprint: ${{ secrets.OCI_FINGERPRINT }}
+          TF_VAR_private_key_content: ${{ secrets.OCI_PRIVATE_KEY_CONTENT }}
+          TF_VAR_region: ${{ vars.OCI_REGION }}
+          TF_VAR_compartment_ocid: ${{ secrets.OCI_COMPARTMENT_OCID }}
+          TF_VAR_availability_domain: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
+          TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
+          TF_VAR_tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY_OCI }}
+        run: terraform destroy -auto-approve -input=false

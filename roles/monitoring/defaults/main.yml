@@ -12,6 +12,10 @@ prometheus_scrape_jobs:
 prometheus_node_exporter_port: 9100
 proxmox_host_ip: "192.168.178.110"
 
+# Extra node targets not in proxmox_containers (e.g. OCI, VPS).
+# Each entry: { addr: "<host>:<port>", name: "<label>" }
+prometheus_extra_node_targets: []
+
 prometheus_immich_targets:
   - { addr: "{{ prometheus_immich_host | default('192.168.178.142') }}:8081", name: "immich-api" }
   - { addr: "{{ prometheus_immich_host | default('192.168.178.142') }}:8082", name: "immich-microservices" }

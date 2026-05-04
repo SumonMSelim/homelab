@@ -29,6 +29,11 @@
   loop_control:
     label: "{{ item.hostname }}"
 
+- name: Append extra node targets (non-Proxmox hosts)
+  ansible.builtin.set_fact:
+    prometheus_node_targets: "{{ prometheus_node_targets + prometheus_extra_node_targets }}"
+  when: prometheus_extra_node_targets | length > 0
+
 - name: Deploy prometheus.yml
   ansible.builtin.template:
     src: prometheus.yml.j2

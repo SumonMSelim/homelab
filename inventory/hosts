@@ -76,7 +76,12 @@ timothy ansible_host=192.168.178.251
 [humaun_host]
 humaun ansible_host=192.168.178.252
 
-# --- Children (groups) ---
+# OCI A1 Flex — AI inference (Tailscale hostname, not LAN IP)
+# Intentionally excluded from [all_nodes]: OCI nodes are not in proxmox_containers
+# and are not scraped by the auto-derived node_exporter targets. Prometheus scrape
+# config is deployed separately via the oci_ollama Ansible role.
+[oci_host]
+oci-ai-inference ansible_host=oci-ai-inference
 
 [core:children]
 ansible_host

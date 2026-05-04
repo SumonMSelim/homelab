@@ -1,0 +1,9 @@
+---
+# Deploy and configure Ollama on OCI A1 Flex instance.
+# Requires Tailscale connectivity to the target host.
+# Usage: ansible-playbook cloud/oci/ai-inference/ansible/playbooks/deploy_oci_ollama.yml
+- name: Configure OCI AI inference node
+  hosts: oci_host
+  become: true
+  roles:
+    - role: oci_ollama

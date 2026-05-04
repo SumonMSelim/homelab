@@ -1,0 +1,12 @@
+---
+# Install and connect Tailscale on one or more hosts.
+# Skips hosts already connected. Safe to run repeatedly.
+#
+# Usage:
+#   ansible-playbook deployments/deploy_tailscale.yml -e "@vars/vault_auth_vars.yml" --limit monitoring
+#   ansible-playbook deployments/deploy_tailscale.yml -e "@vars/vault_auth_vars.yml" --limit monitoring,caddy
+- name: Deploy Tailscale
+  hosts: "{{ target_hosts | default('all') }}"
+  become: true
+  roles:
+    - tailscale

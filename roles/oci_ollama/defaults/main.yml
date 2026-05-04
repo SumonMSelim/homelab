@@ -1,0 +1,13 @@
+---
+ollama_model: "qwen3.6:27b"
+ollama_port: 11434
+ollama_keep_alive: "10m"
+ollama_max_loaded_models: 1
+ollama_num_parallel: 1
+ollama_models_dir: "/var/lib/ollama/models"
+
+# Prometheus monitoring host IP (matches homelab inventory)
+prometheus_host: "192.168.178.124"
+
+# Tailscale hostname registered at provisioning time
+oci_hostname: "oci-ai-inference"
