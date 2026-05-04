@@ -1,5 +1,5 @@
 ---
-# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Bazarr, Jellyseerr
+# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Bazarr, Seerr
 # Deploys in a single Docker Compose stack inside an LXC.
 
 # Docker images (linuxserver.io)
@@ -8,7 +8,7 @@ arr_prowlarr_image: lscr.io/linuxserver/prowlarr:latest
 arr_radarr_image: lscr.io/linuxserver/radarr:latest
 arr_sonarr_image: lscr.io/linuxserver/sonarr:latest
 arr_bazarr_image: lscr.io/linuxserver/bazarr:latest
-arr_jellyseerr_image: fallenbagel/jellyseerr:latest
+arr_seerr_image: ghcr.io/seerr-team/seerr:latest
 
 # Ports
 arr_sabnzbd_port: 8080
@@ -16,7 +16,7 @@ arr_prowlarr_port: 9696
 arr_radarr_port: 7878
 arr_sonarr_port: 8989
 arr_bazarr_port: 6767
-arr_jellyseerr_port: 5055
+arr_seerr_port: 5055
 
 # User/Group IDs (PUID/PGID) — adjust to match media ownership on the host
 arr_uid: 1000

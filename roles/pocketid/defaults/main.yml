@@ -1,3 +1,6 @@
 ---
 # Vault path for PocketID secrets (pocketid_encryption_key, tinyauth_pocketid_client_id, tinyauth_pocketid_client_secret)
 pocketid_vault_secret_path: "kv/homelab/data/pocketid"
+
+pocketid_image: "ghcr.io/pocket-id/pocket-id:v2.6.2"
+tinyauth_image: "ghcr.io/steveiliop56/tinyauth:v4"
