@@ -131,33 +131,7 @@ vault_secret_id: "<from output>"
 
 ### 5. Seed secrets in Vault
 
-Before deploying services, store their secrets:
-
-```bash
-# Caddy
-vault kv put kv/homelab/data/caddy \
-  cloudflare_api_token="..." cloudflare_tunnel_token="..." caddy_cloudflare_email="..."
-
-# PocketID
-vault kv put kv/homelab/data/pocketid \
-  pocketid_encryption_key="$(openssl rand -base64 32)" \
-  tinyauth_pocketid_client_id="..." tinyauth_pocketid_client_secret="..." \
-  pocketid_maxmind_license_key=""
-
-# Databases
-vault kv put kv/homelab/data/postgresql immich="<password>"
-vault kv put kv/homelab/data/redis password="<password>"
-vault kv put kv/homelab/data/mysql root="<password>"
-vault kv put kv/homelab/data/mongodb admin="<password>"
-
-# Grafana OIDC
-vault kv put kv/homelab/data/grafana client_id="..." client_secret="..."
-
-# PVE Exporter
-vault kv put kv/homelab/data/pve_exporter user="..." password="..."
-```
-
-See each `vars/*.example` file for the full list of expected keys.
+See **[docs/seeding-vault-secrets.md](docs/seeding-vault-secrets.md)** for the full guide including how to obtain each token/credential and curl commands for every service.
 
 ### 6. Core services
 
