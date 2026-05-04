@@ -47,6 +47,8 @@ These services use explicit version vars in `roles/<service>/defaults/main.yml` 
 | `vault`        | `vault_version`        |
 | `mongodb`      | `mongodb_version`      |
 | `pve-exporter` | `pve_exporter_version` |
+| `pocketid`     | `pocketid_image`       |
+| `tinyauth`     | `tinyauth_image`       |
 
 ## Architecture
 
@@ -73,10 +75,10 @@ vars/                    → runtime secrets/config (gitignored); *.example file
 | 192.168.178.131 | MariaDB                           | systemd apt    |
 | 192.168.178.132 | Redis                             | systemd apt    |
 | 192.168.178.133 | MongoDB                           | systemd apt    |
+| 192.168.178.125 | LLM (Ollama + Gemma 4)            | Docker Compose |
 | 192.168.178.140 | Jellyfin                          | Docker Compose |
 | 192.168.178.141 | *arr stack                        | Docker Compose |
 | 192.168.178.142 | Immich                            | Docker Compose |
-| 192.168.178.125 | LLM (Ollama + Gemma 4)            | Docker Compose |
 | 192.168.178.250 | Dash (Open WebUI + dashboards)    | Docker Compose |
 | 192.168.178.251 | OpenClaw AI agent                 | Node.js        |
 | 192.168.178.252 | Humaun                            | Docker Compose |

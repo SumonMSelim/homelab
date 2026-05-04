@@ -1,6 +1,6 @@
 services:
   tinyauth:
-    image: ghcr.io/steveiliop56/tinyauth:v4
+    image: {{ tinyauth_image }}
     container_name: tinyauth-{{ inventory_hostname }}
     restart: unless-stopped
     # We map to the internal Docker IP or specific host IP for Caddy
@@ -24,7 +24,7 @@ services:
       TRUSTED_PROXIES: "192.168.178.121,127.0.0.1,::1"
 
   pocketid:
-    image: ghcr.io/pocket-id/pocket-id:v2
+    image: {{ pocketid_image }}
     container_name: pocketid-{{ inventory_hostname }}
     restart: unless-stopped
     ports:

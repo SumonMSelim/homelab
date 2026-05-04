@@ -1,4 +1,4 @@
-# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Bazarr, Jellyseerr
+# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Bazarr, Seerr
 # Media directories must be bind-mounted into the LXC from Proxmox (same as Jellyfin).
 services:
   # SABnzbd - Usenet downloader
@@ -85,20 +85,19 @@ services:
       PGID: "{{ arr_gid }}"
       TZ: "{{ arr_tz }}"
 
-  # Jellyseerr - Request frontend for Jellyfin
+  # Seerr - Media request frontend (migrated from Jellyseerr)
   # Access at :5055 — connect to Jellyfin (https://media.mol.la), Radarr (http://radarr:7878),
   # Sonarr (http://sonarr:8989) during setup for requests to auto-add
-  jellyseerr:
-    image: fallenbagel/jellyseerr:latest
-    container_name: jellyseerr-{{ inventory_hostname }}
+  seerr:
+    image: {{ arr_seerr_image }}
+    container_name: seerr-{{ inventory_hostname }}
     restart: unless-stopped
+    init: true
     ports:
       - "5055:5055"
     volumes:
-      - {{ arr_config_path }}/jellyseerr:/app/config
+      - {{ arr_config_path }}/seerr:/seerr
     environment:
-      PUID: "{{ arr_uid }}"
-      PGID: "{{ arr_gid }}"
       TZ: "{{ arr_tz }}"
 
 # Shared network for inter-container communication
