@@ -1,0 +1,89 @@
+#cloud-config
+hostname: ${hostname}
+manage_etc_hosts: true
+
+packages:
+  - curl
+  - ufw
+  - git
+  - python3-pip
+  - iptables-persistent
+  - netfilter-persistent
+
+runcmd:
+  # Flush default OCI iptables rules that block traffic
+  - iptables -F INPUT
+  - iptables -F FORWARD
+  - netfilter-persistent save
+
+  # UFW baseline
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 41641/udp
+  - ufw allow 443/tcp
+  - ufw --force enable
+
+  # Tailscale
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list
+  - apt-get update -y
+  - apt-get install -y tailscale
+  - tailscale up --authkey=${tailscale_auth_key} --hostname=${hostname} --advertise-tags=tag:homelab --accept-dns=false
+
+%{ if !use_vllm }
+  # Ollama (CPU / ARM)
+  - curl -fsSL https://ollama.com/install.sh | sh
+  - systemctl enable ollama
+  - systemctl start ollama
+  - sleep 10
+  - HOME=/var/lib/ollama ollama pull ${ollama_model}
+%{ endif }
+
+%{ if use_vllm }
+  # CUDA drivers + vLLM (GPU)
+  - apt-get install -y python3-pip
+  - pip install vllm
+  - |
+    cat > /etc/systemd/system/vllm.service << 'EOF'
+    [Unit]
+    Description=vLLM OpenAI-compatible server
+    After=network.target
+
+    [Service]
+    ExecStart=/usr/local/bin/python3 -m vllm.entrypoints.openai.api_server \
+      --model ${vllm_model} \
+      --host 0.0.0.0 \
+      --port 11434 \
+      --max-model-len 8192
+    Restart=on-failure
+    Environment=HOME=/root
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+  - systemctl daemon-reload
+  - systemctl enable vllm
+  - systemctl start vllm
+%{ endif }
+
+  # Allow Prometheus scrape from homelab monitoring
+  - ufw allow from 192.168.178.124 to any port 9100
+
+  # node-exporter
+  - curl -fsSL https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz | tar xz -C /usr/local/bin --strip-components=1 node_exporter-1.8.2.linux-amd64/node_exporter
+  - |
+    cat > /etc/systemd/system/node_exporter.service << 'EOF'
+    [Unit]
+    Description=Prometheus node exporter
+    After=network.target
+
+    [Service]
+    ExecStart=/usr/local/bin/node_exporter
+    Restart=on-failure
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+  - systemctl daemon-reload
+  - systemctl enable node_exporter
+  - systemctl start node_exporter
