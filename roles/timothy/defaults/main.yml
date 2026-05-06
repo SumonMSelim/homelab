@@ -1,0 +1,5 @@
+---
+hermes_image: "ghcr.io/nousresearch/hermes-agent:latest"
+hermes_data_dir: "/opt/hermes/data"
+hermes_uid: 1000
+hermes_gid: 1000

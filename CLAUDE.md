@@ -75,12 +75,11 @@ vars/                    → runtime secrets/config (gitignored); *.example file
 | 192.168.178.131 | MariaDB                           | systemd apt    |
 | 192.168.178.132 | Redis                             | systemd apt    |
 | 192.168.178.133 | MongoDB                           | systemd apt    |
-| 192.168.178.125 | LLM (Ollama + Gemma 4)            | Docker Compose |
+| 192.168.178.125 | Timothy (Hermes AI agent)         | Docker Compose |
 | 192.168.178.140 | Jellyfin                          | Docker Compose |
 | 192.168.178.141 | *arr stack                        | Docker Compose |
 | 192.168.178.142 | Immich                            | Docker Compose |
 | 192.168.178.250 | Dash (Dashboard)                  | Docker Compose |
-| 192.168.178.251 | Timothy (OpenClaw AI agent)       | Node.js        |
 | 192.168.178.252 | Humaun                            | Docker Compose |
 | 192.168.178.253 | AdGuard Primary                   | Docker Compose |
 | 192.168.178.254 | AdGuard Secondary                 | Docker Compose |
@@ -154,5 +153,6 @@ All secrets live under `kv/homelab/data/<service>` (kv-v2 engine):
 | `kv/homelab/data/caddy`        | `cloudflare_api_token`, `cloudflare_tunnel_token`, `cloudflare_account_email`                                               |
 | `kv/homelab/data/pocketid`     | `pocketid_encryption_key`, `tinyauth_pocketid_client_id`, `tinyauth_pocketid_client_secret`, `pocketid_maxmind_license_key` |
 | `kv/homelab/data/tailscale`    | `auth_key`                                                                                                                  |
+| `kv/homelab/data/timothy`      | `api_server_key`, `ollama_base_url`                                                                                         |
 
 Vault reads always use `delegate_to: localhost` + `become: false` (runs on Ansible control, not target host).

@@ -1,0 +1,52 @@
+---
+- name: Read Timothy secrets from Vault
+  community.hashi_vault.vault_kv2_get:
+    url: "{{ vault_addr }}"
+    auth_method: approle
+    role_id: "{{ vault_role_id }}"
+    secret_id: "{{ vault_secret_id }}"
+    engine_mount_point: kv
+    path: homelab/data/timothy
+  register: timothy_vault
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: Set Timothy secrets
+  ansible.builtin.set_fact:
+    hermes_api_server_key: "{{ timothy_vault.secret.api_server_key }}"
+    hermes_ollama_base_url: "{{ timothy_vault.secret.ollama_base_url }}"
+  no_log: true
+
+- name: Install Docker
+  ansible.builtin.include_role:
+    name: geerlingguy.docker
+
+- name: Create Hermes data directory
+  ansible.builtin.file:
+    path: "{{ hermes_data_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Create compose directory
+  ansible.builtin.file:
+    path: /opt/compose/timothy-{{ inventory_hostname }}
+    state: directory
+    mode: "0755"
+
+- name: Deploy compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: /opt/compose/timothy-{{ inventory_hostname }}/compose.yml
+    mode: "0644"
+  notify: restart timothy
+
+- name: Pull Hermes image
+  community.docker.docker_compose_v2_pull:
+    project_src: /opt/compose/timothy-{{ inventory_hostname }}
+
+- name: Start Timothy
+  community.docker.docker_compose_v2:
+    project_src: /opt/compose/timothy-{{ inventory_hostname }}
+    state: present
+    pull: always

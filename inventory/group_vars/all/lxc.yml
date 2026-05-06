@@ -35,12 +35,12 @@ proxmox_containers:
     memory: 2048
     disk: "local-lvm:20"
   - vmid: 125
-    hostname: llm
+    hostname: timothy
     ip: "192.168.178.125/24"
-    description: "Ollama LLM inference (Gemma 4)"
+    description: "Timothy — Hermes AI agent"
     unprivileged: 1
     cores: 4
-    memory: 16384
+    memory: 8192
     disk: "local-lvm:30"
   - vmid: 130
     hostname: postgresql
@@ -112,14 +112,6 @@ proxmox_containers:
     cores: 2
     memory: 4096
     disk: "local-lvm:20"
-  - vmid: 251
-    hostname: timothy
-    ip: "192.168.178.251/24"
-    description: "OpenClaw AI agent"
-    unprivileged: 1
-    cores: 2
-    memory: 4096
-    disk: "local-lvm:20"
   - vmid: 252
     hostname: humaun
     ip: "192.168.178.252/24"
@@ -127,7 +119,7 @@ proxmox_containers:
     unprivileged: 1
     cores: 2
     memory: 4096
-    disk: "local-lvm:20"
+    disk: "local-lvm:30"
   - vmid: 253
     hostname: adguard-primary
     ip: "192.168.178.253/24"
