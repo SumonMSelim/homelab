@@ -86,13 +86,12 @@ resource "oci_core_subnet" "public" {
 
 # ── Compute ────────────────────────────────────────────────────────────────────
 
-# Canonical Ubuntu 24.04 LTS for aarch64 — query latest image.
-# OCI Always-Free A1 requires aarch64 image.
-data "oci_core_images" "ubuntu_arm" {
+# Ubuntu 24.04 LTS — shape-matched image query.
+data "oci_core_images" "ubuntu" {
   compartment_id           = var.compartment_ocid
   operating_system         = "Canonical Ubuntu"
   operating_system_version = "24.04"
-  shape                    = "VM.Standard.A1.Flex"
+  shape                    = var.instance_shape
   sort_by                  = "TIMECREATED"
   sort_order               = "DESC"
 }
@@ -101,17 +100,16 @@ resource "oci_core_instance" "ai_inference" {
   compartment_id      = var.compartment_ocid
   availability_domain = var.availability_domain
   display_name        = var.instance_display_name
-  shape               = "VM.Standard.A1.Flex"
+  shape               = var.instance_shape
 
   shape_config {
-    # 4 OCPU + 24 GB = full Always-Free A1 allocation
-    ocpus         = 4
-    memory_in_gbs = 24
+    ocpus         = var.shape_ocpus
+    memory_in_gbs = var.shape_memory_gbs
   }
 
   source_details {
     source_type             = "image"
-    source_id               = data.oci_core_images.ubuntu_arm.images[0].id
+    source_id               = data.oci_core_images.ubuntu.images[0].id
     boot_volume_size_in_gbs = var.boot_volume_size_gb
   }
 

@@ -70,6 +70,24 @@ variable "ollama_model" {
   default     = "qwen3.6:27b"
 }
 
+variable "instance_shape" {
+  type        = string
+  description = "OCI compute shape"
+  default     = "VM.Standard.A1.Flex"
+}
+
+variable "shape_ocpus" {
+  type        = number
+  description = "Number of OCPUs"
+  default     = 4
+}
+
+variable "shape_memory_gbs" {
+  type        = number
+  description = "RAM in GB"
+  default     = 24
+}
+
 variable "vcn_cidr" {
   type        = string
   description = "CIDR block for the VCN"
