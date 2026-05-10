@@ -57,7 +57,7 @@
     tailscale up
     --authkey={{ tailscale_auth_key }}
     --hostname={{ inventory_hostname }}
-    --advertise-tags={{ tailscale_tags }}
+    {% if tailscale_tags | length > 0 %}--advertise-tags={{ tailscale_tags }}{% endif %}
     {{ tailscale_args }}
   when: not tailscale_connected
   no_log: true
