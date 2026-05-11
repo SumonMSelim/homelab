@@ -39,8 +39,8 @@ proxmox_containers:
     ip: "192.168.178.125/24"
     description: "Timothy — Hermes AI agent"
     unprivileged: 1
-    cores: 4
-    memory: 8192
+    cores: 2
+    memory: 4096
     disk: "local-lvm:30"
   - vmid: 130
     hostname: postgresql
