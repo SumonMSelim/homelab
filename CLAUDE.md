@@ -156,3 +156,47 @@ All secrets live under `kv/homelab/data/<service>` (kv-v2 engine):
 | `kv/homelab/data/timothy`      | `api_server_key`, `ollama_base_url`                                                                                         |
 
 Vault reads always use `delegate_to: localhost` + `become: false` (runs on Ansible control, not target host).
+
+### OCI Cloud Infrastructure (Terraform/OpenTofu)
+
+Lives under `cloud/oci/` — separate from the Ansible homelab. Two independent stacks:
+
+**`cloud/oci/ai-inference/`** — Always-Free A1 Flex instance running Ollama
+- 4 OCPU / 24 GB RAM; pulls `qwen3:30b-a3b` model on bootstrap via cloud-init
+- Tailscale-only access (no public exposure); reachable via MagicDNS as `oci-ai-inference`
+- Remote state: OCI Object Storage (S3-compat backend) — bucket bootstrapped by `oci-bootstrap.yml` workflow
+- Inventory entry uses Tailscale hostname, not LAN IP: see `[oci_host]` in `inventory/hosts`
+
+**`cloud/oci/experiment/`** — Modular stack for burst workloads
+- Two environments: `gpu-burst` (VM.GPU.A10.1, runs vllm) and `cpu-baseline`
+- Separate `compute` + `network` modules under `modules/`; resources tagged with `project`, `env`, `ttl`
+
+**CI/CD** (`.github/workflows/`):
+- `oci-bootstrap.yml` — one-time bucket + secret setup
+- `oci-ai-inference.yml` — plan/apply/destroy with retry logic for OCI capacity errors
+- `oci-experiment-cpu.yml` / `oci-experiment-gpu.yml` — experiment lifecycle workflows
+- All: plan on PR, apply/destroy on `main` only; state artifacts uploaded per run
+
+**Common Terraform pattern:**
+```hcl
+terraform {
+  backend "s3" { ... }   # OCI Object Storage, S3-compat
+  required_providers { oci = { source = "oracle/oci" } }
+}
+```
+
+### Timothy (Hermes AI Agent) Architecture
+
+Timothy (`192.168.178.125`, vmid 125) runs two containers on an internal `timothy` Docker network:
+- **gateway** — Hermes API server (port 8080 internal); reads `api_server_key` + `ollama_base_url` from Vault
+- **dashboard** — web UI on port 9119, bound to LAN IP only
+
+`ollama_base_url` points to `oci-ai-inference` over Tailscale — Timothy requires Tailscale to be installed first (deployment order: `node-exporter` → `tailscale` → `timothy`).
+
+`deploy_timothy.yml` chains all three roles in sequence; the `lab` deploy command handles this automatically.
+
+### lab Script Behavior
+
+`./lab` detects if running on the Ansible host (`192.168.178.120`). If not, it SSHes there, runs `git pull --ff-only`, and re-invokes itself. Runs with `set -euo pipefail`.
+
+`./lab upgrade` only works for Docker Compose services. systemd-managed services (Vault, PostgreSQL, MariaDB, Redis, MongoDB) must be upgraded manually.
