@@ -60,17 +60,13 @@ redis ansible_host=192.168.178.132
 [vault_host]
 vault ansible_host=192.168.178.123
 
-# LLM (Ollama)
-[llm_host]
-llm ansible_host=192.168.178.125
+# Timothy — Hermes AI agent
+[timothy_host]
+timothy ansible_host=192.168.178.125
 
 # Dash (Dashboard)
 [dash_host]
 dash ansible_host=192.168.178.250
-
-# OpenClaw
-[timothy_host]
-timothy ansible_host=192.168.178.251
 
 # Humaun
 [humaun_host]
@@ -105,7 +101,6 @@ adguard_secondary_host
 jellyfin_host
 arr_host
 immich_host
-llm_host
 dash_host
 timothy_host
 humaun_host
