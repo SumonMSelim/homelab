@@ -3,3 +3,5 @@
   ansible.builtin.systemd:
     name: ollama
     state: restarted
+    daemon_reload: true
+    enabled: true

@@ -1,4 +1,63 @@
 ---
+- name: Check if Ollama binary exists
+  ansible.builtin.stat:
+    path: /usr/local/bin/ollama
+  register: ollama_binary
+
+- name: Install Ollama binary
+  ansible.builtin.get_url:
+    url: "https://github.com/ollama/ollama/releases/download/{{ ollama_version }}/ollama-linux-arm64"
+    dest: /usr/local/bin/ollama
+    mode: "0755"
+  when: not ollama_binary.stat.exists
+  notify: restart ollama
+
+- name: Ensure ollama user exists
+  ansible.builtin.user:
+    name: ollama
+    system: true
+    shell: /bin/false
+    home: /var/lib/ollama
+    create_home: true
+  when: not ollama_binary.stat.exists
+
+- name: Ensure ollama directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: ollama
+    group: ollama
+    mode: "0755"
+  loop:
+    - /var/lib/ollama/models
+    - /etc/ollama
+  when: not ollama_binary.stat.exists
+
+- name: Deploy Ollama systemd unit
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/ollama.service
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Ollama Service
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      User=ollama
+      Group=ollama
+      EnvironmentFile=/etc/ollama/environment
+      ExecStart=/usr/local/bin/ollama serve
+      Restart=always
+      RestartSec=3
+      StandardOutput=journal
+      StandardError=journal
+
+      [Install]
+      WantedBy=multi-user.target
+  when: not ollama_binary.stat.exists
+  notify: restart ollama
+
 - name: Configure Ollama environment
   ansible.builtin.copy:
     dest: /etc/ollama/environment
