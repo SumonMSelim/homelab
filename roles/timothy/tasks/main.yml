@@ -52,11 +52,12 @@
     timeout: 30
 
 - name: Configure Hermes model provider
-  community.docker.docker_container_exec:
-    container: timothy-gateway-{{ inventory_hostname }}
-    command: /opt/hermes/.venv/bin/hermes config set {{ item.key }} {{ item.value }}
+  ansible.builtin.command: >
+    docker exec timothy-gateway-{{ inventory_hostname }}
+    /opt/hermes/.venv/bin/hermes config set {{ item.key }} {{ item.value }}
   loop:
     - { key: "model.provider", value: "custom" }
     - { key: "model.default", value: "{{ hermes_model }}" }
     - { key: "model.base_url", value: "{{ hermes_ollama_base_url }}/v1" }
+  changed_when: false
   notify: restart timothy
