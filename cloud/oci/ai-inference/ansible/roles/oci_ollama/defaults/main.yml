@@ -1,0 +1,6 @@
+---
+ollama_model: "qwen3:8b"
+ollama_host: "0.0.0.0:11434"
+ollama_keep_alive: "10m"
+ollama_max_loaded_models: 1
+ollama_num_parallel: 1
