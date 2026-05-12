@@ -135,7 +135,7 @@
       model: "{{ ollama_model }}"
     timeout: 3600
   register: pull_result
-  changed_when: "'success' in pull_result.content"
+  changed_when: false
 
 - name: Get all local models
   ansible.builtin.uri:
