@@ -13,8 +13,8 @@
 
 - name: Set Timothy secrets
   ansible.builtin.set_fact:
-    hermes_api_server_key: "{{ timothy_vault.data.data.api_server_key }}"
-    hermes_ollama_base_url: "{{ timothy_vault.data.data.ollama_base_url }}"
+    hermes_api_server_key: "{{ timothy_vault.data.data.data.api_server_key }}"
+    hermes_ollama_base_url: "{{ timothy_vault.data.data.data.ollama_base_url }}"
   no_log: true
 
 - name: Install Docker
