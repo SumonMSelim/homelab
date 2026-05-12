@@ -154,7 +154,7 @@ jobs:
           TAILSCALE_AUTH_KEY: ${{ secrets.TAILSCALE_AUTH_KEY_CI }}
         run: |
           curl -fsSL https://tailscale.com/install.sh | sh
-          sudo tailscale up --authkey="$TAILSCALE_AUTH_KEY" --hostname=ci-oci-deploy --ephemeral
+          sudo tailscale up --auth-key="$TAILSCALE_AUTH_KEY" --hostname=ci-oci-deploy --ephemeral
           sleep 5
           tailscale status
 
