@@ -11,7 +11,7 @@ Proxmox VE (192.168.178.110)
 ├── LXC 122  PocketID + Tinyauth (identity / OIDC)
 ├── LXC 123  HashiCorp Vault (secrets)
 ├── LXC 124  Monitoring (Prometheus + Grafana)
-├── LXC 125  LLM (Ollama + Gemma 4)
+├── LXC 125  Timothy (Hermes AI agent)
 ├── LXC 130  PostgreSQL
 ├── LXC 131  MySQL
 ├── LXC 132  Redis
@@ -20,7 +20,6 @@ Proxmox VE (192.168.178.110)
 ├── LXC 141  ARR stack (Radarr, Sonarr, SABnzbd, …)
 ├── LXC 142  Immich (photo/video backup)
 ├── LXC 250  Dash (Dashboard)
-├── LXC 251  Timothy (AI agent)
 ├── LXC 252  Humaun
 ├── LXC 253  AdGuard Home Primary (DNS + DHCP)
 └── LXC 254  AdGuard Home Secondary (DNS)
@@ -173,6 +172,23 @@ ansible-playbook deployments/deploy_immich.yml -e "@vars/vault_auth_vars.yml"
 
 Immich depends on PostgreSQL (with `pgvector`) and Redis being deployed first.
 
+### 10. Timothy (Hermes AI agent)
+
+Timothy requires Tailscale to reach the OCI Ollama inference backend over Tailscale MagicDNS. The playbook chains all three roles automatically:
+
+```bash
+ansible-playbook deployments/deploy_timothy.yml -e "@vars/vault_auth_vars.yml"
+```
+
+Or via the lab script: `./lab deploy timothy`
+
+> **Note:** LXC 125 must have `/dev/net/tun` enabled in its Proxmox config for Tailscale to work. Add to `/etc/pve/lxc/125.conf`:
+> ```
+> lxc.cgroup2.devices.allow: c 10:200 rwm
+> lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+> ```
+> Then restart the container.
+
 ## Service Dependencies
 
 ```
@@ -189,6 +205,7 @@ PVE Exporter ─ Vault
 Jellyfin ──── (standalone, needs media bind mount)
 ARR ────────── (standalone, needs media bind mount)
 Immich ─────── Vault, PostgreSQL (pgvector), Redis
+Timothy ─────── Vault, Tailscale → OCI Ollama (oci-ai-inference via MagicDNS)
 ```
 
 ## Day-to-Day Operations
