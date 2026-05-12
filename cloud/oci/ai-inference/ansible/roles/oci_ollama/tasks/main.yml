@@ -20,7 +20,7 @@
 - name: Extract Ollama binary from tarball
   ansible.builtin.shell: |
     cd /tmp
-    tar --use-compress-program=unzstd -xf ollama-linux-arm64.tar.zst ./bin/ollama
+    tar --use-compress-program=unzstd -xf ollama-linux-arm64.tar.zst bin/ollama
     mv /tmp/bin/ollama /usr/local/bin/ollama
     chmod +x /usr/local/bin/ollama
     rm -rf /tmp/bin /tmp/ollama-linux-arm64.tar.zst
