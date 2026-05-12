@@ -96,7 +96,7 @@ runcmd:
 
   # ── Ollama ─────────────────────────────────────────────────────────────────
   # Download the official ARM64 binary directly (avoids pipe-to-shell).
-  - curl -fsSL https://github.com/ollama/ollama/releases/latest/download/ollama-linux-arm64 -o /usr/local/bin/ollama
+  - curl -fsSL https://github.com/ollama/ollama/releases/download/v0.23.2/ollama-linux-arm64 -o /usr/local/bin/ollama
   - chmod +x /usr/local/bin/ollama
   # Create ollama system user and model storage directory
   - useradd -r -s /bin/false -m -d /var/lib/ollama ollama 2>/dev/null || true
