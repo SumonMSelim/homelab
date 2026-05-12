@@ -92,7 +92,7 @@ runcmd:
   - apt-get update -qq
   - apt-get install -y tailscale
   - systemctl enable --now tailscaled
-  - tailscale up --authkey="${tailscale_auth_key}" --hostname="${hostname}" --advertise-tags="tag:homelab" --accept-dns=false
+  - tailscale up --authkey="${tailscale_auth_key}" --hostname="${hostname}" --advertise-tags="tag:homelab" --accept-dns=false --ssh
 
   # ── Ollama ─────────────────────────────────────────────────────────────────
   # Download the official ARM64 binary directly (avoids pipe-to-shell).
