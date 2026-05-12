@@ -174,12 +174,12 @@ jobs:
           github.ref == 'refs/heads/main'
         run: |
           echo "Waiting for oci-ai-inference to appear online in Tailscale..."
-          for i in $(seq 1 24); do
-            if tailscale status --json 2>/dev/null | grep -q '"HostName":"oci-ai-inference"'; then
-              echo "oci-ai-inference is online."
+          for i in $(seq 1 40); do
+            if tailscale ping -c 1 oci-ai-inference >/dev/null 2>&1; then
+              echo "oci-ai-inference is reachable."
               exit 0
             fi
-            echo "Attempt $i/24 — not yet online, waiting 30s..."
+            echo "Attempt $i/40 — not yet reachable, waiting 30s..."
             sleep 30
           done
           echo "Timed out waiting for oci-ai-inference."
