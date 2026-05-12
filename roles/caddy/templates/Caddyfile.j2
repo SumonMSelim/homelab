@@ -110,3 +110,9 @@ http://dns1.mol.la, dns1.mol.la {
 http://dns2.mol.la, dns2.mol.la {
 	reverse_proxy 192.168.178.254:80
 }
+
+# Timothy — Hermes AI agent dashboard (protected by Tinyauth)
+http://timothy.mol.la, timothy.mol.la {
+    import protected
+    reverse_proxy {{ hostvars['timothy'].ansible_host }}:9119
+}
