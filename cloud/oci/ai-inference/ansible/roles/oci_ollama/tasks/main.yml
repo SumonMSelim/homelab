@@ -4,11 +4,28 @@
     path: /usr/local/bin/ollama
   register: ollama_binary
 
-- name: Install Ollama binary
+- name: Ensure zstd is installed
+  ansible.builtin.apt:
+    name: zstd
+    state: present
+  when: not ollama_binary.stat.exists
+
+- name: Download Ollama tarball
   ansible.builtin.get_url:
-    url: "https://github.com/ollama/ollama/releases/download/{{ ollama_version }}/ollama-linux-arm64"
-    dest: /usr/local/bin/ollama
-    mode: "0755"
+    url: "https://github.com/ollama/ollama/releases/download/{{ ollama_version }}/ollama-linux-arm64.tar.zst"
+    dest: /tmp/ollama-linux-arm64.tar.zst
+    mode: "0644"
+  when: not ollama_binary.stat.exists
+
+- name: Extract Ollama binary from tarball
+  ansible.builtin.shell: |
+    cd /tmp
+    tar --use-compress-program=unzstd -xf ollama-linux-arm64.tar.zst ./bin/ollama
+    mv /tmp/bin/ollama /usr/local/bin/ollama
+    chmod +x /usr/local/bin/ollama
+    rm -rf /tmp/bin /tmp/ollama-linux-arm64.tar.zst
+  args:
+    creates: /usr/local/bin/ollama
   when: not ollama_binary.stat.exists
   notify: restart ollama
 
