@@ -150,9 +150,11 @@ jobs:
           (github.event.inputs.action == 'apply' ||
            github.event.inputs.action == 'deploy') &&
           github.ref == 'refs/heads/main'
+        env:
+          TAILSCALE_AUTH_KEY: ${{ secrets.TAILSCALE_AUTH_KEY_CI }}
         run: |
           curl -fsSL https://tailscale.com/install.sh | sh
-          sudo tailscale up --authkey=${{ secrets.TAILSCALE_AUTH_KEY_CI }} --hostname=ci-oci-deploy --ephemeral
+          sudo tailscale up --authkey="$TAILSCALE_AUTH_KEY" --hostname=ci-oci-deploy --ephemeral
           sleep 5
           tailscale status
 
