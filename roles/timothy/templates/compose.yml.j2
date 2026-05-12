@@ -24,6 +24,6 @@ services:
     environment:
       HERMES_UID: "{{ hermes_uid }}"
       HERMES_GID: "{{ hermes_gid }}"
-    command: ["dashboard", "--host", "0.0.0.0", "--no-open"]
+    command: ["dashboard", "--host", "0.0.0.0", "--no-open", "--insecure"]
     depends_on:
       - gateway
