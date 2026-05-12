@@ -4,14 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "Terraform action"
+        description: "Action"
         required: true
         default: plan
         type: choice
         options:
           - plan
           - apply
+          - deploy
           - destroy
+      ollama_model:
+        description: "Ollama model tag (leave blank for default: qwen3:8b)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -19,6 +24,7 @@ permissions:
 env:
   TF_VERSION: "1.15.1"
   TF_WORKING_DIR: cloud/oci/ai-inference/terraform
+  ANSIBLE_WORKING_DIR: cloud/oci/ai-inference/ansible
   # OCI S3-compat backend
   TF_BACKEND_BUCKET: ${{ vars.OCI_STATE_BUCKET }}
   TF_BACKEND_KEY: "oci-ai-inference/terraform.tfstate"
@@ -46,6 +52,12 @@ jobs:
           echo "${{ secrets.OCI_PRIVATE_KEY_CONTENT }}" > ~/.oci/oci_api_key.pem
           chmod 600 ~/.oci/oci_api_key.pem
 
+      - name: Write SSH key for OCI instance
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.OCI_SSH_PRIVATE_KEY }}" > ~/.ssh/oci_inference
+          chmod 600 ~/.ssh/oci_inference
+
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         env:
@@ -67,6 +79,7 @@ jobs:
             -backend-config="skip_s3_checksum=true"
 
       - name: Terraform Plan
+        if: github.event.inputs.action != 'deploy'
         working-directory: ${{ env.TF_WORKING_DIR }}
         env:
           TF_VAR_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
@@ -78,11 +91,13 @@ jobs:
           TF_VAR_availability_domain: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
           TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
           TF_VAR_tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY_OCI }}
+          TF_VAR_ollama_model: ${{ github.event.inputs.ollama_model || 'qwen3:8b' }}
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
         run: terraform plan -out=tfplan -input=false
 
       - name: Upload plan artifact
+        if: github.event.inputs.action != 'deploy'
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
@@ -104,6 +119,7 @@ jobs:
           TF_VAR_availability_domain: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
           TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
           TF_VAR_tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY_OCI }}
+          TF_VAR_ollama_model: ${{ github.event.inputs.ollama_model || 'qwen3:8b' }}
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
         run: |
@@ -129,6 +145,43 @@ jobs:
           echo "All 20 attempts exhausted."
           exit 1
 
+      - name: Install Tailscale (CI runner)
+        if: >
+          (github.event.inputs.action == 'apply' ||
+           github.event.inputs.action == 'deploy') &&
+          github.ref == 'refs/heads/main'
+        run: |
+          curl -fsSL https://tailscale.com/install.sh | sh
+          sudo tailscale up --authkey=${{ secrets.TAILSCALE_AUTH_KEY_CI }} --hostname=ci-oci-deploy --ephemeral
+          sleep 5
+          tailscale status
+
+      - name: Install Ansible + collections
+        if: >
+          (github.event.inputs.action == 'apply' ||
+           github.event.inputs.action == 'deploy') &&
+          github.ref == 'refs/heads/main'
+        run: |
+          pip install ansible
+          ansible-galaxy collection install community.general
+
+      - name: Run Ansible — configure Ollama
+        if: >
+          (github.event.inputs.action == 'apply' ||
+           github.event.inputs.action == 'deploy') &&
+          github.ref == 'refs/heads/main'
+        working-directory: ${{ env.ANSIBLE_WORKING_DIR }}
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          OLLAMA_MODEL: ${{ github.event.inputs.ollama_model || 'qwen3:8b' }}
+        run: |
+          ansible-playbook playbooks/deploy_oci_ollama.yml \
+            -i oci-ai-inference, \
+            -e "ansible_user=ubuntu" \
+            -e "ansible_ssh_private_key_file=~/.ssh/oci_inference" \
+            -e "ansible_host=oci-ai-inference" \
+            -e "ollama_model=${OLLAMA_MODEL}"
+
       - name: Terraform Destroy
         if: >
           github.event.inputs.action == 'destroy' &&
@@ -144,6 +197,7 @@ jobs:
           TF_VAR_availability_domain: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
           TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
           TF_VAR_tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY_OCI }}
+          TF_VAR_ollama_model: ${{ github.event.inputs.ollama_model || 'qwen3:8b' }}
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
         run: terraform destroy -auto-approve -input=false

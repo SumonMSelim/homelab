@@ -67,7 +67,7 @@ variable "boot_volume_size_gb" {
 variable "ollama_model" {
   type        = string
   description = "Ollama model tag to pull on first boot (see https://ollama.com/library/qwen3)"
-  default     = "qwen3.6:27b"
+  default     = "qwen3:8b"
 }
 
 variable "instance_shape" {

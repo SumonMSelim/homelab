@@ -1,0 +1,75 @@
+---
+- name: Configure Ollama environment
+  ansible.builtin.copy:
+    dest: /etc/ollama/environment
+    owner: root
+    group: ollama
+    mode: "0640"
+    content: |
+      OLLAMA_HOST={{ ollama_host }}
+      OLLAMA_MODELS=/var/lib/ollama/models
+      OLLAMA_MAX_LOADED_MODELS={{ ollama_max_loaded_models }}
+      OLLAMA_KEEP_ALIVE={{ ollama_keep_alive }}
+      OLLAMA_NUM_PARALLEL={{ ollama_num_parallel }}
+  notify: restart ollama
+
+- name: Ensure Ollama is running
+  ansible.builtin.systemd:
+    name: ollama
+    state: started
+    enabled: true
+
+- name: Wait for Ollama API
+  ansible.builtin.uri:
+    url: http://127.0.0.1:11434/
+    method: GET
+  register: ollama_ready
+  until: ollama_ready.status == 200
+  retries: 12
+  delay: 5
+
+- name: Get currently loaded models
+  ansible.builtin.uri:
+    url: http://127.0.0.1:11434/api/ps
+    method: GET
+    return_content: true
+  register: ollama_ps
+
+- name: Unload all running models before switching
+  ansible.builtin.uri:
+    url: http://127.0.0.1:11434/api/generate
+    method: POST
+    body_format: json
+    body:
+      model: "{{ item.name }}"
+      keep_alive: 0
+  loop: "{{ (ollama_ps.content | from_json).models }}"
+  when: (ollama_ps.content | from_json).models | length > 0
+
+- name: Pull target model
+  ansible.builtin.uri:
+    url: http://127.0.0.1:11434/api/pull
+    method: POST
+    body_format: json
+    body:
+      model: "{{ ollama_model }}"
+    timeout: 3600
+  register: pull_result
+  changed_when: "'success' in pull_result.content"
+
+- name: Get all local models
+  ansible.builtin.uri:
+    url: http://127.0.0.1:11434/api/tags
+    method: GET
+    return_content: true
+  register: ollama_tags
+
+- name: Remove models that are not the target
+  ansible.builtin.uri:
+    url: http://127.0.0.1:11434/api/delete
+    method: DELETE
+    body_format: json
+    body:
+      model: "{{ item.name }}"
+  loop: "{{ (ollama_tags.content | from_json).models }}"
+  when: item.name != ollama_model
