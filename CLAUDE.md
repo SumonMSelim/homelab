@@ -98,6 +98,8 @@ Most playbooks need runtime secrets that are gitignored. Copy the `.example` fil
 | deploy_mysql      | `-e "@vars/vault_auth_vars.yml"`                                |
 | deploy_redis      | `-e "@vars/vault_auth_vars.yml"`                                |
 | deploy_immich     | `-e "@vars/vault_auth_vars.yml"`                                |
+| deploy_tailscale  | `-e "@vars/vault_auth_vars.yml"`                                |
+| deploy_timothy    | `-e "@vars/vault_auth_vars.yml"`                                |
 | create_lxc        | `-e "@vars/proxmox_create_vars.yml"`                            |
 
 ### Patterns to Follow When Adding a Service
@@ -194,6 +196,12 @@ Timothy (`192.168.178.125`, vmid 125) runs two containers on an internal `timoth
 `ollama_base_url` points to `oci-ai-inference` over Tailscale — Timothy requires Tailscale to be installed first (deployment order: `node-exporter` → `tailscale` → `timothy`).
 
 `deploy_timothy.yml` chains all three roles in sequence; the `lab` deploy command handles this automatically.
+
+LXC 125 requires `/dev/net/tun` for Tailscale — add to `/etc/pve/lxc/125.conf` on the Proxmox host and restart the container:
+```
+lxc.cgroup2.devices.allow: c 10:200 rwm
+lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+```
 
 ### lab Script Behavior
 

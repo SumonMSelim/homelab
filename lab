@@ -131,13 +131,15 @@ cmd_deploy() {
     [jellyfin]="Jellyfin media server"
     [arr]="*arr stack"
     [immich]="Immich photo/video backup"
-    [llm]="Ollama LLM inference"
+    [tailscale]="Tailscale (all hosts)"
+    [timothy]="Timothy (Hermes AI agent)"
   )
 
   if [[ -z "$service" || -z "${SERVICE_LABELS[$service]+_}" ]]; then
     _header "Deploy — available services"
     for svc in adguard caddy pocketid vault postgresql mysql redis mongodb \
-                monitoring node-exporter pve-exporter jellyfin arr immich llm; do
+                monitoring node-exporter pve-exporter jellyfin arr immich \
+                tailscale timothy; do
       printf "    ${CYAN}%-18s${RESET} %s\n" "$svc" "${SERVICE_LABELS[$svc]}"
     done
     echo ""
@@ -177,7 +179,10 @@ cmd_deploy() {
     arr)           _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_arr.yml" ;;
     immich)        _require_vars vault_auth_vars.yml
                    _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_immich.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
-    llm)           _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_llm.yml" ;;
+    tailscale)     _require_vars vault_auth_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_tailscale.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
+    timothy)       _require_vars vault_auth_vars.yml
+                   _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_timothy.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
   esac
 
   _ok "Deployed ${SERVICE_LABELS[$service]} in $(_elapsed $start)"
@@ -192,7 +197,7 @@ cmd_upgrade() {
     [pocketid]="192.168.178.122 /opt/compose/pocketid-pocketid"
     [jellyfin]="192.168.178.140 /opt/compose/jellyfin-jellyfin"
     [arr]="192.168.178.141 /opt/compose/arr-arr"
-    [llm]="192.168.178.125 /opt/compose/ollama-llm"
+    [timothy]="192.168.178.125 /opt/compose/timothy-timothy"
   )
 
   declare -A PINNED=(
