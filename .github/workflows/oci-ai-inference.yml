@@ -167,6 +167,24 @@ jobs:
           pip install ansible
           ansible-galaxy collection install community.general
 
+      - name: Wait for OCI instance to join Tailscale
+        if: >
+          (github.event.inputs.action == 'apply' ||
+           github.event.inputs.action == 'deploy') &&
+          github.ref == 'refs/heads/main'
+        run: |
+          echo "Waiting for oci-ai-inference to appear online in Tailscale..."
+          for i in $(seq 1 24); do
+            if tailscale status --json 2>/dev/null | grep -q '"HostName":"oci-ai-inference"'; then
+              echo "oci-ai-inference is online."
+              exit 0
+            fi
+            echo "Attempt $i/24 — not yet online, waiting 30s..."
+            sleep 30
+          done
+          echo "Timed out waiting for oci-ai-inference."
+          exit 1
+
       - name: Run Ansible — configure Ollama
         if: >
           (github.event.inputs.action == 'apply' ||
