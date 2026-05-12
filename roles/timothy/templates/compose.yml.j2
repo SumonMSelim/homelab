@@ -3,6 +3,7 @@ services:
     image: {{ hermes_image }}
     container_name: timothy-gateway-{{ inventory_hostname }}
     restart: unless-stopped
+    network_mode: host
     volumes:
       - {{ hermes_data_dir }}:/opt/data
     environment:
@@ -10,27 +11,19 @@ services:
       HERMES_GID: "{{ hermes_gid }}"
       OLLAMA_BASE_URL: "{{ hermes_ollama_base_url }}"
       API_SERVER_KEY: "{{ hermes_api_server_key }}"
-    command: gateway run
-    networks:
-      - timothy
+      API_SERVER_HOST: "0.0.0.0"
+    command: ["gateway", "run"]
 
   dashboard:
     image: {{ hermes_image }}
     container_name: timothy-dashboard-{{ inventory_hostname }}
     restart: unless-stopped
-    ports:
-      - "9119:9119"
+    network_mode: host
     volumes:
       - {{ hermes_data_dir }}:/opt/data
     environment:
       HERMES_UID: "{{ hermes_uid }}"
       HERMES_GID: "{{ hermes_gid }}"
-    command: dashboard --host 0.0.0.0 --no-open
+    command: ["dashboard", "--host", "0.0.0.0", "--no-open"]
     depends_on:
       - gateway
-    networks:
-      - timothy
-
-networks:
-  timothy:
-    name: timothy-{{ inventory_hostname }}
