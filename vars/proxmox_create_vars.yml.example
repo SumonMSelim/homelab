@@ -6,9 +6,13 @@ proxmox_node: one
 proxmox_api_user: root@pam
 proxmox_api_token_id: "CHANGE_ME"
 proxmox_api_token_secret: "CHANGE_ME"
+
 # Required when proxmox_containers includes privileged containers (unprivileged: 0).
 proxmox_api_password: "CHANGE_ME"
 proxmox_container_password: "CHANGE_ME"
+
+proxmox_nameserver: "192.168.178.253 192.168.178.254"
+proxmox_searchdomain: "mol.la"
 
 # Optional overrides:
 # proxmox_api_host: "192.168.178.110"
