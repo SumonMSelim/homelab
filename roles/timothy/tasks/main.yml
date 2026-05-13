@@ -61,3 +61,11 @@
     - { key: "model.base_url", value: "{{ hermes_ollama_base_url }}/v1" }
   changed_when: false
   notify: restart timothy
+
+- name: Fix config.yaml ownership so container user can read it
+  ansible.builtin.file:
+    path: "{{ hermes_data_dir }}/config.yaml"
+    owner: "{{ hermes_uid }}"
+    group: "{{ hermes_gid }}"
+    mode: "0640"
+  notify: restart timothy
