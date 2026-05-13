@@ -10,7 +10,6 @@ package_upgrade: true
 packages:
   - curl
   - ufw
-  - iptables-persistent
   - prometheus-node-exporter
   - ca-certificates
   - gnupg
@@ -128,10 +127,5 @@ runcmd:
   - ufw allow 443/tcp comment 'Tailscale DERP relay'
   - ufw --force enable
 
-  # ── Flush OCI default iptables rules ───────────────────────────────────────
-  # OCI Ubuntu images ship with permissive iptables ACCEPT rules that would
-  # bypass UFW. Flush them AFTER UFW is enabled so there is no open window.
-  # iptables-persistent (installed above) ensures UFW rules survive reboots.
-  - iptables -F INPUT
-  - iptables -F FORWARD
-  - netfilter-persistent save
+  # UFW manages iptables rules directly — no manual flush needed.
+  # Enabling UFW inserts its FORWARD/INPUT chains ahead of any existing rules.
