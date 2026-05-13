@@ -153,3 +153,48 @@
       model: "{{ item.name }}"
   loop: "{{ (ollama_tags.content | from_json).models }}"
   when: item.name != ollama_model
+
+# ── Firewall ───────────────────────────────────────────────────────────────────
+- name: Ensure UFW is installed
+  ansible.builtin.apt:
+    name:
+      - ufw
+      - iptables-persistent
+    state: present
+
+- name: Configure UFW defaults
+  community.general.ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - { direction: incoming, policy: deny }
+    - { direction: outgoing, policy: allow }
+
+- name: Allow all traffic on Tailscale interface
+  community.general.ufw:
+    rule: allow
+    interface: tailscale0
+    direction: in
+
+- name: Allow Tailscale WireGuard UDP
+  community.general.ufw:
+    rule: allow
+    port: "41641"
+    proto: udp
+
+- name: Allow Tailscale DERP relay HTTPS
+  community.general.ufw:
+    rule: allow
+    port: "443"
+    proto: tcp
+
+- name: Enable UFW
+  community.general.ufw:
+    state: enabled
+
+- name: Flush OCI default permissive iptables rules
+  ansible.builtin.shell: |
+    iptables -F INPUT
+    iptables -F FORWARD
+    netfilter-persistent save
+  changed_when: false
