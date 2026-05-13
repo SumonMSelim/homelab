@@ -34,8 +34,7 @@ resource "oci_core_route_table" "public" {
 }
 
 # Minimal ingress: Tailscale direct UDP + HTTPS for Tailscale DERP fallback.
-# SSH (22) intentionally omitted — access via Tailscale only post-bootstrap.
-# TEMP: SSH open for diagnostics — remove once Tailscale is confirmed connected.
+# All other access (SSH, Ollama, node-exporter) is via Tailscale only.
 resource "oci_core_security_list" "ai_inference" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.ai_inference.id
@@ -70,16 +69,6 @@ resource "oci_core_security_list" "ai_inference" {
     }
   }
 
-  # TEMP: SSH for diagnostics — remove after Tailscale confirmed connected
-  ingress_security_rules {
-    protocol  = "6" # TCP
-    source    = "0.0.0.0/0"
-    stateless = false
-    tcp_options {
-      min = 22
-      max = 22
-    }
-  }
 }
 
 resource "oci_core_subnet" "public" {
