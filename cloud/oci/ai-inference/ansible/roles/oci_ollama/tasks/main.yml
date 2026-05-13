@@ -157,9 +157,7 @@
 # ── Firewall ───────────────────────────────────────────────────────────────────
 - name: Ensure UFW is installed
   ansible.builtin.apt:
-    name:
-      - ufw
-      - iptables-persistent
+    name: ufw
     state: present
 
 - name: Configure UFW defaults
@@ -191,10 +189,3 @@
 - name: Enable UFW
   community.general.ufw:
     state: enabled
-
-- name: Flush OCI default permissive iptables rules
-  ansible.builtin.shell: |
-    iptables -F INPUT
-    iptables -F FORWARD
-    netfilter-persistent save
-  changed_when: false
