@@ -2,6 +2,7 @@
 timothy_vault_secret_path: "kv/homelab/data/timothy"
 hermes_image: "nousresearch/hermes-agent:latest"
 hermes_model: "qwen3:8b-64k"
+hermes_telegram_allowed_users: "5177075152"
 hermes_data_dir: "/opt/hermes/data"
 hermes_uid: 1000
 hermes_gid: 1000

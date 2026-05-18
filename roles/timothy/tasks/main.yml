@@ -15,6 +15,7 @@
   ansible.builtin.set_fact:
     hermes_api_server_key: "{{ timothy_vault.data.data.data.api_server_key }}"
     hermes_ollama_base_url: "{{ timothy_vault.data.data.data.ollama_base_url }}"
+    hermes_telegram_bot_token: "{{ timothy_vault.data.data.data.telegram_bot_token }}"
   no_log: true
 
 - name: Create Hermes data directory
@@ -60,6 +61,8 @@
     - { key: "model.default", value: "{{ hermes_model }}" }
     - { key: "model.base_url", value: "{{ hermes_ollama_base_url }}/v1" }
     - { key: "model.context_length", value: "65536" }
+    - { key: "TELEGRAM_BOT_TOKEN", value: "{{ hermes_telegram_bot_token }}" }
+    - { key: "TELEGRAM_ALLOWED_USERS", value: "{{ hermes_telegram_allowed_users }}" }
   changed_when: false
   notify: restart timothy
 
