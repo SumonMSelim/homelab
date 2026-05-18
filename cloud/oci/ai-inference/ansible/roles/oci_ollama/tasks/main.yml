@@ -126,16 +126,34 @@
   loop: "{{ (ollama_ps.content | from_json).models }}"
   when: (ollama_ps.content | from_json).models | length > 0
 
-- name: Pull target model
+- name: Pull base model
   ansible.builtin.uri:
     url: http://127.0.0.1:11434/api/pull
     method: POST
     body_format: json
     body:
-      model: "{{ ollama_model }}"
+      model: "{{ ollama_base_model }}"
     timeout: 3600
   register: pull_result
   changed_when: false
+
+- name: Write Modelfile for extended context model
+  ansible.builtin.copy:
+    dest: /tmp/Modelfile
+    mode: "0644"
+    content: |
+      FROM {{ ollama_base_model }}
+      PARAMETER num_ctx {{ ollama_num_ctx }}
+
+- name: Create extended context model
+  ansible.builtin.command: >
+    /usr/local/bin/ollama create {{ ollama_model }} -f /tmp/Modelfile
+  changed_when: true
+
+- name: Remove Modelfile
+  ansible.builtin.file:
+    path: /tmp/Modelfile
+    state: absent
 
 - name: Get all local models
   ansible.builtin.uri:
@@ -144,7 +162,7 @@
     return_content: true
   register: ollama_tags
 
-- name: Remove models that are not the target
+- name: Remove models that are not the target or base
   ansible.builtin.uri:
     url: http://127.0.0.1:11434/api/delete
     method: DELETE
@@ -152,7 +170,7 @@
     body:
       model: "{{ item.name }}"
   loop: "{{ (ollama_tags.content | from_json).models }}"
-  when: item.name != ollama_model
+  when: item.name != ollama_model and item.name != ollama_base_model
 
 # ── Firewall ───────────────────────────────────────────────────────────────────
 - name: Ensure UFW is installed
