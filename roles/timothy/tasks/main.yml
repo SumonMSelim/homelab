@@ -59,6 +59,7 @@
     - { key: "model.provider", value: "custom" }
     - { key: "model.default", value: "{{ hermes_model }}" }
     - { key: "model.base_url", value: "{{ hermes_ollama_base_url }}/v1" }
+    - { key: "model.context_length", value: "65536" }
   changed_when: false
   notify: restart timothy
 
