@@ -15,6 +15,8 @@
   ansible.builtin.set_fact:
     hermes_api_server_key: "{{ timothy_vault.data.data.data.api_server_key }}"
     hermes_ollama_base_url: "{{ timothy_vault.data.data.data.ollama_base_url }}"
+    hermes_telegram_bot_token: "{{ timothy_vault.data.data.data.telegram_bot_token }}"
+    hermes_glm_api_key: "{{ timothy_vault.data.data.data.glm_api_key }}"
   no_log: true
 
 - name: Create Hermes data directory
@@ -56,10 +58,14 @@
     docker exec timothy-gateway-{{ inventory_hostname }}
     /opt/hermes/.venv/bin/hermes config set {{ item.key }} {{ item.value }}
   loop:
-    - { key: "model.provider", value: "custom" }
+    - { key: "model.provider", value: "{{ hermes_model_provider }}" }
     - { key: "model.default", value: "{{ hermes_model }}" }
     - { key: "model.base_url", value: "{{ hermes_ollama_base_url }}/v1" }
     - { key: "model.context_length", value: "65536" }
+    - { key: "auxiliary.compression.context_length", value: "65536" }
+    - { key: "TELEGRAM_BOT_TOKEN", value: "{{ hermes_telegram_bot_token }}" }
+    - { key: "TELEGRAM_ALLOWED_USERS", value: "{{ hermes_telegram_allowed_users }}" }
+    - { key: "GLM_API_KEY", value: "{{ hermes_glm_api_key }}" }
   changed_when: false
   notify: restart timothy
 
