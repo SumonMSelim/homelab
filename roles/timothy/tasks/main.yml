@@ -66,6 +66,7 @@
     - { key: "TELEGRAM_BOT_TOKEN", value: "{{ hermes_telegram_bot_token }}" }
     - { key: "TELEGRAM_ALLOWED_USERS", value: "{{ hermes_telegram_allowed_users }}" }
     - { key: "GLM_API_KEY", value: "{{ hermes_glm_api_key }}" }
+    - { key: "GLM_BASE_URL", value: "https://api.z.ai/api/paas/v4" }
   changed_when: false
   notify: restart timothy
 
