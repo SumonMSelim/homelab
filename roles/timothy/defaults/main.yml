@@ -1,7 +1,7 @@
 ---
 timothy_vault_secret_path: "kv/homelab/data/timothy"
 hermes_image: "nousresearch/hermes-agent:latest"
-hermes_model: "glm-4-flash"
+hermes_model: "glm-4.5-air"
 hermes_model_provider: "glm"
 hermes_telegram_allowed_users: "5177075152"
 hermes_data_dir: "/opt/hermes/data"
