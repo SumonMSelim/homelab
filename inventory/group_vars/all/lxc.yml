@@ -75,7 +75,7 @@ proxmox_containers:
     unprivileged: 1
     cores: 2
     memory: 4096
-    disk: "local-lvm:10"
+    disk: "local-lvm:30"
     mount_volumes:
       - id: mp0
         host_path: "{{ jellyfin_media_storage_host_path }}"
