@@ -118,7 +118,7 @@ proxmox_containers:
     description: "Humaun"
     unprivileged: 1
     cores: 2
-    memory: 4096
+    memory: 8192
     disk: "local-lvm:30"
   - vmid: 253
     hostname: adguard-primary
