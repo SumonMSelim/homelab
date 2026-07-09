@@ -20,6 +20,9 @@ prometheus_immich_targets:
   - { addr: "{{ prometheus_immich_host | default('192.168.178.142') }}:8081", name: "immich-api" }
   - { addr: "{{ prometheus_immich_host | default('192.168.178.142') }}:8082", name: "immich-microservices" }
 
+prometheus_navidrome_targets:
+  - { addr: "{{ prometheus_navidrome_host | default('192.168.178.143') }}:4533", name: "navidrome" }
+
 # PVE exporter
 pve_exporter_target: "192.168.178.110"
 pve_exporter_scrape_addr: "192.168.178.110:9221"
@@ -44,3 +47,7 @@ grafana_community_dashboards:
   - id: 1860
     revision: 37
     name: node-exporter-full
+  # Navidrome dashboard (metrics on /metrics)
+  - id: 15290
+    revision: 2
+    name: navidrome

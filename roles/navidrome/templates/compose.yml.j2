@@ -12,6 +12,9 @@ services:
       - "{{ navidrome_music_path }}:/music:ro"
     environment:
       TZ: "{{ navidrome_tz }}"
+{% if navidrome_prometheus_enabled | default(false) %}
+      ND_PROMETHEUS_ENABLED: "true"
+{% endif %}
       # Additional options (uncomment and set as needed):
       # ND_LOGLEVEL: info
       # ND_SESSIONTIMEOUT: 24h

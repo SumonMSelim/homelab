@@ -28,6 +28,14 @@ scrape_configs:
           instance: "{{ node.name }}"
 {% endfor %}
 
+  - job_name: "navidrome"
+    static_configs:
+{% for node in prometheus_navidrome_targets | default([]) %}
+      - targets: ["{{ node.addr }}"]
+        labels:
+          instance: "{{ node.name }}"
+{% endfor %}
+
   - job_name: "pve"
     scrape_interval: 30s
     scrape_timeout: 30s
