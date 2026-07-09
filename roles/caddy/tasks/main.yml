@@ -36,6 +36,7 @@
     src: Dockerfile
     dest: "/opt/compose/caddy-{{ inventory_hostname }}/Dockerfile"
     mode: '0644'
+  register: caddy_dockerfile
 
 - name: Deploy Caddy compose file
   ansible.builtin.template:
@@ -52,8 +53,18 @@
     mode: '0644'
   notify: Restart Caddy service
 
+- name: Build custom Caddy image (only when Dockerfile changes)
+  community.docker.docker_image:
+    name: caddy-cloudflare-{{ inventory_hostname }}
+    build:
+      path: "/opt/compose/caddy-{{ inventory_hostname }}"
+      dockerfile: Dockerfile
+    source: build
+  when: caddy_dockerfile.changed
+  notify: Restart Caddy service
+
 - name: Start Caddy and Cloudflare Tunnel with Docker Compose
   community.docker.docker_compose_v2:
     project_src: "/opt/compose/caddy-{{ inventory_hostname }}"
     state: present
-    build: always
+    build: false
