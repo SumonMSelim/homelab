@@ -79,6 +79,7 @@ vars/                    → runtime secrets/config (gitignored); *.example file
 | 192.168.178.140 | Jellyfin                          | Docker Compose |
 | 192.168.178.141 | *arr stack                        | Docker Compose |
 | 192.168.178.142 | Immich                            | Docker Compose |
+| 192.168.178.143 | Navidrome (music)                 | Docker Compose |
 | 192.168.178.250 | Dash (Dashboard)                  | Docker Compose |
 | 192.168.178.252 | Humaun                            | Docker Compose |
 | 192.168.178.253 | AdGuard Primary                   | Docker Compose |
