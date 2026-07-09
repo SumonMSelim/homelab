@@ -54,12 +54,12 @@
   notify: Restart Caddy service
 
 - name: Build custom Caddy image (only when Dockerfile changes)
-  community.docker.docker_image:
-    name: caddy-cloudflare-{{ inventory_hostname }}
-    build:
-      path: "/opt/compose/caddy-{{ inventory_hostname }}"
-      dockerfile: Dockerfile
-    source: build
+  ansible.builtin.command:
+    cmd: >
+      docker build
+      -t caddy-cloudflare-{{ inventory_hostname }}
+      -f /opt/compose/caddy-{{ inventory_hostname }}/Dockerfile
+      /opt/compose/caddy-{{ inventory_hostname }}
   when: caddy_dockerfile.changed
   notify: Restart Caddy service
 
