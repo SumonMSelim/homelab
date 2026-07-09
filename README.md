@@ -19,6 +19,7 @@ Proxmox VE (192.168.178.110)
 ├── LXC 140  Jellyfin (media)
 ├── LXC 141  ARR stack (Radarr, Sonarr, SABnzbd, …)
 ├── LXC 142  Immich (photo/video backup)
+├── LXC 143  Navidrome (music)
 ├── LXC 250  Dash (Dashboard)
 ├── LXC 252  Humaun
 ├── LXC 253  AdGuard Home Primary (DNS + DHCP)
@@ -168,9 +169,10 @@ Node exporter goes on all hosts first, then Prometheus + Grafana, then PVE expor
 ansible-playbook deployments/deploy_jellyfin.yml
 ansible-playbook deployments/deploy_arr.yml
 ansible-playbook deployments/deploy_immich.yml -e "@vars/vault_auth_vars.yml"
+ansible-playbook deployments/deploy_navidrome.yml
 ```
 
-Immich depends on PostgreSQL (with `pgvector`) and Redis being deployed first.
+Immich depends on PostgreSQL (with `pgvector`) and Redis being deployed first. Navidrome is standalone (needs media bind mount).
 
 ### 10. Timothy (Hermes AI agent)
 
@@ -205,6 +207,7 @@ PVE Exporter ─ Vault
 Jellyfin ──── (standalone, needs media bind mount)
 ARR ────────── (standalone, needs media bind mount)
 Immich ─────── Vault, PostgreSQL (pgvector), Redis
+Navidrome ──── (standalone, needs media bind mount)
 Timothy ─────── Vault, Tailscale → OCI Ollama (oci-ai-inference via MagicDNS)
 ```
 
