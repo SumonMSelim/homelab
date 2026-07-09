@@ -1,0 +1,11 @@
+---
+# Deploy Navidrome music server (Docker on LXC).
+# Prereq: LXC must have media-storage bind-mounted (see lxc.yml).
+# Create a 'music' (or other) subdirectory under the media storage on the Proxmox host
+# before deploying, so it appears at navidrome_music_path inside the container.
+# Usage: ansible-playbook deployments/deploy_navidrome.yml
+- name: Deploy Navidrome
+  hosts: navidrome_host
+  become: true
+  roles:
+    - navidrome

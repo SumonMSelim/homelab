@@ -1,0 +1,25 @@
+# Navidrome music server.
+# Music collection must be bind-mounted into the LXC (see navidrome_music_path).
+services:
+  navidrome:
+    image: {{ navidrome_image }}
+    container_name: navidrome-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "{{ navidrome_port }}:4533"
+    volumes:
+      - navidrome_data:/data
+      - "{{ navidrome_music_path }}:/music:ro"
+    environment:
+      TZ: "{{ navidrome_tz }}"
+      # Additional options (uncomment and set as needed):
+      # ND_LOGLEVEL: info
+      # ND_SESSIONTIMEOUT: 24h
+      # ND_MUSICFOLDER: /music
+    # Optional: run as specific uid/gid to match media ownership (set in group_vars if needed).
+{% if navidrome_uid is defined and navidrome_gid is defined %}
+    user: "{{ navidrome_uid }}:{{ navidrome_gid }}"
+{% endif %}
+
+volumes:
+  navidrome_data:

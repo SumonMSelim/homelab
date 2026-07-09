@@ -65,6 +65,11 @@ http://media.mol.la, media.mol.la {
     reverse_proxy {{ hostvars['jellyfin'].ansible_host }}:8096
 }
 
+# Navidrome — music server (music.mol.la), public; auth via Navidrome users only
+http://music.mol.la, music.mol.la {
+    reverse_proxy {{ hostvars['navidrome'].ansible_host }}:4533
+}
+
 # *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Bazarr, Jellyseerr (arr LXC)
 # Backend: arr_lxc_ip from group_vars/caddy_host or role defaults
 http://sabnzbd.mol.la, sabnzbd.mol.la {

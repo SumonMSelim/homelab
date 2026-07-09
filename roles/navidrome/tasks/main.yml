@@ -1,0 +1,31 @@
+---
+# Navidrome music server in Docker. Requires LXC to have media-storage bind-mounted
+# and a music collection directory (e.g. /media/music) visible inside the LXC.
+- name: Ensure compose project directory exists
+  ansible.builtin.file:
+    path: "/opt/compose/navidrome-{{ inventory_hostname }}"
+    state: directory
+    mode: '0755'
+
+- name: Check music path exists (bind-mount from Proxmox media-storage before deploy)
+  ansible.builtin.stat:
+    path: "{{ navidrome_music_path }}"
+  register: music_path_stat
+
+- name: Fail if music path is missing
+  ansible.builtin.fail:
+    msg: "Music path '{{ navidrome_music_path }}' must exist on the LXC. Create the directory on the Proxmox host under the media storage (e.g. mkdir -p /mnt/media/music) so it is visible inside the container after the bind mount."
+  when: not music_path_stat.stat.exists or not music_path_stat.stat.isdir
+
+- name: Deploy Navidrome compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "/opt/compose/navidrome-{{ inventory_hostname }}/compose.yml"
+    mode: '0644'
+  notify: Restart Navidrome
+
+- name: Start Navidrome with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "/opt/compose/navidrome-{{ inventory_hostname }}"
+    state: present
+    pull: always

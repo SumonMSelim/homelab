@@ -1,0 +1,4 @@
+---
+# Navidrome LXC at 192.168.178.143.
+# navidrome_music_path: /media/music   # default; subdirectory must exist under the media storage bind mount.
+ansible_user: root
