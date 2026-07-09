@@ -1,4 +1,4 @@
-# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Bazarr, Seerr
+# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Lidarr, Bazarr, Seerr
 # Media directories must be bind-mounted into the LXC from Proxmox (same as Jellyfin).
 services:
   # SABnzbd - Usenet downloader
@@ -62,6 +62,24 @@ services:
       - {{ arr_config_path }}/sonarr:/config
       - {{ arr_tv_path }}:/tv
       - {{ arr_downloads_path }}:/downloads
+    environment:
+      PUID: "{{ arr_uid }}"
+      PGID: "{{ arr_gid }}"
+      TZ: "{{ arr_tz }}"
+
+  # Lidarr - Music manager (for Navidrome library)
+  # Connect to Prowlarr for indexers and qBittorrent/SABnzbd for downloads.
+  # Root folder inside container: /music (maps to /media/libraries/music on host)
+  lidarr:
+    image: {{ arr_lidarr_image }}
+    container_name: lidarr-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "{{ arr_lidarr_port }}:8686"
+    volumes:
+      - {{ arr_config_path }}/lidarr:/config
+      - {{ arr_downloads_path }}:/downloads
+      - {{ arr_music_path }}:/music
     environment:
       PUID: "{{ arr_uid }}"
       PGID: "{{ arr_gid }}"

@@ -33,14 +33,15 @@
     - "{{ arr_downloads_path }}"
     - "{{ arr_movies_path }}"
     - "{{ arr_tv_path }}"
+    - "{{ arr_music_path }}"
 
 - name: Fail if media subdirectories are missing
   ansible.builtin.fail:
     msg: >-
       Media subdirs must exist on the host before deploy (bind mount may be read-only in LXC).
-      On the Proxmox host create: {{ arr_downloads_path }}, {{ arr_movies_path }}, {{ arr_tv_path }}
-      (e.g. mkdir -p /mnt/media/libraries/{downloads,movies,tv}) then re-run.
-  when: media_subdirs_stat.results | selectattr('stat.exists', 'equalto', true) | list | length != 3
+      On the Proxmox host create: {{ arr_downloads_path }}, {{ arr_movies_path }}, {{ arr_tv_path }}, {{ arr_music_path }}
+      (e.g. mkdir -p /mnt/media/libraries/{downloads,movies,tv,music}) then re-run.
+  when: media_subdirs_stat.results | selectattr('stat.exists', 'equalto', true) | list | length != 4
 
 - name: Deploy ARR stack compose file
   ansible.builtin.template:
