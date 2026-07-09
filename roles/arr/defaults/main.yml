@@ -1,5 +1,5 @@
 ---
-# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Bazarr, Seerr
+# *arr stack — SABnzbd, Prowlarr, Radarr, Sonarr, Lidarr, Bazarr, Seerr
 # Deploys in a single Docker Compose stack inside an LXC.
 
 # Docker images (linuxserver.io)
@@ -9,6 +9,7 @@ arr_radarr_image: lscr.io/linuxserver/radarr:latest
 arr_sonarr_image: lscr.io/linuxserver/sonarr:latest
 arr_bazarr_image: lscr.io/linuxserver/bazarr:latest
 arr_seerr_image: ghcr.io/seerr-team/seerr:latest
+arr_lidarr_image: lscr.io/linuxserver/lidarr:latest
 
 # Ports
 arr_sabnzbd_port: 8080
@@ -17,6 +18,7 @@ arr_radarr_port: 7878
 arr_sonarr_port: 8989
 arr_bazarr_port: 6767
 arr_seerr_port: 5055
+arr_lidarr_port: 8686
 
 # User/Group IDs (PUID/PGID) — adjust to match media ownership on the host
 arr_uid: 1000
@@ -31,6 +33,7 @@ arr_media_path: /media
 arr_downloads_path: "{{ arr_media_path }}/libraries/downloads"
 arr_movies_path: "{{ arr_media_path }}/libraries/movies"
 arr_tv_path: "{{ arr_media_path }}/libraries/tv"
+arr_music_path: "{{ arr_media_path }}/libraries/music"
 
 # Config directory (local to LXC, not bind-mounted)
 arr_config_path: /opt/arrstack/config

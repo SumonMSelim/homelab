@@ -1,11 +1,11 @@
 ---
 # Navidrome music server — Docker on LXC.
 # Ensure the LXC has media-storage bind-mounted (e.g. Proxmox mp0=...,/media).
-# Music collection should live in a subdirectory (default /media/music).
+# Music collection should live in a subdirectory (default /media/libraries/music to match arr stack).
 navidrome_image: deluan/navidrome:latest
 navidrome_port: 4533
 # Path inside the LXC to your music collection (must exist; bind from Proxmox media-storage).
-navidrome_music_path: /media/music
+navidrome_music_path: /media/libraries/music
 navidrome_tz: "Europe/Amsterdam"
 
 # Prometheus metrics (exposed on the main port at /metrics)

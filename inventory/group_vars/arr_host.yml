@@ -1,6 +1,6 @@
 ---
 # ARR stack LXC at 192.168.178.141. Override media paths if mount differs.
-# Run *arr as root (0:0) so /movies, /tv, /downloads are writable (mount permission quirks in unprivileged LXC).
+# Run *arr as root (0:0) so /movies, /tv, /downloads, /music are writable (mount permission quirks in unprivileged LXC).
 arr_uid: 0
 arr_gid: 0
 ansible_user: root
