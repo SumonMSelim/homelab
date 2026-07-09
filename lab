@@ -131,6 +131,7 @@ cmd_deploy() {
     [jellyfin]="Jellyfin media server"
     [arr]="*arr stack"
     [immich]="Immich photo/video backup"
+    [navidrome]="Navidrome music server"
     [tailscale]="Tailscale (all hosts)"
     [timothy]="Timothy (Hermes AI agent)"
   )
@@ -138,7 +139,7 @@ cmd_deploy() {
   if [[ -z "$service" || -z "${SERVICE_LABELS[$service]+_}" ]]; then
     _header "Deploy — available services"
     for svc in adguard caddy pocketid vault postgresql mysql redis mongodb \
-                monitoring node-exporter pve-exporter jellyfin arr immich \
+                monitoring node-exporter pve-exporter jellyfin arr immich navidrome \
                 tailscale timothy; do
       printf "    ${CYAN}%-18s${RESET} %s\n" "$svc" "${SERVICE_LABELS[$svc]}"
     done
@@ -179,6 +180,7 @@ cmd_deploy() {
     arr)           _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_arr.yml" ;;
     immich)        _require_vars vault_auth_vars.yml
                    _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_immich.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
+    navidrome)     _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_navidrome.yml" ;;
     tailscale)     _require_vars vault_auth_vars.yml
                    _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_tailscale.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
     timothy)       _require_vars vault_auth_vars.yml
@@ -197,6 +199,7 @@ cmd_upgrade() {
     [pocketid]="192.168.178.122 /opt/compose/pocketid-pocketid"
     [jellyfin]="192.168.178.140 /opt/compose/jellyfin-jellyfin"
     [arr]="192.168.178.141 /opt/compose/arr-arr"
+    [navidrome]="192.168.178.143 /opt/compose/navidrome-navidrome"
     [timothy]="192.168.178.125 /opt/compose/timothy-timothy"
   )
 

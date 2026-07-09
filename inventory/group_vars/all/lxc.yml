@@ -104,6 +104,18 @@ proxmox_containers:
       - id: mp0
         host_path: "{{ jellyfin_media_storage_host_path }}"
         mountpoint: /media
+  - vmid: 143
+    hostname: navidrome
+    ip: "192.168.178.143/24"
+    description: "Navidrome music server"
+    unprivileged: 1
+    cores: 2
+    memory: 2048
+    disk: "local-lvm:15"
+    mount_volumes:
+      - id: mp0
+        host_path: "{{ jellyfin_media_storage_host_path }}"
+        mountpoint: /media
   - vmid: 250
     hostname: dash
     ip: "192.168.178.250/24"

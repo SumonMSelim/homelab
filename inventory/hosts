@@ -28,6 +28,10 @@ arr ansible_host=192.168.178.141
 [immich_host]
 immich ansible_host=192.168.178.142
 
+# Navidrome music server
+[navidrome_host]
+navidrome ansible_host=192.168.178.143
+
 # Monitoring
 [monitoring_host]
 monitoring ansible_host=192.168.178.124
@@ -101,6 +105,7 @@ adguard_secondary_host
 jellyfin_host
 arr_host
 immich_host
+navidrome_host
 dash_host
 timothy_host
 humaun_host
