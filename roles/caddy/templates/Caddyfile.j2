@@ -29,12 +29,20 @@ http://id.mol.la, id.mol.la {
 
     # Route Tinyauth traffic
     handle @tinyauth_paths {
-        reverse_proxy 192.168.178.122:1412
+        reverse_proxy 192.168.178.122:1412 {
+            header_up Host {host}
+            header_up X-Forwarded-Proto https
+            header_up X-Forwarded-Host {host}
+        }
     }
 
     # Route everything else to Pocket ID
     handle {
-        reverse_proxy 192.168.178.122:1411
+        reverse_proxy 192.168.178.122:1411 {
+            header_up Host {host}
+            header_up X-Forwarded-Proto https
+            header_up X-Forwarded-Host {host}
+        }
     }
 }
 

@@ -9,19 +9,19 @@ services:
     volumes:
       - tinyauth_data:/data
     environment:
-      APP_URL: "https://id.mol.la"
-      SECURE_COOKIE: "true"
-      OAUTH_AUTO_REDIRECT: "pocketid"
-      USERS: "{{ tinyauth_users | default('oauth_placeholder:$$2a$$10$$UdLYoJ5lgPsC0RKqYH/jMua7zIn0g9kPqWmhYayJYLaZQ/FTmH2/u') }}"
-      PROVIDERS_POCKETID_CLIENT_ID: "{{ tinyauth_pocketid_client_id }}"
-      PROVIDERS_POCKETID_CLIENT_SECRET: "{{ tinyauth_pocketid_client_secret }}"
-      PROVIDERS_POCKETID_AUTH_URL: "https://id.mol.la/authorize"
-      PROVIDERS_POCKETID_TOKEN_URL: "https://id.mol.la/api/oidc/token"
-      PROVIDERS_POCKETID_USER_INFO_URL: "https://id.mol.la/api/oidc/userinfo"
-      PROVIDERS_POCKETID_REDIRECT_URL: "https://id.mol.la/api/oauth/callback/pocketid"
-      PROVIDERS_POCKETID_SCOPES: "openid email profile groups"
-      PROVIDERS_POCKETID_NAME: "Pocket ID"
-      TRUSTED_PROXIES: "192.168.178.121,127.0.0.1,::1"
+      TINYAUTH_APPURL: "https://id.mol.la"
+      TINYAUTH_AUTH_SECURECOOKIE: "true"
+      TINYAUTH_OAUTH_AUTOREDIRECT: "pocketid"
+      TINYAUTH_AUTH_USERS: "{{ tinyauth_users | default('oauth_placeholder:$$2a$$10$$UdLYoJ5lgPsC0RKqYH/jMua7zIn0g9kPqWmhYayJYLaZQ/FTmH2/u') }}"
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_CLIENTID: "{{ tinyauth_pocketid_client_id }}"
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_CLIENTSECRET: "{{ tinyauth_pocketid_client_secret }}"
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_AUTHURL: "https://id.mol.la/authorize"
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_TOKENURL: "https://id.mol.la/api/oidc/token"
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_USERINFOURL: "https://id.mol.la/api/oidc/userinfo"
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_REDIRECTURL: "https://id.mol.la/api/oauth/callback/pocketid"
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_SCOPES: "openid email profile groups"
+      TINYAUTH_OAUTH_PROVIDERS_POCKETID_NAME: "Pocket ID"
+      TINYAUTH_AUTH_TRUSTEDPROXIES: "192.168.178.121,127.0.0.1,::1"
 
   pocketid:
     image: {{ pocketid_image }}
