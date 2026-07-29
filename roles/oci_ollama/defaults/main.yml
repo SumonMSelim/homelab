@@ -1,5 +1,5 @@
 ---
-ollama_model: "qwen3.6:27b"
+ollama_model: "qwen3:14b"
 ollama_port: 11434
 ollama_keep_alive: "10m"
 ollama_max_loaded_models: 1
