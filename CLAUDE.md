@@ -162,22 +162,18 @@ Vault reads always use `delegate_to: localhost` + `become: false` (runs on Ansib
 
 ### OCI Cloud Infrastructure (Terraform/OpenTofu)
 
-Lives under `cloud/oci/` — separate from the Ansible homelab. Two independent stacks:
+Lives under `cloud/oci/` — separate from the Ansible homelab.
 
 **`cloud/oci/ai-inference/`** — Always-Free A1 Flex instance running Ollama
-- 4 OCPU / 24 GB RAM; pulls `qwen3:30b-a3b` model on bootstrap via cloud-init
+- 4 OCPU / 24 GB RAM; pulls `qwen3:14b` model on bootstrap via cloud-init
 - Tailscale-only access (no public exposure); reachable via MagicDNS as `oci-ai-inference`
 - Remote state: OCI Object Storage (S3-compat backend) — bucket bootstrapped by `oci-bootstrap.yml` workflow
 - Inventory entry uses Tailscale hostname, not LAN IP: see `[oci_host]` in `inventory/hosts`
-
-**`cloud/oci/experiment/`** — Modular stack for burst workloads
-- Two environments: `gpu-burst` (VM.GPU.A10.1, runs vllm) and `cpu-baseline`
-- Separate `compute` + `network` modules under `modules/`; resources tagged with `project`, `env`, `ttl`
+- Never destroy this instance without explicit request — it's a standing deployment, not ephemeral
 
 **CI/CD** (`.github/workflows/`):
 - `oci-bootstrap.yml` — one-time bucket + secret setup
 - `oci-ai-inference.yml` — plan/apply/destroy with retry logic for OCI capacity errors
-- `oci-experiment-cpu.yml` / `oci-experiment-gpu.yml` — experiment lifecycle workflows
 - All: plan on PR, apply/destroy on `main` only; state artifacts uploaded per run
 
 **Common Terraform pattern:**
