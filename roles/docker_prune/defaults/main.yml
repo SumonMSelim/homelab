@@ -1,0 +1,2 @@
+---
+docker_prune_schedule: "Sun 04:00"   # systemd OnCalendar

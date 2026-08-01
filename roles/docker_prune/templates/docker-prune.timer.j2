@@ -1,0 +1,9 @@
+[Unit]
+Description=Weekly Docker image prune
+
+[Timer]
+OnCalendar={{ docker_prune_schedule }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target

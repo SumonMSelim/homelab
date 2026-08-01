@@ -1,0 +1,8 @@
+---
+# Install weekly Docker image-prune timer on all Docker Compose hosts.
+# Usage: ./lab deploy docker-prune
+- name: Deploy Docker image prune timer
+  hosts: docker_hosts
+  become: true
+  roles:
+    - docker_prune

@@ -116,3 +116,17 @@ proxmox_host
 core
 applications
 dns
+
+# Docker Compose hosts — used for the weekly docker-prune timer
+[docker_hosts:children]
+caddy_host
+pocketid_host
+timothy_host
+jellyfin_host
+arr_host
+immich_host
+navidrome_host
+dash_host
+humaun_host
+adguard_primary_host
+adguard_secondary_host
