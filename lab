@@ -127,6 +127,7 @@ cmd_deploy() {
     [mongodb]="MongoDB"
     [monitoring]="Prometheus + Grafana"
     [node-exporter]="Node Exporter (all hosts)"
+    [docker-prune]="Weekly Docker image prune timer (all Compose hosts)"
     [pve-exporter]="Proxmox VE metrics exporter"
     [jellyfin]="Jellyfin media server"
     [arr]="*arr stack"
@@ -139,7 +140,7 @@ cmd_deploy() {
   if [[ -z "$service" || -z "${SERVICE_LABELS[$service]+_}" ]]; then
     _header "Deploy — available services"
     for svc in adguard caddy pocketid vault postgresql mysql redis mongodb \
-                monitoring node-exporter pve-exporter jellyfin arr immich navidrome \
+                monitoring node-exporter docker-prune pve-exporter jellyfin arr immich navidrome \
                 tailscale timothy; do
       printf "    ${CYAN}%-18s${RESET} %s\n" "$svc" "${SERVICE_LABELS[$svc]}"
     done
@@ -174,6 +175,7 @@ cmd_deploy() {
     monitoring)    _require_vars vault_auth_vars.yml
                    _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_monitoring.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
     node-exporter) _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_node_exporter.yml" ;;
+    docker-prune)  _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_docker_prune.yml" ;;
     pve-exporter)  _require_vars vault_auth_vars.yml
                    _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_pve_exporter.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
     jellyfin)      _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_jellyfin.yml" ;;
