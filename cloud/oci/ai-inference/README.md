@@ -1,6 +1,6 @@
 # OCI A1 Flex — AI Inference
 
-OCI Always-Free Ampere A1 Flex instance running **Ollama + Qwen3:14b** for homelab agent use (NanoClaw/Timothy). No public exposure — access via Tailscale only. Infrastructure managed via GitHub Actions.
+OCI Always-Free Ampere A1 Flex instance running **Ollama + Qwen3:14b** for homelab agent use. No public exposure — access via Tailscale only. Infrastructure managed via GitHub Actions.
 
 ## Hardware
 
@@ -137,7 +137,7 @@ terraform plan
 
 ---
 
-## Connecting from Timothy / NanoClaw
+## Connecting from a homelab agent
 
 Set the Ollama base URL to:
 

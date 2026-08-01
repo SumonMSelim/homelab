@@ -38,7 +38,7 @@ proxmox_containers:
   - vmid: 125
     hostname: timothy
     ip: "192.168.178.125/24"
-    description: "Timothy — Hermes AI agent"
+    description: "AI agent host (Docker Compose)"
     unprivileged: 1
     cores: 2
     memory: 4096
