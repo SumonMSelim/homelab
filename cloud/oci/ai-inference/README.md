@@ -1,6 +1,6 @@
 # OCI A1 Flex — AI Inference
 
-OCI Always-Free Ampere A1 Flex instance running **Ollama + Qwen3:14b** for homelab agent use. No public exposure — access via Tailscale only. Infrastructure managed via GitHub Actions.
+OCI Always-Free Ampere A1 Flex instance running **Ollama + Qwen3:4b** for homelab agent use. No public exposure — access via Tailscale only. Infrastructure managed via GitHub Actions.
 
 ## Hardware
 
@@ -14,16 +14,16 @@ OCI Always-Free Ampere A1 Flex instance running **Ollama + Qwen3:14b** for homel
 
 ## Model
 
-**`qwen3:14b`** (default Q4 quant, ~9 GB)
+**`qwen3:4b`** (default Q4 quant, ~2.5 GB)
 
 | Item | Size |
 |---|---|
-| Model weights | ~9 GB |
-| KV cache + runtime | ~4 GB |
+| Model weights | ~2.5 GB |
+| KV cache + runtime | ~2 GB |
 | OS + Tailscale | ~1.5 GB |
-| **Headroom** | **~9.5 GB** |
+| **Headroom** | **~18 GB** |
 
-Expected throughput: **3–6 tok/s** on 4× Neoverse N1 (CPU-only, bandwidth-bound). Acceptable for agentic non-streaming calls.
+Expected throughput: **8–15 tok/s** on 4× Neoverse N1 (CPU-only, bandwidth-bound). Acceptable for agentic non-streaming calls.
 
 ---
 
@@ -98,7 +98,7 @@ Trigger from **Actions → OCI AI Inference → Run workflow**:
 
 ### Wait for cloud-init (~15–25 min)
 
-cloud-init installs Tailscale, Ollama, pulls `qwen3:14b` (~9 GB), and hardens UFW.
+cloud-init installs Tailscale, Ollama, pulls `qwen3:4b` (~2.5 GB), and hardens UFW.
 
 ```bash
 # SSH in during bootstrap via the public IP shown in Terraform output
@@ -114,7 +114,7 @@ sudo journalctl -u ollama-pull-model.service -f
 curl http://oci-ai-inference:11434/api/tags | jq '.models[].name'
 ```
 
-Should return `qwen3:14b`.
+Should return `qwen3:4b`.
 
 ### Run Ansible
 
@@ -149,7 +149,7 @@ The Tailscale hostname resolves on all tailnet nodes. No port forwarding, no pub
 
 ```bash
 curl http://oci-ai-inference:11434/api/generate \
-  -d '{"model":"qwen3:14b","prompt":"ping","stream":false}'
+  -d '{"model":"qwen3:4b","prompt":"ping","stream":false}'
 ```
 
 ---
@@ -175,7 +175,7 @@ Suggested Grafana alerts:
 
 ```bash
 ssh ubuntu@oci-ai-inference
-ollama pull qwen3:14b     # update in place
+ollama pull qwen3:4b     # update in place
 ollama rm <old-model>     # free disk if switching
 ```
 
@@ -187,7 +187,7 @@ Or change `ollama_model` in `roles/oci_ollama/defaults/main.yml` and re-run Ansi
 
 Trigger **Actions → OCI AI Inference → Run workflow → destroy**.
 
-> **Warning:** Permanently deletes the instance and boot volume. Model weights re-downloaded on next apply (~17 GB).
+> **Warning:** Permanently deletes the instance and boot volume. Model weights re-downloaded on next apply (~2.5 GB).
 
 ---
 

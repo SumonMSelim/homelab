@@ -164,7 +164,7 @@ Vault reads always use `delegate_to: localhost` + `become: false` (runs on Ansib
 Lives under `cloud/oci/` — separate from the Ansible homelab.
 
 **`cloud/oci/ai-inference/`** — Always-Free A1 Flex instance running Ollama
-- 4 OCPU / 24 GB RAM; pulls `qwen3:14b` model on bootstrap via cloud-init
+- 4 OCPU / 24 GB RAM; pulls `qwen3:4b` model on bootstrap via cloud-init
 - Tailscale-only access (no public exposure); reachable via MagicDNS as `oci-ai-inference`
 - Remote state: OCI Object Storage (S3-compat backend) — bucket bootstrapped by `oci-bootstrap.yml` workflow
 - Inventory entry uses Tailscale hostname, not LAN IP: see `[oci_host]` in `inventory/hosts`

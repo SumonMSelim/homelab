@@ -1,7 +1,7 @@
 ---
 ollama_version: "v0.23.2"
-ollama_base_model: "qwen3:14b"
-ollama_model: "qwen3:14b"
+ollama_base_model: "qwen3:4b"
+ollama_model: "qwen3:4b"
 ollama_num_ctx: 40960
 ollama_host: "0.0.0.0:11434"
 ollama_keep_alive: "10m"

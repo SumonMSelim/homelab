@@ -14,7 +14,7 @@ on:
           - deploy
           - destroy
       ollama_model:
-        description: "Ollama model tag (leave blank for default: qwen3:14b)"
+        description: "Ollama model tag (leave blank for default: qwen3:4b)"
         required: false
         default: ""
 
@@ -91,7 +91,7 @@ jobs:
           TF_VAR_availability_domain: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
           TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
           TF_VAR_tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY_OCI }}
-          TF_VAR_ollama_model: ${{ github.event.inputs.ollama_model || 'qwen3:14b' }}
+          TF_VAR_ollama_model: ${{ github.event.inputs.ollama_model || 'qwen3:4b' }}
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
         run: terraform plan -out=tfplan -input=false
@@ -119,7 +119,7 @@ jobs:
           TF_VAR_availability_domain: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
           TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
           TF_VAR_tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY_OCI }}
-          TF_VAR_ollama_model: ${{ github.event.inputs.ollama_model || 'qwen3:14b' }}
+          TF_VAR_ollama_model: ${{ github.event.inputs.ollama_model || 'qwen3:4b' }}
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
         run: |
@@ -193,7 +193,7 @@ jobs:
         working-directory: ${{ env.ANSIBLE_WORKING_DIR }}
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
-          OLLAMA_MODEL: ${{ github.event.inputs.ollama_model || 'qwen3:14b' }}
+          OLLAMA_MODEL: ${{ github.event.inputs.ollama_model || 'qwen3:4b' }}
         run: |
           ansible-playbook playbooks/deploy_oci_ollama.yml \
             -i oci-ai-inference, \
@@ -217,7 +217,7 @@ jobs:
           TF_VAR_availability_domain: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
           TF_VAR_ssh_public_key: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
           TF_VAR_tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY_OCI }}
-          TF_VAR_ollama_model: ${{ github.event.inputs.ollama_model || 'qwen3:14b' }}
+          TF_VAR_ollama_model: ${{ github.event.inputs.ollama_model || 'qwen3:4b' }}
           AWS_REQUEST_CHECKSUM_CALCULATION: when_required
           AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
         run: terraform destroy -auto-approve -input=false
