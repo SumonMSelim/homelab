@@ -75,7 +75,7 @@ vars/                    → runtime secrets/config (gitignored); *.example file
 | 192.168.178.131 | MariaDB                           | systemd apt    |
 | 192.168.178.132 | Redis                             | systemd apt    |
 | 192.168.178.133 | MongoDB                           | systemd apt    |
-| 192.168.178.125 | Timothy (Hermes AI agent)         | Docker Compose |
+| 192.168.178.125 | AI agent host                      | Docker Compose |
 | 192.168.178.140 | Jellyfin                          | Docker Compose |
 | 192.168.178.141 | *arr stack                        | Docker Compose |
 | 192.168.178.142 | Immich                            | Docker Compose |
@@ -100,7 +100,6 @@ Most playbooks need runtime secrets that are gitignored. Copy the `.example` fil
 | deploy_redis      | `-e "@vars/vault_auth_vars.yml"`                                |
 | deploy_immich     | `-e "@vars/vault_auth_vars.yml"`                                |
 | deploy_tailscale  | `-e "@vars/vault_auth_vars.yml"`                                |
-| deploy_timothy    | `-e "@vars/vault_auth_vars.yml"`                                |
 | create_lxc        | `-e "@vars/proxmox_create_vars.yml"`                            |
 
 ### Patterns to Follow When Adding a Service
@@ -156,7 +155,7 @@ All secrets live under `kv/homelab/data/<service>` (kv-v2 engine):
 | `kv/homelab/data/caddy`        | `cloudflare_api_token`, `cloudflare_tunnel_token`, `cloudflare_account_email`                                               |
 | `kv/homelab/data/pocketid`     | `pocketid_encryption_key`, `tinyauth_pocketid_client_id`, `tinyauth_pocketid_client_secret`, `pocketid_maxmind_license_key` |
 | `kv/homelab/data/tailscale`    | `auth_key`                                                                                                                  |
-| `kv/homelab/data/timothy`      | `api_server_key`, `ollama_base_url`                                                                                         |
+| `kv/homelab/data/timothy`      | `api_server_key`, `ollama_base_url`, `telegram_bot_token`, `glm_api_key`                                                    |
 
 Vault reads always use `delegate_to: localhost` + `become: false` (runs on Ansible control, not target host).
 
@@ -165,7 +164,7 @@ Vault reads always use `delegate_to: localhost` + `become: false` (runs on Ansib
 Lives under `cloud/oci/` — separate from the Ansible homelab.
 
 **`cloud/oci/ai-inference/`** — Always-Free A1 Flex instance running Ollama
-- 4 OCPU / 24 GB RAM; pulls `qwen3:14b` model on bootstrap via cloud-init
+- 4 OCPU / 24 GB RAM; pulls `qwen3:4b` model on bootstrap via cloud-init
 - Tailscale-only access (no public exposure); reachable via MagicDNS as `oci-ai-inference`
 - Remote state: OCI Object Storage (S3-compat backend) — bucket bootstrapped by `oci-bootstrap.yml` workflow
 - Inventory entry uses Tailscale hostname, not LAN IP: see `[oci_host]` in `inventory/hosts`
@@ -184,15 +183,9 @@ terraform {
 }
 ```
 
-### Timothy (Hermes AI Agent) Architecture
+### LXC 125 (AI agent host)
 
-Timothy (`192.168.178.125`, vmid 125) runs two containers on an internal `timothy` Docker network:
-- **gateway** — Hermes API server (port 8080 internal); reads `api_server_key` + `ollama_base_url` from Vault
-- **dashboard** — web UI on port 9119, bound to LAN IP only
-
-`ollama_base_url` points to `oci-ai-inference` over Tailscale — Timothy requires Tailscale to be installed first (deployment order: `node-exporter` → `tailscale` → `timothy`).
-
-`deploy_timothy.yml` chains all three roles in sequence; the `lab` deploy command handles this automatically.
+LXC 125 (`192.168.178.125`, vmid 125) runs user-deployed Docker Compose agents. Tailscale is installed (reaches `oci-ai-inference` over MagicDNS).
 
 LXC 125 requires `/dev/net/tun` for Tailscale — add to `/etc/pve/lxc/125.conf` on the Proxmox host and restart the container:
 ```

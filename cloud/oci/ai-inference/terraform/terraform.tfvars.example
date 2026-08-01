@@ -19,7 +19,7 @@ tailscale_auth_key = "tskey-auth-..."
 
 instance_display_name = "oci-ai-inference"
 boot_volume_size_gb   = 100
-ollama_model          = "qwen3:14b"
+ollama_model          = "qwen3:4b"
 
 vcn_cidr    = "10.10.0.0/16"
 subnet_cidr = "10.10.0.0/24"

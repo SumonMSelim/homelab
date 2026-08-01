@@ -1,7 +1,0 @@
----
-- name: Deploy Timothy (Hermes AI agent)
-  hosts: timothy_host
-  roles:
-    - role: node_exporter
-    - role: tailscale
-    - role: timothy
