@@ -1,6 +1,9 @@
 ---
 postgres_homelab_network: "192.168.178.0/24"
 postgres_vault_secret_path: "kv/homelab/data/postgresql"
+# Pinned major version; installed from the postgresql.org (pgdg) apt repo.
+# Bump + run pg_upgradecluster <old> main manually for a major upgrade.
+postgresql_version: "18"
 
 # List of apps — each gets a user, db, and pg_hba rule.
 # Password is fetched from Vault using vault_key.

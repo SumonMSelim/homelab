@@ -134,7 +134,7 @@ Install before first run: `ansible-galaxy install -r requirements.yml`
 - Caddy uses a custom Dockerfile (in `roles/caddy/files/`) that builds the Cloudflare DNS plugin via `xcaddy`; runs in `network_mode: host`
 - Caddy Caddyfile defines a reusable `(protected)` snippet for Tinyauth forward-auth; import it with `import protected` on protected routes
 - Database roles (postgresql, mysql, mongodb) have a `create_app.yml` task file separate from `main.yml` — included by playbooks that need per-app users/databases. PostgreSQL apps also specify extensions (e.g. `vector`, `earthdistance` for Immich).
-- PostgreSQL has pgvector installed for Immich; `pg_hba.conf` is templated
+- PostgreSQL is pinned to PG18 (from the pgdg apt repo, `postgresql_version` var in `roles/postgresql/defaults/main.yml`); pgvector installed for Immich + Timothy; `pg_hba.conf` is templated. Major-version upgrades require a manual `pg_upgradecluster` run (not handled by the role).
 - Monitoring: Prometheus node targets auto-derive from `proxmox_containers` in `inventory/group_vars/all/lxc.yml` — adding an LXC there and redeploying monitoring is sufficient
 - AdGuard Primary runs in host network mode (required for DHCP broadcasts); Secondary uses bridge
 - *arr stack runs as uid/gid 0:0 — unprivileged LXC quirk so containers can write to bind-mounted media
