@@ -7,3 +7,7 @@ postgres_apps:
     vault_key: immich
     vector_extension: true
     earthdistance_extension: true
+  - user: timothy
+    db: timothy
+    vault_key: timothy
+    vector_extension: true
