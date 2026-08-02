@@ -1,10 +1,12 @@
 ---
 timothy_vault_secret_path: "kv/homelab/data/timothy"
 timothy_pg_vault_path: "kv/homelab/data/postgresql"
-timothy_version: "v0.1.0-alpha.1"
+# TIMOTHY_VERSION (image tag) is bare; GitHub release tag adds a 'v' prefix.
+timothy_version: "0.1.0-alpha.1"
+timothy_release_tag: "v{{ timothy_version }}"
 timothy_image_namespace: "ghcr.io/timothy-agent"
 timothy_compose_dir: "/opt/compose/timothy-{{ inventory_hostname }}"
-timothy_release_base: "https://github.com/timothy-agent/timothy/releases/download/{{ timothy_version }}"
+timothy_release_base: "https://github.com/timothy-agent/timothy/releases/download/{{ timothy_release_tag }}"
 timothy_web_port: 3300
 timothy_brain_port: 8300
 timothy_public_url: "https://timothy.mol.la"
