@@ -72,6 +72,52 @@
       - "Store these securely. The secret_id cannot be retrieved again."
   # Intentionally not no_log — operator needs these values once during bootstrap.
 
+# --- Timothy (own runtime secret backend) ---
+
+- name: Write timothy-policy
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "sys/policies/acl/{{ vault_timothy_policy_name }}"
+    data:
+      policy: "{{ lookup('template', 'timothy-policy.hcl.j2') }}"
+
+- name: Create timothy AppRole
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "auth/approle/role/{{ vault_timothy_approle_name }}"
+    data:
+      token_policies:
+        - "{{ vault_timothy_policy_name }}"
+      token_ttl: "{{ vault_approle_token_ttl }}"
+      token_max_ttl: "{{ vault_approle_token_max_ttl }}"
+      secret_id_ttl: "{{ vault_approle_secret_id_ttl }}"
+
+- name: Read timothy AppRole role-id
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "auth/approle/role/{{ vault_timothy_approle_name }}/role-id"
+  register: timothy_approle_role_id
+  no_log: true
+
+- name: Generate timothy AppRole secret-id
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "auth/approle/role/{{ vault_timothy_approle_name }}/secret-id"
+  register: timothy_approle_secret_id
+  no_log: true
+
+- name: Display timothy AppRole credentials
+  ansible.builtin.debug:
+    msg:
+      - "timothy role_id: {{ timothy_approle_role_id.data.data.role_id }}"
+      - "timothy secret_id: {{ timothy_approle_secret_id.data.data.secret_id }}"
+      - "Store these in kv/homelab/data/timothy as vault_role_id / vault_secret_id. The secret_id cannot be retrieved again."
+  # Intentionally not no_log — operator needs these values once during bootstrap.
+
 # --- OIDC (PocketID) ---
 
 - name: Write admin policy

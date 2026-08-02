@@ -75,7 +75,7 @@ vars/                    → runtime secrets/config (gitignored); *.example file
 | 192.168.178.131 | MariaDB                           | systemd apt    |
 | 192.168.178.132 | Redis                             | systemd apt    |
 | 192.168.178.133 | MongoDB                           | systemd apt    |
-| 192.168.178.125 | AI agent host                      | Docker Compose |
+| 192.168.178.125 | Timothy (AI agent)                 | Docker Compose |
 | 192.168.178.140 | Jellyfin                          | Docker Compose |
 | 192.168.178.141 | *arr stack                        | Docker Compose |
 | 192.168.178.142 | Immich                            | Docker Compose |
@@ -155,7 +155,7 @@ All secrets live under `kv/homelab/data/<service>` (kv-v2 engine):
 | `kv/homelab/data/caddy`        | `cloudflare_api_token`, `cloudflare_tunnel_token`, `cloudflare_account_email`                                               |
 | `kv/homelab/data/pocketid`     | `pocketid_encryption_key`, `tinyauth_pocketid_client_id`, `tinyauth_pocketid_client_secret`, `pocketid_maxmind_license_key` |
 | `kv/homelab/data/tailscale`    | `auth_key`                                                                                                                  |
-| `kv/homelab/data/timothy`      | `api_server_key`, `ollama_base_url`, `telegram_bot_token`, `glm_api_key`                                                    |
+| `kv/homelab/data/timothy`      | `master_key`, `api_token`, `public_url`, `vault_role_id`, `vault_secret_id` (bootstrap); runtime provider keys written by Timothy's own Vault backend |
 
 Vault reads always use `delegate_to: localhost` + `become: false` (runs on Ansible control, not target host).
 
@@ -183,9 +183,20 @@ terraform {
 }
 ```
 
-### LXC 125 (AI agent host)
+### LXC 125 — Timothy (AI agent)
 
-LXC 125 (`192.168.178.125`, vmid 125) runs user-deployed Docker Compose agents. Tailscale is installed (reaches `oci-ai-inference` over MagicDNS).
+LXC 125 (`192.168.178.125`, vmid 125) runs Timothy (`ghcr.io/timothy-agent/timothy-*`, pinned `timothy_version`). Self-hosted Go/React AI assistant. Tailscale installed (reaches `oci-ai-inference` over MagicDNS for local model fallback).
+
+**Deployment model** — `roles/timothy/` treats Timothy's release assets as upstream: each deploy fetches `docker-compose.yml` + `searxng-settings.yml` fresh from the pinned release tag, then patches the compose to centralize Postgres:
+- Drops the bundled `postgres` service + `pgdata` volume; rewrites `DATABASE_URL` to the central instance (LXC 130, `timothy` db with pgvector).
+- Scrubs dangling `depends_on.postgres` entries.
+- The patch runs via `roles/timothy/templates/patch-compose.py.j2` (PyYAML on the LXC); validated with `docker compose config -q` before start.
+
+**Secrets** — two layers:
+- **Bootstrap** (`master_key`, `api_token`, `public_url`, pg password): fetched from Vault at deploy time into `.env` (Vault-fed, not installer-generated).
+- **Runtime** (LLM provider keys, connector tokens): Timothy's own native Vault backend, using a scoped `timothy` AppRole + `timothy-policy` (read/write on `kv/homelab/data/timothy/*` only — NOT the broad `ansible-read-policy`). Configured post-deploy via Timothy's Settings UI → secret backends.
+
+Image tag pinned (`timothy_version`); bump + redeploy to upgrade. Mission sandbox image pulled explicitly (compose pull doesn't cover env-var-referenced images).
 
 LXC 125 requires `/dev/net/tun` for Tailscale — add to `/etc/pve/lxc/125.conf` on the Proxmox host and restart the container:
 ```

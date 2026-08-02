@@ -134,3 +134,9 @@ http://dns2.mol.la, dns2.mol.la {
 http://vibejudge.mol.la, vibejudge.mol.la {
     reverse_proxy 192.168.178.252:80
 }
+
+# Timothy — self-hosted AI agent (protected by Tinyauth)
+http://timothy.mol.la, timothy.mol.la {
+    import protected
+    reverse_proxy {{ hostvars['timothy'].ansible_host }}:3300
+}

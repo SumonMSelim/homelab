@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+# Centralize Timothy's Postgres: drop the bundled postgres service + its
+# volume, rewrite DATABASE_URL to the homelab central instance, and scrub
+# the now-dangling depends_on.postgres entries the go-services carry.
+# Run against the upstream docker-compose.yml fetched fresh each deploy.
+import sys
+import yaml
+
+COMPOSE = "{{ timothy_compose_dir }}/docker-compose.yml"
+DB_URL = "postgres://timothy:{{ timothy_pg_secret.data.data.data.timothy }}@{{ timothy_pg_host }}:{{ timothy_pg_port }}/timothy"
+
+with open(COMPOSE) as f:
+    doc = yaml.safe_load(f)
+
+services = doc.get("services", {})
+
+# 1. Drop bundled postgres service.
+services.pop("postgres", None)
+
+# 2. Rewrite DATABASE_URL everywhere it appears (env maps + the &db-env
+#    anchor is resolved into each service's environment by yaml.safe_load,
+#    so editing per-service env catches all of brain/gateway/memoryd).
+for svc in services.values():
+    env = svc.get("environment")
+    if isinstance(env, dict) and "DATABASE_URL" in env:
+        env["DATABASE_URL"] = DB_URL
+    # 3. Scrub dangling depends_on.postgres (upstream uses dict form).
+    dep = svc.get("depends_on")
+    if isinstance(dep, dict):
+        dep.pop("postgres", None)
+        if not dep:
+            svc.pop("depends_on", None)
+
+# 4. Drop pgdata volume (kept workspace/attachments).
+doc.get("volumes", {}).pop("pgdata", None)
+
+with open(COMPOSE, "w") as f:
+    yaml.safe_dump(doc, f, sort_keys=False)
+
+print("patched: postgres service dropped, DATABASE_URL -> central PG")

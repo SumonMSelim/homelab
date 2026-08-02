@@ -1,0 +1,9 @@
+---
+# Deploy Timothy (self-hosted AI agent). Central Postgres (LXC 130),
+# Vault-fed .env. Upstream compose fetched live each deploy.
+# Usage: ./lab deploy timothy
+- name: Deploy Timothy
+  hosts: timothy_host
+  become: true
+  roles:
+    - timothy

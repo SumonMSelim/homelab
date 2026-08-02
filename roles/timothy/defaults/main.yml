@@ -1,0 +1,13 @@
+---
+timothy_vault_secret_path: "kv/homelab/data/timothy"
+timothy_pg_vault_path: "kv/homelab/data/postgresql"
+timothy_version: "v0.1.0-alpha.1"
+timothy_image_namespace: "ghcr.io/timothy-agent"
+timothy_compose_dir: "/opt/compose/timothy-{{ inventory_hostname }}"
+timothy_release_base: "https://github.com/timothy-agent/timothy/releases/download/{{ timothy_version }}"
+timothy_web_port: 3300
+timothy_brain_port: 8300
+timothy_public_url: "https://timothy.mol.la"
+timothy_sandbox_image: "{{ timothy_image_namespace }}/timothy-sandbox:{{ timothy_version }}"
+timothy_pg_host: "192.168.178.130"
+timothy_pg_port: 5432

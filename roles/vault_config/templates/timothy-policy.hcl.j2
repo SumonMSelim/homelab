@@ -1,0 +1,8 @@
+# Read/write for Timothy's own secret backend — scoped to its own path only
+path "{{ vault_kv_path }}/data/timothy/*" {
+  capabilities = ["create", "read", "update", "list"]
+}
+
+path "{{ vault_kv_path }}/metadata/timothy/*" {
+  capabilities = ["read", "list"]
+}
