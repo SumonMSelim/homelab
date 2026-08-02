@@ -69,10 +69,6 @@
   ansible.builtin.command: python3 {{ timothy_compose_dir }}/patch-compose.py
   changed_when: false
 
-- name: Validate patched compose
-  ansible.builtin.command: docker compose -f {{ timothy_compose_dir }}/docker-compose.yml config -q
-  changed_when: false
-
 - name: Deploy .env from Vault secrets
   ansible.builtin.template:
     src: env.j2
@@ -81,8 +77,29 @@
   no_log: true
   notify: Restart Timothy
 
+- name: Validate patched compose
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - --env-file
+      - "{{ timothy_compose_dir }}/.env"
+      - -f
+      - "{{ timothy_compose_dir }}/docker-compose.yml"
+      - config
+      - -q
+  changed_when: false
+
 - name: Pull Timothy images
-  ansible.builtin.command: docker compose -f {{ timothy_compose_dir }}/docker-compose.yml pull
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - --env-file
+      - "{{ timothy_compose_dir }}/.env"
+      - -f
+      - "{{ timothy_compose_dir }}/docker-compose.yml"
+      - pull
   changed_when: false
 
 - name: Pull mission sandbox image explicitly
