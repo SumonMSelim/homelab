@@ -1,9 +1,29 @@
 ---
-- name: Install PostgreSQL and Python bindings
+- name: Ensure postgresql.org apt repo (pgdg) keyring present
+  ansible.builtin.file:
+    path: /usr/share/postgresql-common/pgdg
+    state: directory
+    mode: '0755'
+
+- name: Download pgdg apt signing key
+  ansible.builtin.get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+    mode: '0644'
+    force: true
+
+- name: Add pgdg apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+    filename: pgdg
+    state: present
+    update_cache: true
+
+- name: Install PostgreSQL {{ postgresql_version }} + Python bindings + pgvector
   ansible.builtin.apt:
     name:
-      - postgresql
-      - postgresql-contrib
+      - "postgresql-{{ postgresql_version }}"
+      - "postgresql-{{ postgresql_version }}-pgvector"
       - python3-psycopg2
     state: present
     update_cache: true
