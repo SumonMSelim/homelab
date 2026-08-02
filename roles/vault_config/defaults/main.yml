@@ -7,6 +7,10 @@ vault_approle_token_max_ttl: "4h"
 vault_approle_secret_id_ttl: "0"
 vault_policy_name: "ansible-read-policy"
 
+# Timothy (own runtime secret backend)
+vault_timothy_policy_name: "timothy-policy"
+vault_timothy_approle_name: "timothy"
+
 # OIDC (PocketID)
 vault_oidc_discovery_url: "https://id.mol.la"
 vault_oidc_role_name: "homelab-admin"

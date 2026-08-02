@@ -1,0 +1,100 @@
+---
+- name: Ensure compose project directory exists
+  ansible.builtin.file:
+    path: "{{ timothy_compose_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Detect docker.sock GID on host
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: timothy_sock_stat
+
+- name: Set docker sock GID
+  ansible.builtin.set_fact:
+    timothy_docker_sock_gid: "{{ timothy_sock_stat.stat.gid | default(0) }}"
+
+- name: Fetch timothy postgres password from Vault
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    path: "{{ timothy_pg_vault_path }}"
+    auth_method: approle
+    role_id: "{{ vault_role_id }}"
+    secret_id: "{{ vault_secret_id }}"
+  register: timothy_pg_secret
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: Fetch timothy bootstrap secrets from Vault
+  community.hashi_vault.vault_read:
+    url: "{{ vault_addr }}"
+    path: "{{ timothy_vault_secret_path }}"
+    auth_method: approle
+    role_id: "{{ vault_role_id }}"
+    secret_id: "{{ vault_secret_id }}"
+  register: timothy_secret
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: Fetch upstream docker-compose.yml
+  ansible.builtin.get_url:
+    url: "{{ timothy_release_base }}/docker-compose.yml"
+    dest: "{{ timothy_compose_dir }}/docker-compose.yml"
+    mode: '0644'
+    force: true
+
+- name: Ensure searxng config directory exists
+  ansible.builtin.file:
+    path: "{{ timothy_compose_dir }}/searxng"
+    state: directory
+    mode: '0755'
+
+- name: Fetch upstream searxng settings
+  ansible.builtin.get_url:
+    url: "{{ timothy_release_base }}/searxng-settings.yml"
+    dest: "{{ timothy_compose_dir }}/searxng/settings.yml"
+    mode: '0644'
+    force: true
+
+- name: Drop compose patch script
+  ansible.builtin.template:
+    src: patch-compose.py.j2
+    dest: "{{ timothy_compose_dir }}/patch-compose.py"
+    mode: '0755'
+  no_log: true
+
+- name: Centralize Postgres (drop bundled, rewrite DATABASE_URL)
+  ansible.builtin.command: python3 {{ timothy_compose_dir }}/patch-compose.py
+  changed_when: false
+
+- name: Validate patched compose
+  ansible.builtin.command: docker compose -f {{ timothy_compose_dir }}/docker-compose.yml config -q
+  changed_when: false
+
+- name: Deploy .env from Vault secrets
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ timothy_compose_dir }}/.env"
+    mode: '0600'
+  no_log: true
+  notify: Restart Timothy
+
+- name: Pull Timothy images
+  ansible.builtin.command: docker compose -f {{ timothy_compose_dir }}/docker-compose.yml pull
+  changed_when: false
+
+- name: Pull mission sandbox image explicitly
+  ansible.builtin.command: docker pull {{ timothy_sandbox_image }}
+  changed_when: false
+
+- name: Start Timothy
+  community.docker.docker_compose_v2:
+    project_src: "{{ timothy_compose_dir }}"
+    state: present
+
+- name: Wait for web UI
+  ansible.builtin.wait_for:
+    port: "{{ timothy_web_port }}"
+    timeout: 90

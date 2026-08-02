@@ -1,0 +1,6 @@
+---
+- name: Restart Timothy
+  community.docker.docker_compose_v2:
+    project_src: "{{ timothy_compose_dir }}"
+    state: present
+    restarted: true
