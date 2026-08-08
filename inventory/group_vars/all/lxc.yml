@@ -41,7 +41,8 @@ proxmox_containers:
     description: "AI agent host (Docker Compose)"
     unprivileged: 1
     cores: 2
-    memory: 4096
+    memory: 8192
+    swap: 4096
     disk: "local-lvm:30"
   - vmid: 130
     hostname: postgresql
