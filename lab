@@ -135,13 +135,14 @@ cmd_deploy() {
     [navidrome]="Navidrome music server"
     [tailscale]="Tailscale (all hosts)"
     [timothy]="Timothy AI agent"
+    [promtail]="Promtail log shipper (Timothy)"
   )
 
   if [[ -z "$service" || -z "${SERVICE_LABELS[$service]+_}" ]]; then
     _header "Deploy — available services"
     for svc in adguard caddy pocketid vault postgresql mysql redis mongodb \
                 monitoring node-exporter docker-prune pve-exporter jellyfin arr immich navidrome \
-                tailscale timothy; do
+                tailscale timothy promtail; do
       printf "    ${CYAN}%-18s${RESET} %s\n" "$svc" "${SERVICE_LABELS[$svc]}"
     done
     echo ""
@@ -187,6 +188,7 @@ cmd_deploy() {
                    _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_tailscale.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
     timothy)       _require_vars vault_auth_vars.yml
                    _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_timothy.yml" -e "@$VARS_DIR/vault_auth_vars.yml" ;;
+    promtail)      _run ansible-playbook "$DEPLOYMENTS_DIR/deploy_promtail.yml" ;;
   esac
 
   _ok "Deployed ${SERVICE_LABELS[$service]} in $(_elapsed $start)"
