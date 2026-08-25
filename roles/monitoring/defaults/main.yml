@@ -4,6 +4,10 @@ grafana_port: 3000
 prometheus_scrape_interval: "15s"
 prometheus_retention: "30d"
 
+loki_port: 3100
+loki_retention_days: 30
+loki_data_dir: /var/lib/loki
+
 prometheus_scrape_jobs:
   - job_name: prometheus
     targets: ["localhost:9090"]
@@ -22,6 +26,9 @@ prometheus_immich_targets:
 
 prometheus_navidrome_targets:
   - { addr: "{{ prometheus_navidrome_host | default('192.168.178.143') }}:4533", name: "navidrome" }
+
+prometheus_timothy_targets:
+  - { addr: "{{ prometheus_timothy_host | default('192.168.178.125') }}:8300", name: "timothy-brain" }
 
 # PVE exporter
 pve_exporter_target: "192.168.178.110"

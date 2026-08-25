@@ -70,7 +70,7 @@ vars/                    → runtime secrets/config (gitignored); *.example file
 | 192.168.178.121 | Caddy (reverse proxy + Tunnel)    | Docker Compose |
 | 192.168.178.122 | PocketID (OIDC) + Tinyauth        | Docker Compose |
 | 192.168.178.123 | Vault                             | systemd binary |
-| 192.168.178.124 | Monitoring (Prometheus + Grafana) | systemd apt    |
+| 192.168.178.124 | Monitoring (Prometheus + Grafana + Loki) | systemd apt    |
 | 192.168.178.130 | PostgreSQL                        | systemd apt    |
 | 192.168.178.131 | MariaDB                           | systemd apt    |
 | 192.168.178.132 | Redis                             | systemd apt    |
@@ -136,6 +136,7 @@ Install before first run: `ansible-galaxy install -r requirements.yml`
 - Database roles (postgresql, mysql, mongodb) have a `create_app.yml` task file separate from `main.yml` — included by playbooks that need per-app users/databases. PostgreSQL apps also specify extensions (e.g. `vector`, `earthdistance` for Immich).
 - PostgreSQL is pinned to PG18 (from the pgdg apt repo, `postgresql_version` var in `roles/postgresql/defaults/main.yml`); pgvector installed for Immich + Timothy; `pg_hba.conf` is templated. Major-version upgrades require a manual `pg_upgradecluster` run (not handled by the role).
 - Monitoring: Prometheus node targets auto-derive from `proxmox_containers` in `inventory/group_vars/all/lxc.yml` — adding an LXC there and redeploying monitoring is sufficient
+- Logs: Loki (LXC 124, port 3100 for log push) aggregates Docker container logs shipped by Promtail, deployed as its own Compose project per log-emitting host (`roles/promtail/`, `./lab deploy promtail`) — reads `/var/run/docker.sock` directly, no app-compose changes needed. App-specific `/metrics` endpoints (e.g. Timothy's brain) are added as their own Prometheus job (`prometheus_<service>_targets` in `roles/monitoring/defaults/main.yml`), following the `immich`/`navidrome`/`timothy` job pattern in `prometheus.yml.j2` — UFW allow rule for the scraped port lives in the target service's own role (see `roles/timothy/tasks/main.yml`), scoped to `src: 192.168.178.124`.
 - AdGuard Primary runs in host network mode (required for DHCP broadcasts); Secondary uses bridge
 - *arr stack runs as uid/gid 0:0 — unprivileged LXC quirk so containers can write to bind-mounted media
 - Media bind-mount directories are set to 0777 on the Proxmox host (see `deployments/create_lxc.yml`) to allow unprivileged container writes

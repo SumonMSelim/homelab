@@ -1,0 +1,5 @@
+---
+- name: Restart Promtail
+  community.docker.docker_compose_v2:
+    project_src: "/opt/compose/promtail-{{ inventory_hostname }}"
+    state: present
