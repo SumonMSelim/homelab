@@ -79,7 +79,7 @@
     dest: /etc/loki/config.yml
     mode: '0644'
     owner: loki
-    group: loki
+    group: nogroup
   notify: Restart Loki
 
 - name: Ensure Loki is running and enabled
