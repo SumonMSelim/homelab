@@ -67,6 +67,44 @@
     state: present
     update_cache: true
 
+# Loki (log aggregation) — same apt.grafana.com repo added above for Grafana.
+- name: Install Loki
+  ansible.builtin.apt:
+    name: loki
+    state: present
+
+- name: Deploy loki-config.yml
+  ansible.builtin.template:
+    src: loki-config.yml.j2
+    dest: /etc/loki/config.yml
+    mode: '0644'
+    owner: loki
+    group: loki
+  notify: Restart Loki
+
+- name: Ensure Loki is running and enabled
+  ansible.builtin.service:
+    name: loki
+    state: started
+    enabled: true
+
+- name: Deploy Grafana Loki datasource provisioning
+  ansible.builtin.template:
+    src: grafana-datasource-loki.yml.j2
+    dest: /etc/grafana/provisioning/datasources/loki.yml
+    mode: '0640'
+    owner: root
+    group: grafana
+  notify: Restart Grafana
+
+- name: Allow Timothy host to push logs to Loki (port {{ loki_port }})
+  community.general.ufw:
+    rule: allow
+    port: "{{ loki_port | string }}"
+    proto: tcp
+    src: "192.168.178.125"
+  when: ansible_facts['os_family'] == 'Debian'
+
 - name: Fetch Grafana OIDC credentials from Vault
   community.hashi_vault.vault_read:
     url: "{{ vault_addr }}"

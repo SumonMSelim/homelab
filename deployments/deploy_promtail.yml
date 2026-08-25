@@ -1,0 +1,8 @@
+---
+# Deploy Promtail (ships Docker container logs to Loki on monitoring LXC).
+# Usage: ./lab deploy promtail
+- name: Deploy Promtail
+  hosts: timothy_host
+  become: true
+  roles:
+    - promtail

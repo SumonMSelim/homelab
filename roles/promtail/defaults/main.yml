@@ -1,0 +1,6 @@
+---
+# Promtail — ships this host's Docker container logs to Loki on the
+# monitoring LXC. Runs as its own Compose project, separate from the
+# service(s) whose logs it collects.
+promtail_image: grafana/promtail:latest
+promtail_loki_push_url: "http://192.168.178.124:3100/loki/api/v1/push"

@@ -8,3 +8,8 @@
   ansible.builtin.service:
     name: grafana-server
     state: restarted
+
+- name: Restart Loki
+  ansible.builtin.service:
+    name: loki
+    state: restarted

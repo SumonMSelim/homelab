@@ -1,0 +1,26 @@
+---
+- name: Ensure Promtail compose project directory exists
+  ansible.builtin.file:
+    path: "/opt/compose/promtail-{{ inventory_hostname }}"
+    state: directory
+    mode: '0755'
+
+- name: Deploy Promtail config
+  ansible.builtin.template:
+    src: promtail-config.yml.j2
+    dest: "/opt/compose/promtail-{{ inventory_hostname }}/promtail-config.yml"
+    mode: '0644'
+  notify: Restart Promtail
+
+- name: Deploy Promtail compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "/opt/compose/promtail-{{ inventory_hostname }}/compose.yml"
+    mode: '0644'
+  notify: Restart Promtail
+
+- name: Start Promtail with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "/opt/compose/promtail-{{ inventory_hostname }}"
+    state: present
+    pull: always
