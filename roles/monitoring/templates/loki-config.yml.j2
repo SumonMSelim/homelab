@@ -30,4 +30,5 @@ limits_config:
 
 compactor:
   working_directory: {{ loki_data_dir }}/compactor
+  delete_request_store: filesystem
   retention_enabled: true
