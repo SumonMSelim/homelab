@@ -140,3 +140,8 @@ http://timothy.mol.la, timothy.mol.la {
     import protected
     reverse_proxy {{ hostvars['timothy'].ansible_host }}:3300
 }
+
+# Draftly, public browser-based WYSIWYG editor (Timothy LXC :8081, no auth)
+http://draftly.mol.la, draftly.mol.la {
+    reverse_proxy {{ hostvars['timothy'].ansible_host }}:8081
+}
