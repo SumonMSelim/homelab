@@ -45,18 +45,10 @@
     mode: '0644'
     force: true
 
-- name: Ensure searxng config directory exists
+- name: Remove stale searxng bind dir (settings ship inline in compose since alpha.72)
   ansible.builtin.file:
     path: "{{ timothy_compose_dir }}/searxng"
-    state: directory
-    mode: '0755'
-
-- name: Fetch upstream searxng settings
-  ansible.builtin.get_url:
-    url: "{{ timothy_release_base }}/searxng-settings.yml"
-    dest: "{{ timothy_compose_dir }}/searxng/settings.yml"
-    mode: '0644'
-    force: true
+    state: absent
 
 - name: Drop compose patch script
   ansible.builtin.template:
