@@ -136,6 +136,11 @@ http://vibejudge.mol.la, vibejudge.mol.la, http://vibejudge.org {
     reverse_proxy 192.168.178.252:80
 }
 
+# www.vibejudge.org → apex (via Cloudflare Tunnel)
+http://www.vibejudge.org {
+    redir https://vibejudge.org{uri} permanent
+}
+
 # Timothy — self-hosted AI agent (protected by Tinyauth)
 http://timothy.mol.la, timothy.mol.la {
     import protected
