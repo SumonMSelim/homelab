@@ -131,8 +131,14 @@ http://dns2.mol.la, dns2.mol.la {
 }
 
 # Vibejudge — public web app
-http://vibejudge.mol.la, vibejudge.mol.la {
+# vibejudge.org arrives via Cloudflare Tunnel (TLS terminated at edge) — http-only site label, no ACME cert
+http://vibejudge.mol.la, vibejudge.mol.la, http://vibejudge.org {
     reverse_proxy 192.168.178.252:80
+}
+
+# www.vibejudge.org → apex (via Cloudflare Tunnel)
+http://www.vibejudge.org {
+    redir https://vibejudge.org{uri} permanent
 }
 
 # Timothy — self-hosted AI agent (protected by Tinyauth)
