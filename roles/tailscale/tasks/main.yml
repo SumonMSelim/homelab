@@ -55,6 +55,7 @@
 - name: Connect to Tailscale
   ansible.builtin.command: >
     tailscale up
+    --reset
     --authkey={{ tailscale_auth_key }}
     --hostname={{ inventory_hostname }}
     {% if tailscale_tags | length > 0 %}--advertise-tags={{ tailscale_tags }}{% endif %}
