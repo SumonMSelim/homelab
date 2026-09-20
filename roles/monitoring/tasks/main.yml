@@ -134,6 +134,13 @@
   become: false
   no_log: true
 
+- name: Install Grafana Drilldown app plugins
+  ansible.builtin.command:
+    cmd: "grafana-cli plugins install {{ item }}"
+    creates: "/var/lib/grafana/plugins/{{ item }}"
+  loop: "{{ grafana_plugins }}"
+  notify: Restart Grafana
+
 - name: Deploy Grafana datasource provisioning
   ansible.builtin.template:
     src: grafana-datasource.yml.j2
