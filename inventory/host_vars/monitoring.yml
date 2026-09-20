@@ -5,3 +5,9 @@
 prometheus_extra_node_targets:
   - addr: "oci-ai-inference:9100"
     name: oci-ai-inference
+  - addr: "shobd:9100"
+    name: shobd
+
+# shobd's tailscale IP — allowed to push logs to Loki
+loki_extra_push_sources:
+  - "100.85.160.34"
