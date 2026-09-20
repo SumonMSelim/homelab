@@ -51,6 +51,11 @@ grafana_root_url: "https://grafana.mol.la"
 # Grafana dashboard provisioning
 grafana_dashboards_dir: /var/lib/grafana/dashboards
 
+# Grafana Drilldown apps (Explore-style investigation UIs)
+grafana_plugins:
+  - grafana-metricsdrilldown-app
+  - grafana-lokiexplore-app
+
 # Community dashboards to download from Grafana.com by ID.
 # Browse: https://grafana.com/grafana/dashboards/
 # Workflow: find a dashboard → add its id + revision here → redeploy.
