@@ -59,7 +59,7 @@
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "{compose_project=\"laravelbd\", container=~\"$container\"} | json | level_name=~\"(?i)$level\"",
+          "expr": "{compose_project=\"laravelbd\", container=~\"$container\"} |~ \"(?i)(${level:pipe})|^[^{]\"",
           "refId": "A"
         }
       ],
