@@ -16,5 +16,5 @@
     rule: allow
     port: "9100"
     proto: tcp
-    src: "192.168.178.124"
+    src: "{{ prometheus_host }}"
   when: ansible_facts['os_family'] == 'Debian'

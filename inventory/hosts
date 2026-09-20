@@ -83,6 +83,13 @@ humaun ansible_host=192.168.178.252
 [oci_host]
 oci-ai-inference ansible_host=oci-ai-inference
 
+# shobd — Laravel Bangladesh production VM, external provider (public IP for now,
+# switches to a Tailscale hostname once joined). Intentionally excluded from
+# [all_nodes]: not a LAN/proxmox host, node_exporter and promtail are deployed
+# to it directly with --limit.
+[shobd_host]
+shobd ansible_host=103.159.37.223
+
 [core:children]
 ansible_host
 caddy_host
