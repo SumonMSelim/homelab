@@ -1,3 +1,7 @@
 ---
 ansible_user: ubuntu
 ansible_python_interpreter: /usr/bin/python3
+
+# monitoring's tailscale IP — shobd reaches it over tailscale, not the LAN
+prometheus_host: "100.74.128.91"
+promtail_loki_push_url: "http://100.74.128.91:3100/loki/api/v1/push"

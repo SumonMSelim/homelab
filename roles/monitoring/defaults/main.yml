@@ -8,6 +8,10 @@ loki_port: 3100
 loki_retention_days: 30
 loki_data_dir: /var/lib/loki
 
+# Hosts allowed to push logs to Loki, besides Timothy (192.168.178.125).
+# Each entry is a source IP/hostname Promtail runs on, e.g. a tailscale host.
+loki_extra_push_sources: []
+
 prometheus_scrape_jobs:
   - job_name: prometheus
     targets: ["localhost:9090"]

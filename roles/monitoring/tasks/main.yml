@@ -113,6 +113,15 @@
     src: "192.168.178.125"
   when: ansible_facts['os_family'] == 'Debian'
 
+- name: Allow extra hosts to push logs to Loki (port {{ loki_port }})
+  community.general.ufw:
+    rule: allow
+    port: "{{ loki_port | string }}"
+    proto: tcp
+    src: "{{ item }}"
+  loop: "{{ loki_extra_push_sources }}"
+  when: ansible_facts['os_family'] == 'Debian'
+
 - name: Fetch Grafana OIDC credentials from Vault
   community.hashi_vault.vault_read:
     url: "{{ vault_addr }}"
