@@ -136,7 +136,7 @@
 
 - name: Install Grafana Drilldown app plugins
   ansible.builtin.command:
-    cmd: "grafana-cli plugins install {{ item.id }} {{ item.version }}"
+    cmd: "grafana-cli --homepath /usr/share/grafana plugins install {{ item.id }} {{ item.version }}"
   loop: "{{ grafana_plugins }}"
   loop_control:
     label: "{{ item.id }}@{{ item.version }}"
