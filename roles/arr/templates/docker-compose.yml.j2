@@ -85,6 +85,24 @@ services:
       PGID: "{{ arr_gid }}"
       TZ: "{{ arr_tz }}"
 
+  # qBittorrent - Torrent downloader (for torrent-only indexers, e.g. Lidarr music trackers)
+  qbittorrent:
+    image: {{ arr_qbittorrent_image }}
+    container_name: qbittorrent-{{ inventory_hostname }}
+    restart: unless-stopped
+    ports:
+      - "{{ arr_qbittorrent_port }}:8080"
+      - "{{ arr_qbittorrent_torrent_port }}:6881"
+      - "{{ arr_qbittorrent_torrent_port }}:6881/udp"
+    volumes:
+      - {{ arr_config_path }}/qbittorrent:/config
+      - {{ arr_downloads_path }}:/downloads
+    environment:
+      PUID: "{{ arr_uid }}"
+      PGID: "{{ arr_gid }}"
+      TZ: "{{ arr_tz }}"
+      WEBUI_PORT: "8080"
+
   # Bazarr - Automatic subtitle downloader
   # Connect to Radarr/Sonarr in Bazarr UI for auto subtitle scanning/downloading
   # (supports many languages/subtitle providers)

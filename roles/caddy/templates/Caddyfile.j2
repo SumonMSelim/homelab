@@ -94,6 +94,10 @@ http://prowlarr.mol.la, prowlarr.mol.la {
     import protected
     reverse_proxy {{ arr_lxc_ip }}:9696
 }
+http://qbittorrent.mol.la, qbittorrent.mol.la {
+    import protected
+    reverse_proxy {{ arr_lxc_ip }}:8081
+}
 http://radarr.mol.la, radarr.mol.la {
     import protected
     reverse_proxy {{ arr_lxc_ip }}:7878
