@@ -1,8 +1,9 @@
 ---
 # Install prometheus-node-exporter on all managed hosts.
 # Usage: ansible-playbook deployments/deploy_node_exporter.yml
+#   ansible-playbook deployments/deploy_node_exporter.yml --limit shobd -e target_hosts=shobd_host
 - name: Deploy node exporter
-  hosts: all_nodes
+  hosts: "{{ target_hosts | default('all_nodes') }}"
   become: true
   roles:
     - node_exporter
