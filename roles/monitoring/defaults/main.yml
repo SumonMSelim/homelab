@@ -59,6 +59,6 @@ grafana_community_dashboards:
     revision: 37
     name: node-exporter-full
   # Navidrome dashboard (metrics on /metrics)
-  - id: 15290
-    revision: 2
+  - id: 24397
+    revision: 1
     name: navidrome
