@@ -10,6 +10,7 @@ arr_sonarr_image: lscr.io/linuxserver/sonarr:latest
 arr_bazarr_image: lscr.io/linuxserver/bazarr:latest
 arr_seerr_image: ghcr.io/seerr-team/seerr:latest
 arr_lidarr_image: lscr.io/linuxserver/lidarr:latest
+arr_qbittorrent_image: lscr.io/linuxserver/qbittorrent:latest
 
 # Ports
 arr_sabnzbd_port: 8080
@@ -19,6 +20,8 @@ arr_sonarr_port: 8989
 arr_bazarr_port: 6767
 arr_seerr_port: 5055
 arr_lidarr_port: 8686
+arr_qbittorrent_port: 8081
+arr_qbittorrent_torrent_port: 6881
 
 # User/Group IDs (PUID/PGID) — adjust to match media ownership on the host
 arr_uid: 1000
