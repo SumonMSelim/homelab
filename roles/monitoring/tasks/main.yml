@@ -136,9 +136,10 @@
 
 - name: Install Grafana Drilldown app plugins
   ansible.builtin.command:
-    cmd: "grafana-cli plugins install {{ item }}"
-    creates: "/var/lib/grafana/plugins/{{ item }}"
+    cmd: "grafana-cli plugins install {{ item.id }} {{ item.version }}"
   loop: "{{ grafana_plugins }}"
+  loop_control:
+    label: "{{ item.id }}@{{ item.version }}"
   notify: Restart Grafana
 
 - name: Deploy Grafana datasource provisioning
